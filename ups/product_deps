@@ -26,9 +26,9 @@ fwdir	product_dir	config_data
 
 product                 version
 cetbuildtools	        v8_20_00	-	only_for_build
-duneopdet               v09_61_00d00_genie_G1810b0211a
-dunecalib               v09_61_00d00_genie_G1810b0211a
-dunesim                 v09_61_00d00_genie_G1810b0211a
+duneopdet               v09_61_00d00G1810b0211a
+dunecalib               v09_61_00d00G1810b0211a
+dunesim                 v09_61_00d00G1810b0211a
 end_product_list
 
 # We now define allowed qualifiers and the corresponding qualifiers for the depdencies.
