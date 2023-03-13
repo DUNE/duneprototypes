@@ -97,7 +97,7 @@ nlana::SSPMonitor::SSPMonitor(fhicl::ParameterSet const& pset)
 {
 
   // Get channel map
-  art::ServiceHandle<dune::PdspChannelMapService> channelMap;
+  art::ServiceHandle<dune::PdspChannelMapService> wireReadout;
 
   fOpDetWaveformModuleLabel = pset.get<std::string>("OpDetWaveformLabel");
   fOpHitModuleLabel = pset.get<std::string>("OpHitLabel");

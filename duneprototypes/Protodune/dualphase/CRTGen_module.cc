@@ -44,7 +44,7 @@ public:
   void beginRun(art::Run & run) 		  override;
 
 private:
-  short int driftcoordinate=0;
+  geo::Coordinate driftcoordinate{};
   std::vector<double> CRT_TOP_center_driftY={-581,305.7,135};//drift in Y geometry in cm
   std::vector<double> CRT_BOT_center_driftY={+581,-202.7,135}; //drift in Y geometry in cm
   double CRTHeight=8*14.0; //size in the vertical direction
@@ -161,9 +161,9 @@ void evgen::CRTGen::beginRun(art::Run& run)
 {
     art::ServiceHandle<geo::Geometry const> geo;
     run.put(std::make_unique<sumdata::RunData>(geo->DetectorName()), art::fullRun());
-    driftcoordinate = geo->TPC(geo::TPCID{0, 0}).DetectDriftDirection();
+    driftcoordinate = geo->TPC().DriftAxisWithSign().coordinate;
 
-    if( driftcoordinate==1 || driftcoordinate==2 )
+    if( driftcoordinate==geo::Coordinate::X || driftcoordinate==geo::Coordinate::Y )
       {
 	std::cout<<" drift coordinate: "<<driftcoordinate<<std::endl;
       }else{ throw cet::exception("CRTGen") << "unknown drift coordinate " << driftcoordinate << " \n"; }  
@@ -187,7 +187,7 @@ void evgen::CRTGen::beginRun(art::Run& run)
   CRTSizeZ=CRTLength; //size in Z for drift in Y and X
 
   //We correct for the drift in X geometry
-  if(driftcoordinate==1) // Y->X, X->-Y
+  if(driftcoordinate==geo::Coordinate::X) // Y->X, X->-Y
   {
      // CRT_TOP_center {305.7,581,135};//drift in X geometry in cm
      // CRT_BOT_center {-202.7,-581,135};//drift in X geometry in cm
@@ -221,7 +221,7 @@ void evgen::CRTGen::produce(art::Event & e)
   double xPosition, yPosition, zPosition, xPositionEnd, yPositionEnd, zPositionEnd;
   if(fmode==1)
   {
-    if(driftcoordinate==1)
+    if(driftcoordinate==geo::Coordinate::X)
     { //drift in X
       CRTTop.GetRandom2(zPosition,xPosition);
       CRTBot.GetRandom2(zPositionEnd,xPositionEnd);
@@ -231,7 +231,7 @@ void evgen::CRTGen::produce(art::Event & e)
       fTH2CRTTop->Fill(zPosition,xPosition);
       fTH2CRTBot->Fill(zPositionEnd,xPositionEnd);
     }
-    if(driftcoordinate==2)
+    if(driftcoordinate==geo::Coordinate::Y)
     { //drift in Y
       CRTTop.GetRandom2(zPosition,yPosition);
       CRTBot.GetRandom2(zPositionEnd,yPositionEnd);
@@ -248,13 +248,13 @@ void evgen::CRTGen::produce(art::Event & e)
     yPosition   	= CLHEP::RandFlat::shoot(CRT_TOP_center[1]-0.5*CRTSizeY,CRT_TOP_center[1]+0.5*CRTSizeY);
     zPosition   	= CLHEP::RandFlat::shoot(CRT_TOP_center[2]-0.5*CRTSizeZ,CRT_TOP_center[2]+0.5*CRTSizeZ);
 
-    if(driftcoordinate==1)
+    if(driftcoordinate==geo::Coordinate::X)
     { //drift in X
       xPositionEnd  	= CLHEP::RandFlat::shoot(CRT_BOT_center[0]-0.5*CRTSizeX-BufferLengthOnCRTBottom,CRT_BOT_center[0]+0.5*CRTSizeX+BufferLengthOnCRTBottom);
       yPositionEnd  	= CLHEP::RandFlat::shoot(CRT_BOT_center[1]-0.5*CRTSizeY,CRT_BOT_center[1]+0.5*CRTSizeY);
       zPositionEnd  	= CLHEP::RandFlat::shoot(CRT_BOT_center[2]-0.5*CRTSizeZ-BufferLengthOnCRTBottom,CRT_BOT_center[2]+0.5*CRTSizeZ+BufferLengthOnCRTBottom);
     }
-    if(driftcoordinate==2)
+    if(driftcoordinate==geo::Coordinate::Y)
     { //drift in Y
       xPositionEnd  	= CLHEP::RandFlat::shoot(CRT_BOT_center[0]-0.5*CRTSizeX,CRT_BOT_center[0]+0.5*CRTSizeX);
       yPositionEnd  	= CLHEP::RandFlat::shoot(CRT_BOT_center[1]-0.5*CRTSizeY-BufferLengthOnCRTBottom,CRT_BOT_center[1]+0.5*CRTSizeY+BufferLengthOnCRTBottom);
@@ -262,12 +262,12 @@ void evgen::CRTGen::produce(art::Event & e)
     }
   }
 
-  if(driftcoordinate==1)
+  if(driftcoordinate==geo::Coordinate::X)
   { //drift in X
     fTH2CRTTop->Fill(zPosition,xPosition);
     fTH2CRTBot->Fill(zPositionEnd,xPositionEnd);
   }
-  if(driftcoordinate==2)
+  if(driftcoordinate==geo::Coordinate::Y)
   { //drift in Y
     fTH2CRTTop->Fill(zPosition,yPosition);
     fTH2CRTBot->Fill(zPositionEnd,yPositionEnd);

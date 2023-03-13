@@ -84,7 +84,7 @@ HDColdboxDAQWriter::HDColdboxDAQWriter(fhicl::ParameterSet const& p)
 
 void HDColdboxDAQWriter::analyze(art::Event const& e)
 {
-  art::ServiceHandle<dune::PD2HDChannelMapService> channelMap;
+  art::ServiceHandle<dune::PD2HDChannelMapService> wireReadout;
 
   auto runno = e.run();
   //auto subrun = e.subRun();
@@ -155,7 +155,7 @@ void HDColdboxDAQWriter::analyze(art::Event const& e)
           agrp = H5Gcreate(fFilePtr,agname.c_str(),gpl,H5P_DEFAULT,H5P_DEFAULT);
 
 	  uint32_t first_chan_on_apa = 2560*curapa;
-          auto cinfofca = channelMap->GetChanInfoFromOfflChan(first_chan_on_apa);
+          auto cinfofca = wireReadout->GetChanInfoFromOfflChan(first_chan_on_apa);
 
           for (size_t ilink=0; ilink<nLinks; ++ilink)
             {
@@ -183,7 +183,7 @@ void HDColdboxDAQWriter::analyze(art::Event const& e)
 
 	      for (size_t wibframechan = 0; wibframechan < 256; ++wibframechan)
 		{
-		  auto cinfo2 = channelMap->GetChanInfoFromWIBElements(crate,sloc,daqlink,wibframechan);
+		  auto cinfo2 = wireReadout->GetChanInfoFromWIBElements(crate,sloc,daqlink,wibframechan);
 		  uint32_t offlchan = cinfo2.offlchan;
 		  int pedestaloffset = (cinfo2.plane == 2) ? fCollectionPedestalOffset : fInductionPedestalOffset;
 

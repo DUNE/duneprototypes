@@ -215,14 +215,14 @@ namespace raw
     
     //
     // channel map order by CRP View 
-    art::ServiceHandle<dune::VDColdboxTDEChannelMapService> channelMap;
+    art::ServiceHandle<dune::VDColdboxTDEChannelMapService> wireReadout;
 
     // we grab all CRPs
-    auto crpidx = channelMap->get_crpidx();
+    auto crpidx = wireReadout->get_crpidx();
     for( auto c: crpidx )
       {
 	// we take all channels in this CRP sorted by view and view channel
-	std::vector<dune::tde::ChannelId> chidx = channelMap->find_by_crp( c, true );
+	std::vector<dune::tde::ChannelId> chidx = wireReadout->find_by_crp( c, true );
 
 	// check if we want to keep only specific CRPs
 	bool keep = true;
@@ -261,7 +261,7 @@ namespace raw
     
     if( __logLevel >= 1 ){
       std::cout << myname << "       Readout info              : " << std::endl;
-      std::cout<<myname   << "       Number of CRPs from chmap : " << channelMap->ncrps()  << std::endl;
+      std::cout<<myname   << "       Number of CRPs from chmap : " << wireReadout->ncrps()  << std::endl;
       std::cout<<myname   << "       Total channels expected   : " << __daqch.size() << std::endl;
     }
   }

@@ -11,10 +11,11 @@
 // LArSoft libraries
 
 //LArSoft includes
-#include "larcore/Geometry/Geometry.h"
+#include "larcore/Geometry/WireReadout.h"
 #include "larcore/CoreUtils/ServiceUtil.h"
 
 #include "larcorealg/Geometry/LocalTransformationGeo.h"
+#include "larcorealg/Geometry/OpDetGeo.h"
 #include "larcorealg/Geometry/WireGeo.h"
 
 #include "larcoreobj/SimpleTypesAndConstants/RawTypes.h"
@@ -165,7 +166,6 @@ private:
   int   TotGen_Ar42;
 
 
-  art::ServiceHandle<geo::Geometry> geo;
   art::ServiceHandle<cheat::BackTrackerService> bt_serv;
   art::ServiceHandle<cheat::ParticleInventoryService> pi_serv;
   art::ServiceHandle<cheat::PhotonBackTrackerService> pbt_serv;
@@ -315,8 +315,7 @@ void DualPhaseOpHitDumper::analyze(art::Event const & evt)
   SubRun = evt.subRun();
   Event  = evt.event();
 
-  //GET INFORMATION ABOUT THE DETECTOR'S GEOMETRY.
-  auto const* geo = lar::providerFrom<geo::Geometry>();
+  auto const& wireReadout = art::ServiceHandle<geo::WireReadout>()->Get();
 
   //LIFT OUT THE SignEY PARTICLES.
   //auto SignTrue = evt.getValidHandle<std::vector<simb::MCTruth> >(fSIGNLabel);
@@ -454,7 +453,7 @@ void DualPhaseOpHitDumper::analyze(art::Event const & evt)
 
         map_of_ophit[gen].push_back(ophitlist.at(i));
 
-        auto const xyz_world = geo->OpDetGeoFromOpChannel(ophitlist[i]->OpChannel()).GetCenter();
+        auto const xyz_world = wireReadout.OpDetGeoFromOpChannel(ophitlist[i]->OpChannel()).GetCenter();
         PDS_OpHit_OpChannel   .push_back(ophitlist[i]->OpChannel());
         PDS_OpHit_X           .push_back(xyz_world.X());
         PDS_OpHit_Y           .push_back(xyz_world.Y());

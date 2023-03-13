@@ -12,8 +12,6 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
-#include "art/Framework/Principal/Run.h"
-#include "art/Framework/Principal/SubRun.h"
 #include "canvas/Utilities/InputTag.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
@@ -23,7 +21,7 @@
 
 //LArSoft includes
 #include "lardataobj/Simulation/AuxDetSimChannel.h"
-#include "larcore/Geometry/Geometry.h"
+#include "larcore/Geometry/AuxDetGeometry.h"
 
 //Local includes
 #include "duneprototypes/Protodune/singlephase/CRT/data/CRTTrigger.h"
@@ -98,13 +96,13 @@ void CRT::CRTSimValidation::analyze(art::Event const & e)
   art::FindManyP<sim::AuxDetSimChannel> trigToSim(triggers, e, fCRTLabel);
 
   //Get a handle to the Geometry service to look up AuxDetGeos from module numbers
-  art::ServiceHandle<geo::Geometry> geom;
+  auto const& auxDetGeom = art::ServiceHandle<geo::AuxDetGeometry>()->GetProvider();
 
   //Mapping from channel to previous Trigger time
   std::unordered_map<size_t, double> prevTimes;
   for(const auto& trigger: *triggers)
   {
-    fDetsWithHits->Fill(geom->AuxDet(trigger.Channel()).Name().c_str(), 1.0);
+    fDetsWithHits->Fill(auxDetGeom.AuxDet(trigger.Channel()).Name().c_str(), 1.0);
     const auto& hits = trigger.Hits();
     for(const auto& hit: hits) fAllADCs->Fill(hit.ADC());
 

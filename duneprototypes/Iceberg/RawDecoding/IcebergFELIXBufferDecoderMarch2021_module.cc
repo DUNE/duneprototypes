@@ -101,7 +101,7 @@ IcebergFELIXBufferDecoderMarch2021::IcebergFELIXBufferDecoderMarch2021(fhicl::Pa
 void IcebergFELIXBufferDecoderMarch2021::produce(art::Event &e)
 {
 
-  art::ServiceHandle<dune::IcebergChannelMapService> channelMap;
+  art::ServiceHandle<dune::IcebergChannelMapService> wireReadout;
   RawDigits raw_digits;
   RDTimeStamps rd_timestamps;
   RDTsAssocs rd_ts_assocs;
@@ -330,7 +330,7 @@ void IcebergFELIXBufferDecoderMarch2021::produce(art::Event &e)
             }
 
           // for iceberg, hardcode the crate number to suppress warnings
-          unsigned int offlineChannel = channelMap->GetOfflineNumberFromDetectorElements(1, slotloc2, fiberloc2, chloc, dune::IcebergChannelMapService::kFELIX); 
+          unsigned int offlineChannel = wireReadout->GetOfflineNumberFromDetectorElements(1, slotloc2, fiberloc2, chloc, dune::IcebergChannelMapService::kFELIX); 
 
           size_t uncompressed_nticks = fNSamples;  
           raw::Compress_t cflag=raw::kNone;

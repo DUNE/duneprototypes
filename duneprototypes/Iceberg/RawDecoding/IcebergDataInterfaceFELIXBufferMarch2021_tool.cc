@@ -37,7 +37,7 @@ int IcebergDataInterfaceFELIXBufferMarch2021::retrieveData(art::Event &e,
                                                            std::vector<raw::RDStatus> &rdstatuses)
 {
 
-  art::ServiceHandle<dune::IcebergChannelMapService> channelMap;
+  art::ServiceHandle<dune::IcebergChannelMapService> wireReadout;
 
   uint32_t framebuf[117];
   uint16_t databuf[128];
@@ -284,7 +284,7 @@ int IcebergDataInterfaceFELIXBufferMarch2021::retrieveData(art::Event &e,
             }
 
           // for iceberg, hardcode the crate number to suppress warnings
-          unsigned int offlineChannel = channelMap->GetOfflineNumberFromDetectorElements(1, slotloc2, fiberloc2, chloc, dune::IcebergChannelMapService::kFELIX); 
+          unsigned int offlineChannel = wireReadout->GetOfflineNumberFromDetectorElements(1, slotloc2, fiberloc2, chloc, dune::IcebergChannelMapService::kFELIX); 
 
           size_t uncompressed_nticks = adcvv.at(0).size();  
           raw::Compress_t cflag=raw::kNone;
