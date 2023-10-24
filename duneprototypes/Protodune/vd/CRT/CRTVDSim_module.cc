@@ -107,19 +107,13 @@ private:
 CRT::CRTVDSim::CRTVDSim(fhicl::ParameterSet const & p): EDProducer{p}, 
                                                               logInfo_("CRTVDSim"),
                                                               fSimLabel(p.get<art::InputTag>("SimLabel")), 
-                                                              /*fScintillationYield(p.get<double>("ScintillationYield")), 
-                                                              fQuantumEff(p.get<double>("QuantumEff")), 
-                                                              fDummyGain(p.get<double>("DummyGain")),*/
-                                                              //fGeVToADC(p.get<double>("GeVToADC")),
                                                               fIntegrationWindow(p.get<time>("IntegrationWindow")), 
                                                               fSamplingTime(p.get<time>("SamplingTime")), 
                                                               fDownwardWindow(p.get<time>("DownwardWindow")), 
                                                               fUpwardWindow(p.get<time>("UpwardWindow")), 
-                                                              //fReadoutWindowSize(p.get<size_t>("ReadoutWindowSize")), 
                                                               fDeadTime(p.get<size_t>("DeadTime")),
                                                               fEnergyThreshold(p.get<double>("EnergyThreshold")),
                                                               fSmearing(p.get<double>("Smearing"))
-                                                              //fDACThreshold(p.get<adc_t>("DACThreshold"))
 {
   produces<std::vector<CRTVD::Trigger>>();
   produces<art::Assns<simb::MCParticle,CRTVD::Trigger>>(); 
@@ -136,14 +130,14 @@ void CRT::CRTVDSim::produce(art::Event & e)
 
   // Get all AuxDetHits contained in the event
   auto const allSims = e.getMany<sim::AuxDetHitCollection>();
-std::cout << "aux det hit size : " << allSims.size() << std::endl;
+//std::cout << "aux det hit size : " << allSims.size() << std::endl;
 
   // -- Get all MCParticles to do assns later
   const auto & mcp_handle = e.getValidHandle<std::vector<simb::MCParticle>>("largeant"); // -- TODO: make this an input tag. Tag is correct though
   art::PtrMaker<simb::MCParticle> makeMCParticlePtr{e,mcp_handle.id()};
 //  art::ServiceHandle < cheat::ParticleInventoryService > partInventory; // seems useless
   auto const & mcparticles = *(mcp_handle); //dereference the handle
-std::cout << "MCParticle size = " << mcparticles.size() << std::endl;
+//std::cout << "MCParticle size = " << mcparticles.size() << std::endl;
 
   // -- Construct map of trackId to MCParticle handle index to do assns later
   std::unordered_map<int, int> map_trackID_to_handle_index;
@@ -218,6 +212,8 @@ std::cout << "energy deposited : = " << eDep.GetEnergyDeposited() << std::endl;
       }
       // smeared hit position
       geo::Point_t hp(x, y ,z);
+
+//std::cout << "Position : = " << hp.X() << " " << hp.Y() << " " << hp.Z() << std::endl; 
 
 
       crtHitsModuleMap[(eDep.GetID()-1)/8][tAvg/fSamplingTime].emplace_back(CRTVD::Hit( (eDep.GetID()-1)%8, volume, eDep.GetEnergyDeposited(), geo::Point_t(x, y, z)), eDep.GetTrackID() );
@@ -361,7 +357,6 @@ std::cout << "--- END bottom module only ---\n\n";
     for (auto pair : bottomHits) crtTrackedHitsModuleMap[0][t].emplace_back(pair);
   }
 
-std::cout << "\n---CHECK---\n" << std::endl;
 
   // store CRT activity
   for (int k=0; k<3; k++){ // trigerring type loop. 0 = top trigger only, 1 = bottom trigger only, 2 = coincidence trigger

@@ -15,6 +15,7 @@ art_make( MODULE_LIBRARIES
 			lardataobj_AnalysisBase
 			ROOT_BASIC_LIB_LIST
                         larcoreobj_SimpleTypesAndConstants
+                        larcorealg::GeoAlgo
 )
 
 install_headers()
