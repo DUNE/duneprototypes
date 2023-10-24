@@ -175,15 +175,16 @@ void CRT::CRTVDSim::produce(art::Event & e)
 /*
 std::cout << "\nHit in volume " << volume << std::endl;
 std::cout << "edep.GetID() = " << eDep.GetID() << std::endl;
-std::cout << "CRT volume index = " << (eDep.GetID()-1)/8 << std::endl;
+std::cout << "CRT volume index = " << (eDep.GetID())/8 << std::endl;
 std::cout << "CRT channel = " << (eDep.GetID()-1)%8 << std::endl;
 std::cout << "edep.GetTrackID() = " << eDep.GetTrackID() << std::endl;
 std::cout << "tAvg_fl = " << tAvg_fl << "\t" << "tAvg_int = " << tAvg << std::endl;
 std::cout << "Integration window = " << fIntegrationWindow << std::endl; 
 std::cout << "energy deposited : = " << eDep.GetEnergyDeposited() << std::endl; 
 */
+
       // Smear hit position from true position
-      const geo::AuxDetGeo& adg = geom->AuxDet( (eDep.GetID()-1)/8 );
+      const geo::AuxDetGeo& adg = geom->AuxDet( eDep.GetID()/8 );
 // adg.PrintAuxDetInfo(std::cout, "" , 3); std::cout << "\n";
       float x = midpoint.X();
       float y = midpoint.Y();
@@ -270,6 +271,7 @@ std::cout << "energy deposited : = " << eDep.GetEnergyDeposited() << std::endl;
             } // end loop over secondary bottom hits
          //} // end if
     } // end primary loop over bottom module hits
+
 /*
 // CHECK
 std::cout << "\n--- Check 1st bottom hit search ---" << std::endl;
