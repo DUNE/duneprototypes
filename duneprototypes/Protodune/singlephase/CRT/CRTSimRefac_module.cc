@@ -9,29 +9,26 @@
 
 //     An ART module to simulate how the ProtoDUNE-SP Cosmic Ray Tagger (CRT) system 
 //responds to energy deposits. 
+
 //Framework includes
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
-#include "art/Framework/Principal/Run.h"
-#include "art/Framework/Principal/SubRun.h"
 #include "canvas/Utilities/InputTag.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "art/Persistency/Common/PtrMaker.h"
 #include "canvas/Persistency/Common/Assns.h"
 #include "canvas/Persistency/Common/Ptr.h"
-#include "lardata/Utilities/AssociationUtil.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "canvas/Persistency/Common/FindManyP.h"
-//LArSoft includes
 
-#include "larcore/Geometry/Geometry.h"
+//LArSoft includes
+#include "larcore/Geometry/AuxDetGeometry.h"
 #include "lardataobj/Simulation/AuxDetHit.h"
 #include "larsim/MCCheater/ParticleInventoryService.h"
 #include "nusimdata/SimulationBase/MCParticle.h"
-#include "nug4/ParticleNavigation/ParticleList.h"
 
 //local includes
 //#include "CRTTrigger.h"
@@ -66,9 +63,6 @@ public:
 
 private:
 
-  // -- message logger
-  mf::LogInfo logInfo_;
-
   //The formats for time and ADC value I will use throughout this module.  If I want to change it later, I only have to change it in one place.  
   typedef long long int time;
   typedef unsigned short adc_t;
@@ -94,7 +88,6 @@ private:
 
 
 CRT::CRTSimRefac::CRTSimRefac(fhicl::ParameterSet const & p): EDProducer{p}, 
-                                                              logInfo_("CRTSimRefactor"),
                                                               fSimLabel(p.get<art::InputTag>("SimLabel")), 
                                                               /*fScintillationYield(p.get<double>("ScintillationYield")), 
                                                               fQuantumEff(p.get<double>("QuantumEff")), 
@@ -138,7 +131,7 @@ void CRT::CRTSimRefac::produce(art::Event & e)
   art::PtrMaker<CRT::Trigger> makeTrigPtr(e);
 
 
-  art::ServiceHandle<geo::Geometry> geom;
+  auto const& auxDetGeom = art::ServiceHandle<geo::AuxDetGeometry>()->GetProvider();
   std::map<int, std::map<time, std::vector<std::pair<CRT::Hit, int>>>> crtHitsModuleMap;
   for(auto const& auxHits : allSims){
     for(const auto & eDep: * auxHits)
@@ -162,7 +155,7 @@ void CRT::CRTSimRefac::produce(art::Event & e)
     if ((module+1)==1) crtChannel=24; 
     for (int i=0; i<32; ++i){
       if (crtChannel==22 || crtChannel==24) break;
-      const auto& det = geom->AuxDet(i);
+      const auto& det = auxDetGeom.AuxDet(i);
       if(det.Name().find(modStrng) != std::string::npos){
         crtChannel=i; break;
       }

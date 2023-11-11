@@ -7,6 +7,7 @@
 
 // LArSoft includes
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
+#include "larcore/Geometry/WireReadout.h"
 #include "larcore/Geometry/Geometry.h"
 #include "larcoreobj/SimpleTypesAndConstants/geo_types.h"
 
@@ -108,7 +109,7 @@ namespace raw_event_display{
     unsigned int nADC_uncompPed;
 
 
-    geo::GeometryCore const * fGeom = &*(art::ServiceHandle<geo::Geometry>());
+    geo::WireReadoutGeom const& fWireReadoutGeom = art::ServiceHandle<geo::WireReadout>()->Get();
 
 
  }; // RawEventDisplay
@@ -144,8 +145,9 @@ namespace raw_event_display{
 
 
     // Accquiring geometry data
-    fNofAPA=fGeom->NTPC()*fGeom->Ncryostats()/2;
-    fChansPerAPA = fGeom->Nchannels()/fNofAPA;
+    art::ServiceHandle<geo::Geometry> geom;
+    fNofAPA=geom->NTPC()*geom->Ncryostats()/2;
+    fChansPerAPA = fWireReadoutGeom.Nchannels()/fNofAPA;
 
     // taken from dune35t module a way to organise the channel mapping:
     // loop through channels in the first APA to find the channel boundaries for each view
@@ -153,11 +155,11 @@ namespace raw_event_display{
     fUChanMin = 0;
     fZChanMax = fChansPerAPA - 1;
     for ( unsigned int c = fUChanMin + 1; c < fZChanMax; c++ ){
-      if ( fGeom->View(c) == geo::kV && fGeom->View(c-1) == geo::kU ){
+      if ( fWireReadoutGeom.View(c) == geo::kV && fWireReadoutGeom.View(c-1) == geo::kU ){
         fVChanMin = c;
         fUChanMax = c - 1;
       }
-      if ( fGeom->View(c) == geo::kZ && fGeom->View(c-1) == geo::kV ){
+      if ( fWireReadoutGeom.View(c) == geo::kZ && fWireReadoutGeom.View(c-1) == geo::kV ){
         fZChanMin = c;
         fVChanMax = c-1;
       }
@@ -293,7 +295,7 @@ namespace raw_event_display{
       
 
       //Induction Plane	  
-      if( fGeom->View(chan) == geo::kU){	
+      if( fWireReadoutGeom.View(chan) == geo::kU){
 				for(unsigned int l=0;l<nADC_uncompPed;l++) {
 	  			if(uncompPed.at(l)!=0){
 	    			fTimeChanU[apa]->Fill(chan,l, uncompPed.at(l));
@@ -302,7 +304,7 @@ namespace raw_event_display{
       }// end of U View
       
       //Induction Plane	  
-      if( fGeom->View(chan) == geo::kV){	
+      if( fWireReadoutGeom.View(chan) == geo::kV){
 				for(unsigned int l=0;l<nADC_uncompPed;l++) {
 	  			if(uncompPed.at(l)!=0){
 	    			fTimeChanV[apa]->Fill(chan,l, uncompPed.at(l));
@@ -310,7 +312,7 @@ namespace raw_event_display{
 				}
       }// end of V View
 
-      if ( fGeom->View(chan) == geo::kZ){
+      if ( fWireReadoutGeom.View(chan) == geo::kZ){
 				for(unsigned int l=0;l<nADC_uncompPed;l++) {
 	  			if(uncompPed.at(l)!=0){
 	    			fTimeChanZ[apa]->Fill(chan,l, uncompPed.at(l));

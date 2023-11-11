@@ -15,6 +15,7 @@
 
 // LArSoft includes
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
+#include "larcore/Geometry/WireReadout.h"
 #include "larcore/Geometry/Geometry.h"
 #include "larcoreobj/SimpleTypesAndConstants/geo_types.h"
 
@@ -216,7 +217,7 @@ namespace tpc_monitor{
     float meanADC(std::vector< short > & uncompressed);
     void calculateFFT(TH1D* hist_waveform, TH1D* graph_frequency);
     void FillChannelHistos(TProfile* h1, double mean, double sigma, int& ndeadchannels, int& nnoisychannels_sigma, int& nnoisychannels_counts);
-    geo::GeometryCore const * fGeom = &*(art::ServiceHandle<geo::Geometry>());
+    geo::WireReadoutGeom const& fWireReadoutGeom = art::ServiceHandle<geo::WireReadout>()->Get();
 
     std::vector<unsigned int> fApaLabelNum;
 
@@ -248,23 +249,24 @@ namespace tpc_monitor{
     unsigned int ZChMax;
 
     // Accquiring geometry data
-    fNofAPA=fGeom->NTPC()*fGeom->Ncryostats()/2;
-    fChansPerAPA = fGeom->Nchannels()/fNofAPA;
+    art::ServiceHandle<geo::Geometry> geom;
+    fNofAPA=geom->NTPC()*geom->Ncryostats()/2;
+    fChansPerAPA = fWireReadoutGeom.Nchannels()/fNofAPA;
 
     // loop through channels in the first APA to find the channel boundaries for each view
     // will adjust for desired APA after
     fUChanMin = 0;
     fZ1ChanMax = fChansPerAPA - 1;
     for ( unsigned int c = fUChanMin + 1; c < fZ1ChanMax; c++ ){
-      if ( fGeom->View(c) == geo::kV && fGeom->View(c-1) == geo::kU ){
+      if ( fWireReadoutGeom.View(c) == geo::kV && fWireReadoutGeom.View(c-1) == geo::kU ){
         fVChanMin = c;
         fUChanMax = c - 1;
       }
-      if ( fGeom->View(c) == geo::kZ && fGeom->View(c-1) == geo::kV ){
+      if ( fWireReadoutGeom.View(c) == geo::kZ && fWireReadoutGeom.View(c-1) == geo::kV ){
         fZ0ChanMin = c;
         fVChanMax = c-1;
       }
-      if ( fGeom->View(c) == geo::kZ && fGeom->ChannelToWire(c)[0].TPC == fGeom->ChannelToWire(c-1)[0].TPC + 1 ){
+      if ( fWireReadoutGeom.View(c) == geo::kZ && fWireReadoutGeom.ChannelToWire(c)[0].TPC == fWireReadoutGeom.ChannelToWire(c-1)[0].TPC + 1 ){
         fZ1ChanMin = c;
         fZ0ChanMax = c-1;
       }
@@ -456,11 +458,11 @@ namespace tpc_monitor{
     fNNoisyChannelsHistoFromNCountsZ = tfs->make<TH1F>("fNNoisyChannelsHistoFromNCountsZ",Form("Number of noisy channels above %i counts  (Plane Z)", fNoiseLevelMinNCountsZ), fNofAPA+1,0,fNofAPA+1);
     fNNoisyChannelsHistoFromNCountsZ->GetYaxis()->SetTitle("Number of noisy channels (Plane Z)");
 
-    fNDeadChannelsList = tfs->make<TH1F>("fNDeadChannelsList","List of dead channels",fGeom->Nchannels()+1,fUChanMin,fGeom->Nchannels()+1);
+    fNDeadChannelsList = tfs->make<TH1F>("fNDeadChannelsList","List of dead channels",fWireReadoutGeom.Nchannels()+1,fUChanMin,fWireReadoutGeom.Nchannels()+1);
     fNDeadChannelsList->GetXaxis()->SetTitle("Channel ID");
-    fNNoisyChannelsListFromNSigma = tfs->make<TH1F>("fNNoisyChannelsListFromNSigma","List of noisy channels",fGeom->Nchannels()+1,fUChanMin,fGeom->Nchannels()+1);
+    fNNoisyChannelsListFromNSigma = tfs->make<TH1F>("fNNoisyChannelsListFromNSigma","List of noisy channels",fWireReadoutGeom.Nchannels()+1,fUChanMin,fWireReadoutGeom.Nchannels()+1);
     fNNoisyChannelsListFromNSigma->GetXaxis()->SetTitle("Channel ID");
-    fNNoisyChannelsListFromNCounts = tfs->make<TH1F>("fNNoisyChannelsListFromNCounts",Form("Number of noisy channels above counts %i-%i-%i (U-V-Z)", fNoiseLevelMinNCountsU, fNoiseLevelMinNCountsV, fNoiseLevelMinNCountsZ),fGeom->Nchannels()+1,fUChanMin,fGeom->Nchannels()+1);
+    fNNoisyChannelsListFromNCounts = tfs->make<TH1F>("fNNoisyChannelsListFromNCounts",Form("Number of noisy channels above counts %i-%i-%i (U-V-Z)", fNoiseLevelMinNCountsU, fNoiseLevelMinNCountsV, fNoiseLevelMinNCountsZ),fWireReadoutGeom.Nchannels()+1,fUChanMin,fWireReadoutGeom.Nchannels()+1);
     fNNoisyChannelsListFromNCounts->GetXaxis()->SetTitle("Channel ID");
 
     for(unsigned int i=0;i<fNofAPA;i++){
@@ -520,7 +522,7 @@ namespace tpc_monitor{
 
   void TpcMonitor::analyze(const art::Event& event) {
     // Get channel map
-    art::ServiceHandle<dune::PdspChannelMapService> channelMap;
+    art::ServiceHandle<dune::PdspChannelMapService> wireReadout;
     // TODO Use MF_LOG_DEBUG
     MF_LOG_INFO("TpcMonitor")
       << "-------------------- TPC TpcMonitor -------------------";
@@ -605,7 +607,7 @@ namespace tpc_monitor{
       nADC_uncompPed=uncompPed.size();	 
       
       // wavefrom histogram   
-      int FiberID = channelMap->FiberIdFromOfflineChannel(chan);
+      int FiberID = wireReadout->FiberIdFromOfflineChannel(chan);
       TH1D* histwav=new TH1D(Form("wav%d",(int)chan),Form("wav%d",(int)chan),nSamples,0,nSamples); 
       
       for(int k=0;k<(int)nADC_uncompPed;k++) {
@@ -634,9 +636,9 @@ namespace tpc_monitor{
 
       //get ready to fill the summary plots
       //get the channel's FEMB and WIB
-      int WIB = channelMap->WIBFromOfflineChannel(chan); //0-4
-      int FEMB = channelMap->FEMBFromOfflineChannel(chan); //1-4
-      int FEMBchan = channelMap->FEMBChannelFromOfflineChannel(chan);
+      int WIB = wireReadout->WIBFromOfflineChannel(chan); //0-4
+      int FEMB = wireReadout->FEMBFromOfflineChannel(chan); //1-4
+      int FEMBchan = wireReadout->FEMBChannelFromOfflineChannel(chan);
       int iFEMB = ((WIB*4)+(FEMB-1)); //index of the FEMB 0-19
       //Get the location of any FEMBchan in the hitogram
       //put as a function for clenliness.
@@ -661,7 +663,7 @@ namespace tpc_monitor{
 
 	     
       // U View, induction Plane	  
-      if( fGeom->View(chan) == geo::kU){	
+      if( fWireReadoutGeom.View(chan) == geo::kU){
 	fChanMeanU_pfx[apa]->Fill(chan, mean, 1);
 	fChanRMSU_pfx[apa]->Fill(chan, rms, 1);
 	fChanMeanDistU[apa]->Fill(mean);
@@ -678,7 +680,7 @@ namespace tpc_monitor{
       }// end of U View
 
       // V View, induction Plane
-      if( fGeom->View(chan) == geo::kV){
+      if( fWireReadoutGeom.View(chan) == geo::kV){
         fChanRMSV_pfx[apa]->Fill(chan, rms, 1);
 	fChanMeanV_pfx[apa]->Fill(chan, mean, 1);
 	fChanMeanDistV[apa]->Fill(mean);
@@ -695,7 +697,7 @@ namespace tpc_monitor{
       }// end of V View               
 
       // Z View, collection Plane
-      if( fGeom->View(chan) == geo::kZ){
+      if( fWireReadoutGeom.View(chan) == geo::kZ){
 	fChanMeanZ_pfx[apa]->Fill(chan, mean, 1);
 	fChanRMSZ_pfx[apa]->Fill(chan, rms, 1);
 	fChanMeanDistZ[apa]->Fill(mean);
@@ -712,9 +714,9 @@ namespace tpc_monitor{
       }// end of Z View
       
       // Mean/RMS by slot
-      int SlotID = channelMap->SlotIdFromOfflineChannel(chan);
-      int FiberNumber = channelMap->FEMBFromOfflineChannel(chan) - 1;
-      int FiberChannelNumber = channelMap->FEMBChannelFromOfflineChannel(chan);
+      int SlotID = wireReadout->SlotIdFromOfflineChannel(chan);
+      int FiberNumber = wireReadout->FEMBFromOfflineChannel(chan) - 1;
+      int FiberChannelNumber = wireReadout->FEMBChannelFromOfflineChannel(chan);
       uint32_t SlotChannelNumber = FiberNumber*128 + FiberChannelNumber; //128 channels per fiber
       fSlotChanMean_pfx.at(SlotID)->Fill(SlotChannelNumber, mean, 1);
       fSlotChanRMS_pfx.at(SlotID)->Fill(SlotChannelNumber, rms, 1);

@@ -8,6 +8,7 @@
 #include "duneprototypes/Protodune/singlephase/DetectorServices/Services/DetectorPropertiesServiceProtoDUNEsp.h"
 #include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
 #include "lardataalg/DetectorInfo/LArProperties.h"
+#include "larcore/Geometry/WireReadout.h"
 #include "larcore/Geometry/Geometry.h"
 #include "larcorealg/Geometry/CryostatGeo.h"
 #include "larcorealg/Geometry/TPCGeo.h"
@@ -50,11 +51,11 @@ namespace spdp{
 
     fProp = std::make_unique<detinfo::DetectorPropertiesStandard>(pset,geo,lp,clks);
     */
-    fProp = std::make_unique<spdp::DetectorPropertiesProtoDUNEsp>(pset,
-      lar::extractProviders<
-        geo::Geometry,
-        detinfo::LArPropertiesService
-        >(),
+    fProp = std::make_unique<spdp::DetectorPropertiesProtoDUNEsp>(
+        pset,
+        lar::providerFrom<geo::Geometry>(),
+        &art::ServiceHandle<geo::WireReadout>()->Get(),
+        lar::providerFrom<detinfo::LArPropertiesService>(),
         std::set<std::string>({ "InheritNumberTimeSamples" })
       );
 

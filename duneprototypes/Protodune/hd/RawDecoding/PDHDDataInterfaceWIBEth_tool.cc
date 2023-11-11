@@ -93,7 +93,7 @@ int PDHDDataInterface::retrieveDataAPAListWithLabels( art::Event &evt,
 void PDHDDataInterface::getFragmentsForEvent(dunedaq::hdf5libs::HDF5RawDataFile::record_id_t &rid, RawDigits& raw_digits, RDTimeStamps &timestamps, int apano)
 {
   using dunedaq::fddetdataformats::WIBEthFrame;
-  art::ServiceHandle<dune::PD2HDChannelMapService> channelMap;
+  art::ServiceHandle<dune::PD2HDChannelMapService> wireReadout;
   art::ServiceHandle<dune::HDF5RawFile2Service> rawFileService;
   auto rf = rawFileService->GetPtr();
   auto sourceids = rf->get_source_ids(rid);
@@ -224,7 +224,7 @@ void PDHDDataInterface::getFragmentsForEvent(dunedaq::hdf5libs::HDF5RawDataFile:
 
 	      size_t wibframechan = iChan + 64*locstream; 
 
-              auto hdchaninfo = channelMap->GetChanInfoFromWIBElements (crate, slotloc, link, wibframechan); 
+              auto hdchaninfo = wireReadout->GetChanInfoFromWIBElements (crate, slotloc, link, wibframechan); 
               if (!hdchaninfo.valid) continue;
 
               unsigned int offline_chan = hdchaninfo.offlchan;

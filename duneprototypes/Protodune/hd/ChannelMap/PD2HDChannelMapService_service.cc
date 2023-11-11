@@ -12,18 +12,18 @@
 
 dune::PD2HDChannelMapService::PD2HDChannelMapService(fhicl::ParameterSet const& pset) {
 
-  std::string channelMapFile = pset.get<std::string>("FileName");
+  std::string wireReadoutFile = pset.get<std::string>("FileName");
 
   std::string fullname;
   cet::search_path sp("FW_SEARCH_PATH");
-  sp.find_file(channelMapFile, fullname);
+  sp.find_file(wireReadoutFile, fullname);
 
   if (fullname.empty()) {
-    std::cout << "Input file " << channelMapFile << " not found" << std::endl;
+    std::cout << "Input file " << wireReadoutFile << " not found" << std::endl;
     throw cet::exception("File not found");
   }
   else
-    std::cout << "PD2HD Channel Map: Building TPC wiremap from file " << channelMapFile << std::endl;
+    std::cout << "PD2HD Channel Map: Building TPC wiremap from file " << wireReadoutFile << std::endl;
 
   fHDChanMap.ReadMapFromFile(fullname);
 }

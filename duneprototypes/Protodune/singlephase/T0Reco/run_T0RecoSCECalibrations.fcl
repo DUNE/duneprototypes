@@ -10,8 +10,9 @@ services:
   # Load the service that manages root files for histograms.
   TFileService:            { fileName: "T0RecoSCE_ana.root" }
   TimeTracker:             {}
-  ExptGeoHelperInterface:         @local::dune_geometry_helper
+  WireReadout:         @local::dune_wire_readout
   GeometryConfigurationWriter: {}
+AuxDetGeometry: @local::protodune_auxdet_geo
   Geometry:                       @local::protodune_geo
   DetectorProperties:             @local::protodune_detproperties
   LArProperties:                  @local::dunefd_properties

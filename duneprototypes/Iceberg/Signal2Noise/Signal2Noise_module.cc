@@ -23,7 +23,7 @@
 #include "canvas/Persistency/Common/FindManyP.h"
 #include "lardata/Utilities/AssociationUtil.h"
 
-#include "larcore/Geometry/Geometry.h"
+#include "larcore/Geometry/WireReadout.h"
 #include "nusimdata/SimulationBase/MCTruth.h"
 #include "nusimdata/SimulationBase/MCFlux.h"
 #include "nusimdata/SimulationBase/MCParticle.h"
@@ -274,7 +274,7 @@ void Signal2Noise::analyze(art::Event const& e)
     art::fill_ptr_vector(tracklist, trackListHandle);
   }
  
-  art::ServiceHandle<geo::Geometry> geom;
+  auto const& wireReadout = art::ServiceHandle<geo::WireReadout>()->Get();
 
   art::FindManyP<recob::Hit> fmtrkhit(trackListHandle, e, fTrackModuleLabel);
   art::FindManyP<anab::Calorimetry> fmtrkcalo(trackListHandle, e, fCalorimetryModuleLabel);
@@ -421,7 +421,8 @@ void Signal2Noise::analyze(art::Event const& e)
       hit_plane[ntrks][ihit] = wireplane;
 
       // calculate track angle w.r.t. wire
-      double angleToVert = geom->WireAngleToVertical(geom->View(allhits[ihit]->WireID()), allhits[ihit]->WireID().asPlaneID().asTPCID())-0.5*::util::pi<>();
+      geo::PlaneID const& planeID = allhits[ihit]->WireID().asPlaneID();
+      double angleToVert = wireReadout.WireAngleToVertical(wireReadout.Plane(planeID).View(), planeID.asTPCID())-0.5*::util::pi<>();
       
       //cout << "tpc: " << tpc << "; plane: " << wireplane << ";  wire: " << wire <<  "channel: " << channel << "; WireangleToVert: " << angleToVert << "; x: " << xyz[0] << endl;
 
@@ -439,11 +440,11 @@ void Signal2Noise::analyze(art::Event const& e)
 
       /*
       // check wire direction on each plane
-      cout << geom->Plane(wireplane).Wire(wire).ThetaZ(true) << endl;
+      cout << wireReadout.Plane(wireplane).Wire(wire).ThetaZ(true) << endl;
       double wirestart[3];
       double wireend[3];
-      geom->Plane(wireplane).Wire(wire).GetStart(wirestart);
-      geom->Plane(wireplane).Wire(wire).GetEnd(wireend);
+      wireReadout.Plane(wireplane).Wire(wire).GetStart(wirestart);
+      wireReadout.Plane(wireplane).Wire(wire).GetEnd(wireend);
       cout << "wirestart: (" << wirestart[0] << ", " << wirestart[1] << ", "<<  wirestart[2] << ")" << endl;
       cout << "wireend: (" << wireend[0] << ", " << wireend[1] << ", "<<  wireend[2] << ")" << endl;
       */

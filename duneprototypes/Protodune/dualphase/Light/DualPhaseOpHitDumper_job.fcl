@@ -10,6 +10,7 @@ services:
   MemoryTracker:         {}
   RandomNumberGenerator: {} #ART native random number generator
   FileCatalogMetadata:   @local::art_file_catalog_mc
+AuxDetGeometry: @local::dunedphase10kt_auxdet_geo
  Geometry:                       @local::dunedphase10kt_geo
 
  PhotonBackTrackerService:       @local::standard_photonbacktrackerservice
@@ -46,6 +47,7 @@ source:
   maxEvents:   -1
 }
 
+AuxDetGeometry: @local::dunedphase10kt_auxdet_geo
 services.Geometry: @local::dunedphase10kt_driftY_HalfFoiled_geo	
 
 

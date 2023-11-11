@@ -369,7 +369,7 @@ bool IcebergDataInterface::_process_RCE_AUX(
   //<< "   fragmentID = " << frag.fragmentID()
   //<< "   fragmentType = " << (unsigned)frag.type()
   //<< "   Timestamp =  " << frag.timestamp();
-  art::ServiceHandle<dune::IcebergChannelMapService> channelMap;
+  art::ServiceHandle<dune::IcebergChannelMapService> wireReadout;
 
   artdaq::Fragment cfragloc(frag);
   size_t cdsize = cfragloc.dataSizeBytes();
@@ -637,7 +637,7 @@ bool IcebergDataInterface::_process_RCE_AUX(
       raw::RawDigit::ADCvector_t v_adc;
       for (size_t i_ch = 0; i_ch < n_ch; i_ch++)
         {
-          unsigned int offlineChannel = channelMap->GetOfflineNumberFromDetectorElements(crateloc, slotNumber, fiberNumber, i_ch, dune::IcebergChannelMapService::kRCE);
+          unsigned int offlineChannel = wireReadout->GetOfflineNumberFromDetectorElements(crateloc, slotNumber, fiberNumber, i_ch, dune::IcebergChannelMapService::kRCE);
 
           if (_max_offline_channel >= 0 && _min_offline_channel >= 0 && _max_offline_channel >= _min_offline_channel && 
               (offlineChannel < (size_t) _min_offline_channel || offlineChannel > (size_t) _max_offline_channel) ) continue;
@@ -812,7 +812,7 @@ bool IcebergDataInterface::_process_FELIX_AUX(art::Event &evt,
       std::cout.copyfmt(oldState);
     }
 
-  art::ServiceHandle<dune::IcebergChannelMapService> channelMap;
+  art::ServiceHandle<dune::IcebergChannelMapService> wireReadout;
 
   // Load overlay class.   Either a felix or a frame14 overlay, depending on the
   // input instance name
@@ -1070,7 +1070,7 @@ bool IcebergDataInterface::_process_FELIX_AUX(art::Event &evt,
       }
 
 
-    unsigned int offlineChannel = channelMap->GetOfflineNumberFromDetectorElements(crateloc, slotloc2, fiberloc2, chloc, dune::IcebergChannelMapService::kFELIX); 
+    unsigned int offlineChannel = wireReadout->GetOfflineNumberFromDetectorElements(crateloc, slotloc2, fiberloc2, chloc, dune::IcebergChannelMapService::kFELIX); 
 
     // skip this channel if we are asked to.
 

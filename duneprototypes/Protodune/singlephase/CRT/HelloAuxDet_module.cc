@@ -5,7 +5,7 @@
 // Brief:       Demonstration of how to access AuxDetGeos and AuxDetDigits 
 //              in LArSoft.  Checks for presence of AuxDetGeos in geometry 
 //              service for ProtoDUNE-SP.  Absence may be due to needing 
-//              a dedicated ChannelMapAlg to register AuxDets with 
+//              a dedicated WireReadoutGeom to register AuxDets with 
 //              the Geometry service.  
 //
 // Generated at Wed May 16 09:02:34 2018 by Andrew Olivier (aolivier@ur.rochester.edu) using cetskelgen
@@ -17,8 +17,6 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
-#include "art/Framework/Principal/Run.h"
-#include "art/Framework/Principal/SubRun.h"
 #include "canvas/Utilities/InputTag.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
@@ -27,9 +25,7 @@
 //LArSoft includes
 #include "lardataobj/Simulation/AuxDetSimChannel.h"
 #include "lardataobj/RawData/AuxDetDigit.h"
-#include "larcore/Geometry/Geometry.h"
-#include "larcore/CoreUtils/ServiceUtil.h"
-#include "larcorealg/Geometry/GeometryCore.h"
+#include "larcore/Geometry/AuxDetGeometry.h"
 #include "nusimdata/SimulationBase/MCParticle.h"
 
 //ROOT includes
@@ -147,21 +143,21 @@ void ex::HelloAuxDet::analyze(art::Event const & e)
   //::PrintAllIfEmpty<sim::AuxDetSimChannel>(fSimLabels, e);
 
   //Produce a map from TrackId to MCParticle
-  const auto parts = e.getValidHandle<std::vector<simb::MCParticle>>(fPartLabel);
+  const auto& parts = e.getProduct<std::vector<simb::MCParticle>>(fPartLabel);
   std::map<int, simb::MCParticle> idToPart; //Map of Geant TrackId to particle
-  for(const auto& part: *parts) idToPart[part.TrackId()] = part;
+  for(const auto& part: parts) idToPart[part.TrackId()] = part;
 
   idToPart[-1] = idToPart[0]; //TODO: Remove this hack that makes sure the primary particle is recognized
-  mf::LogInfo("Number of Particles") << "There are " << parts->size() << " simb::MCParticles in this event.\n";
+  mf::LogInfo("Number of Particles") << "There are " << parts.size() << " simb::MCParticles in this event.\n";
 
   //Make histograms showing that channel mapping works for AuxDetSimChannels
-  art::ServiceHandle<geo::Geometry> geom;
+  auto const& auxDetGeom = art::ServiceHandle<geo::AuxDetGeometry>()->GetProvider();
   for(const auto& label: fSimLabels)
   {
     const auto channels = e.getValidHandle<std::vector<sim::AuxDetSimChannel>>(label); 
     for(const auto& channel: *channels)
     {
-      const auto& auxDet = geom->AuxDet(channel.AuxDetID());
+      const auto& auxDet = auxDetGeom.AuxDet(channel.AuxDetID());
       const auto& sens = auxDet.SensitiveVolume(channel.AuxDetSensitiveID());
       const auto center = sens.GetCenter();
       TLorentzVector centerV(center.X(), center.Y(), center.Z(), 0.); //TODO: Use GenVector when I have time to figure it out
@@ -206,12 +202,12 @@ void ex::HelloAuxDet::analyze(art::Event const & e)
 void ex::HelloAuxDet::beginJob()
 {
   // Print all of the AuxDetGeos that the Geometry service knows about.  
-  const auto geom = lar::providerFrom<geo::Geometry>();
+  const auto& auxDetGeom = art::ServiceHandle<geo::AuxDetGeometry>()->GetProvider();
 
   //Get AuxDetGeos and print their names.  
-  for(size_t det = 0; det < geom->NAuxDets(); ++det) 
+  for(size_t det = 0; det < auxDetGeom.NAuxDets(); ++det)
   {
-    const auto& geo = geom->AuxDet(det);
+    const auto& geo = auxDetGeom.AuxDet(det);
     mf::LogInfo("AuxDetGeometry") << "AuxDetGeo number " << det << ", " << geo.Name() << ", is centered at " << geo.GetCenter() 
                                   << " and has sensitive volumes:\n";
     for(size_t sens = 0; sens < geo.NSensitiveVolume(); ++sens)
