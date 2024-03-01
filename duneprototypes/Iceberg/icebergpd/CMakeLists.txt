@@ -1,19 +1,20 @@
-cet_build_plugin(ICEBERGPDSSPMonitor art::module
-              larcorealg_Geometry
-              larcore_Geometry_Geometry_service
-              lardataobj_RawData
+cet_build_plugin(ICEBERGPDSSPMonitor art::module LIBRARIES
+              larcorealg::Geometry
+              larcore::Geometry_Geometry_service
+              lardataobj::RawData
+              lardata::headers
               nusimdata::SimulationBase
-              dunepdlegacy_Services_ChannelMap_IcebergChannelMapService_service
-              ART_FRAMEWORK_CORE
-              ART_FRAMEWORK_PRINCIPAL
-              ART_FRAMEWORK_SERVICES_REGISTRY
-              ART_ROOT_IO_TFILE_SUPPORT
+              dunepdlegacy::Services_ChannelMap_IcebergChannelMapService_service
+              art::Framework_Core
+              art::Framework_Principal
+              art::Framework_Services_Registry
+              art_root_io::tfile_support
               ROOT::Core
-              ART_ROOT_IO_TFILESERVICE_SERVICE
-              ART_PERSISTENCY_PROVENANCE
+              lardataalg::DetectorInfo 
+              art::Persistency_Provenance
               messagefacility::MF_MessageLogger
-              CETLIB
-              ROOT_BASIC_LIB_LIST
+              cetlib::cetlib
+              ROOT::Core ROOT::Hist ROOT::Tree
               BASENAME_ONLY)
 
 install_headers()

@@ -1,67 +1,68 @@
-cet_build_plugin(PDDPChannelMap art::service
-                        ART_FRAMEWORK_CORE
-			ART_FRAMEWORK_IO_SOURCES
-                        ART_FRAMEWORK_PRINCIPAL
-                        art::Persistency_Common canvas
-			art::Persistency_Provenance canvas
-			art::Utilities canvas
+cet_build_plugin(PDDPChannelMap art::service LIBRARIES
+                        art::Framework_Core
+			art::Framework_IO_Sources
+                        art::Framework_Principal
+                        art::Persistency_Common
+			art::Persistency_Provenance
+			art::Utilities canvas::canvas
 			fhiclcpp::fhiclcpp
                         messagefacility::MF_MessageLogger
-                        CETLIB
-                        ROOT_BASIC_LIB_LIST
+                        cetlib::cetlib
+                        ROOT::Core ROOT::Hist ROOT::Tree
                         BASENAME_ONLY
 )
 
-cet_build_plugin(PDDPRawInput art::source
+cet_build_plugin(PDDPRawInput art::source LIBRARIES
 			PDDPRawInputDriver_service
-                        lardataobj_RawData
-                        lardata_Utilities
-                        ART_FRAMEWORK_CORE
-			ART_FRAMEWORK_IO_SOURCES
-                        ART_FRAMEWORK_PRINCIPAL
-                        art::Persistency_Common canvas
-			art::Persistency_Provenance canvas
-			art::Utilities canvas
+                        lardataobj::RawData
+                        lardata::Utilities
+                        art::Framework_Core
+			art::Framework_IO_Sources
+                        art::Framework_Principal
+                        art::Persistency_Common
+			art::Persistency_Provenance
+			art::Utilities canvas::canvas
 			fhiclcpp::fhiclcpp
                         messagefacility::MF_MessageLogger
-                        CETLIB
-                        ROOT_BASIC_LIB_LIST
+                        cetlib::cetlib
+                        ROOT::Core ROOT::Hist ROOT::Tree
                         BASENAME_ONLY
 )
 
-cet_build_plugin(PDDPRawInputDriver art::service
+cet_build_plugin(PDDPRawInputDriver art::service LIBRARIES
 			PDDPChannelMap_service
 			pthread
-			lardataobj_RawData
-                        lardata_Utilities
-                        ART_FRAMEWORK_CORE
-			ART_FRAMEWORK_IO_SOURCES
-                        ART_FRAMEWORK_PRINCIPAL
-                        art::Persistency_Common canvas
-			art::Persistency_Provenance canvas
-			art::Utilities canvas
+			lardataobj::RawData
+                        lardata::Utilities
+                        dunecore::DuneObj
+                        art::Framework_Core
+			art::Framework_IO_Sources
+                        art::Framework_Principal
+                        art::Persistency_Common
+			art::Persistency_Provenance
+			art::Utilities canvas::canvas
 			fhiclcpp::fhiclcpp
                         messagefacility::MF_MessageLogger
-                        CETLIB
-                        ROOT_BASIC_LIB_LIST
+                        cetlib::cetlib
+                        ROOT::Core ROOT::Hist ROOT::Tree
                         BASENAME_ONLY
 )
 
-cet_build_plugin(PDDPTPCRawDecoderTest art::module
-			lardataobj_RawData
-                        ART_FRAMEWORK_CORE
-			ART_FRAMEWORK_PRINCIPAL
-			ART_FRAMEWORK_SERVICES_REGISTRY
-                        ART_ROOT_IO_TFILE_SUPPORT
+cet_build_plugin(PDDPTPCRawDecoderTest art::module LIBRARIES
+			lardataobj::RawData
+                        art::Framework_Core
+			art::Framework_Principal
+			art::Framework_Services_Registry
+                        art_root_io::tfile_support
                         ROOT::Core
-                        ART_ROOT_IO_TFILESERVICE_SERVICE
- 			art::Persistency_Common canvas
-			art::Persistency_Provenance canvas
-			art::Utilities canvas
+                        
+ 			art::Persistency_Common
+			art::Persistency_Provenance
+			art::Utilities canvas::canvas
 			messagefacility::MF_MessageLogger
 			
-			cetlib::cetlib cetlib_except
-			ROOT_BASIC_LIB_LIST
+			cetlib::cetlib cetlib_except::cetlib_except
+			ROOT::Core ROOT::Hist ROOT::Tree
               		BASENAME_ONLY
 )
 

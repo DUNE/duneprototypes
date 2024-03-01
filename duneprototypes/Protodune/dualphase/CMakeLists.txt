@@ -1,119 +1,121 @@
 
 
 cet_build_plugin(
-           CRTGen art::module
+           CRTGen art::module LIBRARIES
            nusimdata::SimulationBase
            cetlib::cetlib
            cetlib_except::cetlib_except
            fhiclcpp::fhiclcpp
-           CLHEP
-           larcorealg_Geometry
-           larcoreobj_SummaryData
-           larsim_EventGenerator
+           CLHEP::CLHEP
+           larcorealg::Geometry
+           larcoreobj::SummaryData
+           larcore::headers
+           larsim::EventGenerator
            nurandom::RandomUtils_NuRandomService_service
-           ART_FRAMEWORK_SERVICES_REGISTRY
-           ART_ROOT_IO_TFILESERVICE_SERVICE
-           ART_ROOT_IO_TFILE_SUPPORT
-           CLHEP
+           art::Framework_Services_Registry
+           larsim::MCCheater_ParticleInventoryService_service
+           art_root_io::tfile_support
+           CLHEP::CLHEP
            messagefacility::MF_MessageLogger
-  	   ROOT_BASIC_LIB_LIST
-           ROOT_GEOM
-           ROOT_XMLIO
-           ROOT_GDML
+  	   ROOT::Core ROOT::Hist ROOT::Tree
+           ROOT::Geom
+           ROOT::XMLIO
+           ROOT::Gdml
 )
 if(FALSE)
 cet_build_plugin(
-			Purity art::module
-			dunesim_DetSim
-                        lardataobj_RecoBase
-                        larreco_Calorimetry
-                        larcorealg_Geometry
-                        larcore_Geometry_Geometry_service
-                        lardata_ArtDataHelper
-                        lardata_Utilities
-                        lardataobj_Simulation
-                        larsim_MCCheater_BackTrackerService_service
-           larsim_MCCheater_ParticleInventoryService_service
-                        ART_FRAMEWORK_CORE
-                        ART_FRAMEWORK_PRINCIPAL
-                        ART_FRAMEWORK_SERVICES_REGISTRY
-                        ART_ROOT_IO_TFILE_SUPPORT
+			Purity art::module LIBRARIES
+			dunesim::DetSim
+                        lardataobj::RecoBase
+                        larreco::Calorimetry
+                        larcorealg::Geometry
+                        larcore::Geometry_Geometry_service
+                        lardata::ArtDataHelper
+                        lardata::Utilities
+                        lardataobj::Simulation
+                        larsim::MCCheater_BackTrackerService_service
+                        larsim::MCCheater_ParticleInventoryService_service
+                        art::Framework_Core
+                        art::Framework_Principal
+                        art::Framework_Services_Registry
+                        art_root_io::tfile_support
                         ROOT::Core
-                        ART_ROOT_IO_TFILESERVICE_SERVICE
-                        art::Persistency_Common canvas
-                        art::Persistency_Provenance canvas
-                        art::Utilities canvas
+                        
+                        art::Persistency_Common
+                        art::Persistency_Provenance
+                        art::Utilities canvas::canvas
                         messagefacility::MF_MessageLogger
                         
-                        cetlib::cetlib cetlib_except
-                        ROOT_BASIC_LIB_LIST
+                        cetlib::cetlib cetlib_except::cetlib_except
+                        ROOT::Core ROOT::Hist ROOT::Tree
                         BASENAME_ONLY
 )
 endif()
 cet_build_plugin(
-			DEdxdp art::module
-			dunesim_DetSim
-                        lardataobj_RecoBase
-                        larreco_Calorimetry
-                        larcorealg_Geometry
-                        larcore_Geometry_Geometry_service
-                        lardata_ArtDataHelper
-                        lardata_Utilities
-                        lardataobj_Simulation
-                        larsim_MCCheater_BackTrackerService_service
-                        ART_FRAMEWORK_CORE
-                        ART_FRAMEWORK_PRINCIPAL
-                        ART_FRAMEWORK_SERVICES_REGISTRY
-                        ART_ROOT_IO_TFILE_SUPPORT
+			DEdxdp art::module LIBRARIES
+			dunesim::DetSim
+                        lardataobj::RecoBase
+                        larreco::Calorimetry
+                        larcorealg::Geometry
+                        larcore::Geometry_Geometry_service
+                        lardata::ArtDataHelper
+                        lardata::Utilities
+                        lardataobj::Simulation
+                        larsim::MCCheater_BackTrackerService_service
+                        art::Framework_Core
+                        art::Framework_Principal
+                        art::Framework_Services_Registry
+                        art_root_io::tfile_support
                         ROOT::Core
-                        ART_ROOT_IO_TFILESERVICE_SERVICE
-                        art::Persistency_Common canvas
-                        art::Persistency_Provenance canvas
-                        art::Utilities canvas
+                        
+                        art::Persistency_Common
+                        art::Persistency_Provenance
+                        art::Utilities canvas::canvas
                         messagefacility::MF_MessageLogger
                         
-                        cetlib::cetlib cetlib_except
-                        ROOT_BASIC_LIB_LIST
+                        cetlib::cetlib cetlib_except::cetlib_except
+                        ROOT::Core ROOT::Hist ROOT::Tree
                         BASENAME_ONLY
 )
 
 cet_build_plugin(
-	  AnaRootParser art::module
-	  larcore_Geometry_Geometry_service
-	  larsim_Simulation nug4::ParticleNavigation lardataobj_Simulation
-	  larsim_MCCheater_BackTrackerService_service
-          larsim_MCCheater_ParticleInventoryService_service
-	  lardata_Utilities
-	  larevt_Filters
-	  lardataobj_RawData
-	  lardataobj_RecoBase
-	  lardata_RecoObjects
-	  lardata_ArtDataHelper
-	  lardataalg_DetectorInfo
-	  larcorealg_Geometry
-	  larcorealg_GeoAlgo
-	  larreco_RecoAlg
-	  larpandora_LArPandoraInterface
+	  AnaRootParser art::module LIBRARIES
+	  larcore::Geometry_Geometry_service
+	  larsim::Simulation nug4::ParticleNavigation lardataobj::Simulation
+	  larsim::MCCheater_BackTrackerService_service
+          larsim::MCCheater_ParticleInventoryService_service
+	  lardata::Utilities
+	  larevt::Filters
+	  lardataobj::RawData
+	  lardataobj::RecoBase
+	  lardata::RecoObjects
+	  lardata::ArtDataHelper
+	  lardataalg::DetectorInfo
+	  larcorealg::Geometry
+	  larcorealg::GeoAlgo
+          larcore::headers
+	  larreco::RecoAlg
+	  larpandora::LArPandoraInterface
 	  dunecore::SignalShapingServiceDUNE10kt_service
 	  dunecore::SignalShapingServiceDUNE35t_service
           nusimdata::SimulationBase
-          ART_FRAMEWORK_CORE
-	  ART_FRAMEWORK_PRINCIPAL
-	  ART_FRAMEWORK_SERVICES_REGISTRY
-	  ART_ROOT_IO_TFILE_SUPPORT
+          art::Framework_Core
+	  art::Framework_Principal
+	  art::Framework_Services_Registry
+	  art_root_io::tfile_support
 	  ROOT::Core
-	  ART_ROOT_IO_TFILESERVICE_SERVICE
-	  art::Persistency_Common canvas
-	  art::Persistency_Provenance canvas
-	  art::Utilities canvas
+
+	  art::Persistency_Common
+	  art::Persistency_Provenance
+	  art::Utilities canvas::canvas
 	  messagefacility::MF_MessageLogger
 	  
 	  fhiclcpp::fhiclcpp
-	  cetlib::cetlib cetlib_except
-          ROOT_GEOM
-          ROOT_XMLIO
-          ROOT_GDML
-	  ROOT_BASIC_LIB_LIST
+	  cetlib::cetlib cetlib_except::cetlib_except
+          ROOT::Geom
+          ROOT::XMLIO
+          ROOT::Gdml
+	  ROOT::Core ROOT::Hist ROOT::Tree
 )
 
 

@@ -5,33 +5,34 @@ add_subdirectory(alg)
 cet_add_compiler_flags(CXX -Wno-pedantic)
 
 art_make( MODULE_LIBRARIES
-                        lardataalg_DetectorInfo
-                        lardataobj_RawData
-                        lardataalg_DetectorInfo
-			larcorealg_Geometry
-                        larcorealg_CoreUtils
-			larcore_Geometry_Geometry_service
-                        lardataobj_Simulation
+                        lardataalg::DetectorInfo
+                        lardataobj::RawData
+                        lardata::headers
+                        larevt::SpaceCharge
+                        lardataalg::DetectorInfo
+			larcorealg::Geometry
+                        larcorealg::CoreUtils
+			larcore::Geometry_Geometry_service
+                        lardataobj::Simulation
                         nusimdata::SimulationBase
-			lardataobj_RecoBase
-			lardataobj_AnalysisBase
-			larsim_MCCheater_ParticleInventoryService_service
-			larsim_MCCheater_BackTrackerService_service
-			larsim_MCCheater_PhotonBackTrackerService_service
-			ART_FRAMEWORK_CORE
-			ART_FRAMEWORK_PRINCIPAL
-			ART_FRAMEWORK_SERVICES_REGISTRY
-			ART_ROOT_IO_TFILE_SUPPORT
-			ROOT::Core
-			ART_ROOT_IO_TFILESERVICE_SERVICE
- 			art::Persistency_Common canvas
-			art::Persistency_Provenance canvas
-			art::Utilities canvas
+			lardataobj::RecoBase
+			lardataobj::AnalysisBase
+			larsim::MCCheater_ParticleInventoryService_service
+			larsim::MCCheater_BackTrackerService_service
+			larsim::MCCheater_PhotonBackTrackerService_service
+			art::Framework_Core
+			art::Framework_Principal
+		        art_root_io::TFileService_service	
+			art_root_io::tfile_support
+			ROOT::Gpad
+ 			art::Persistency_Common
+			art::Persistency_Provenance
+			art::Utilities canvas::canvas
 			messagefacility::MF_MessageLogger
-			cetlib::cetlib cetlib_except
-			ROOT_BASIC_LIB_LIST
-                        ROOT_GENVECTOR
-                        ROOT_GEOM
+			cetlib::cetlib cetlib_except::cetlib_except
+			ROOT::Core ROOT::Hist ROOT::Tree ROOT::Graf
+                        ROOT::GenVector
+                        ROOT::Geom
 )
 
 install_headers()

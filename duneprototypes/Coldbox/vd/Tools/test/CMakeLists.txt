@@ -7,70 +7,70 @@
 
 include(CetTest)
 
-cet_test(test_VDColdboxChannelRanges SOURCES test_VDColdboxChannelRanges.cxx
+cet_test(test_VDColdboxChannelRanges SOURCE test_VDColdboxChannelRanges.cxx
   LIBRARIES
-    dunecore_ArtSupport
+    dunecore::ArtSupport
     art::Utilities
     canvas::canvas
-    fhiclcpp
-    cetlib::cetlib cetlib_except
+    fhiclcpp::fhiclcpp
+    cetlib::cetlib
     cetlib_except::cetlib_except
-    ROOT_BASIC_LIB_LIST
-    SQLITE3
+    ROOT::Core ROOT::Hist ROOT::Tree
+    SQLite::SQLite3
     Boost::filesystem
 )
 
-cet_test(test_VDColdboxChannelGroups SOURCES test_VDColdboxChannelGroups.cxx
+cet_test(test_VDColdboxChannelGroups SOURCE test_VDColdboxChannelGroups.cxx
   LIBRARIES
-    dunecore_ArtSupport
+    dunecore::ArtSupport
     art::Utilities
     canvas::canvas
-    fhiclcpp
-    cetlib::cetlib cetlib_except
+    fhiclcpp::fhiclcpp
+    cetlib::cetlib 
     cetlib_except::cetlib_except
-    ROOT_BASIC_LIB_LIST
-    SQLITE3
+    ROOT::Core ROOT::Hist ROOT::Tree
+    SQLite::SQLite3
     Boost::filesystem
 )
 
-cet_test(test_VDColdboxOnlineChannel SOURCES test_VDColdboxOnlineChannel.cxx
+cet_test(test_VDColdboxOnlineChannel SOURCE test_VDColdboxOnlineChannel.cxx
   LIBRARIES
-    dunecore_ArtSupport
+    dunecore::ArtSupport
     art::Utilities
     canvas::canvas
-    fhiclcpp
-    cetlib::cetlib cetlib_except
+    fhiclcpp::fhiclcpp
+    cetlib::cetlib 
     cetlib_except::cetlib_except
-    ROOT_BASIC_LIB_LIST
-    SQLITE3
+    ROOT::Core ROOT::Hist ROOT::Tree
+    SQLite::SQLite3
     Boost::filesystem
 )
 
-cet_test(test_CrpChannelRanges SOURCES test_CrpChannelRanges.cxx
+cet_test(test_CrpChannelRanges SOURCE test_CrpChannelRanges.cxx
   LIBRARIES
-    dunecore_ArtSupport
-    dunecore_DuneCommon_Utility
+    dunecore::ArtSupport
+    dunecore::DuneCommon_Utility
     art::Utilities
     canvas::canvas
-    fhiclcpp
-    cetlib::cetlib cetlib_except
+    fhiclcpp::fhiclcpp
+    cetlib::cetlib 
     cetlib_except::cetlib_except
-    ROOT_BASIC_LIB_LIST
-    SQLITE3
+    ROOT::Core ROOT::Hist ROOT::Tree
+    SQLite::SQLite3
     Boost::filesystem
 )
 
-cet_test(test_CrpChannelGroups SOURCES test_CrpChannelGroups.cxx
+cet_test(test_CrpChannelGroups SOURCE test_CrpChannelGroups.cxx
   LIBRARIES
-    dunecore_ArtSupport
-    dunecore_DuneCommon_Utility
+    dunecore::ArtSupport
+    dunecore::DuneCommon_Utility
     art::Utilities
     canvas::canvas
-    fhiclcpp
-    cetlib::cetlib cetlib_except
+    fhiclcpp::fhiclcpp
+    cetlib::cetlib
     cetlib_except::cetlib_except
-    ROOT_BASIC_LIB_LIST
-    SQLITE3
+    ROOT::Core ROOT::Hist ROOT::Tree
+    SQLite::SQLite3
     Boost::filesystem
 )
 

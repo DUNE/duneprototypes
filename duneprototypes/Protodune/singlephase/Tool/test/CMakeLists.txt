@@ -7,108 +7,108 @@
 
 include(CetTest)
 
-cet_test(test_PdspOnlineChannel SOURCES test_PdspOnlineChannel.cxx
+cet_test(test_PdspOnlineChannel SOURCE test_PdspOnlineChannel.cxx
   LIBRARIES
-    dunecore_ArtSupport
+    dunecore::ArtSupport
     art::Utilities
     canvas::canvas
-    fhiclcpp
-    cetlib::cetlib cetlib_except
+    fhiclcpp::fhiclcpp
+    cetlib::cetlib
     cetlib_except::cetlib_except
-    ROOT_BASIC_LIB_LIST
-    SQLITE3
+    ROOT::Core ROOT::Hist ROOT::Tree
+    SQLite::SQLite3
     Boost::filesystem
 )
 
-cet_test(test_IcebergOnlineChannel SOURCES test_IcebergOnlineChannel.cxx
+cet_test(test_IcebergOnlineChannel SOURCE test_IcebergOnlineChannel.cxx
   LIBRARIES
-    dunecore_ArtSupport
+    dunecore::ArtSupport
     art::Utilities
     canvas::canvas
-    fhiclcpp
-    cetlib::cetlib cetlib_except
+    fhiclcpp::fhiclcpp
+    cetlib::cetlib
     cetlib_except::cetlib_except
-    ROOT_BASIC_LIB_LIST
-    SQLITE3
+    ROOT::Core ROOT::Hist ROOT::Tree
+    SQLite::SQLite3
     Boost::filesystem
 )
 
-cet_test(test_ProtoduneOnlineChannel SOURCES test_ProtoduneOnlineChannel.cxx
+cet_test(test_ProtoduneOnlineChannel SOURCE test_ProtoduneOnlineChannel.cxx
   LIBRARIES
-    dunecore_ArtSupport
+    dunecore::ArtSupport
     duneprototypes_Protodune_singlephase_Utility
     art::Utilities
     canvas::canvas
-    fhiclcpp
-    cetlib::cetlib cetlib_except
+    fhiclcpp::fhiclcpp
+    cetlib::cetlib
     cetlib_except::cetlib_except
-    ROOT_BASIC_LIB_LIST
-    SQLITE3
+    ROOT::Core ROOT::Hist ROOT::Tree
+    SQLite::SQLite3
     Boost::filesystem
 )
 
-cet_test(test_ProtoDuneChannelRanges SOURCES test_ProtoDuneChannelRanges.cxx
+cet_test(test_ProtoDuneChannelRanges SOURCE test_ProtoDuneChannelRanges.cxx
   LIBRARIES
-    dunecore_ArtSupport
+    dunecore::ArtSupport
     art::Utilities
     canvas::canvas
-    fhiclcpp
-    cetlib::cetlib cetlib_except
+    fhiclcpp::fhiclcpp
+    cetlib::cetlib
     cetlib_except::cetlib_except
-    ROOT_BASIC_LIB_LIST
-    SQLITE3
+    ROOT::Core ROOT::Hist ROOT::Tree
+    SQLite::SQLite3
     Boost::filesystem
 )
 
-cet_test(test_ApaChannelRanges SOURCES test_ApaChannelRanges.cxx
+cet_test(test_ApaChannelRanges SOURCE test_ApaChannelRanges.cxx
   LIBRARIES
-    dunecore_ArtSupport
+    dunecore::ArtSupport
     art::Utilities
     canvas::canvas
-    fhiclcpp
-    cetlib::cetlib cetlib_except
+    fhiclcpp::fhiclcpp
+    cetlib::cetlib
     cetlib_except::cetlib_except
-    ROOT_BASIC_LIB_LIST
-    SQLITE3
+    ROOT::Core ROOT::Hist ROOT::Tree
+    SQLite::SQLite3
     Boost::filesystem
 )
 
-cet_test(test_HalfApaChannelRanges SOURCES test_HalfApaChannelRanges.cxx
+cet_test(test_HalfApaChannelRanges SOURCE test_HalfApaChannelRanges.cxx
   LIBRARIES
-    dunecore_ArtSupport
+    dunecore::ArtSupport
     art::Utilities
     canvas::canvas
-    fhiclcpp
-    cetlib::cetlib cetlib_except
+    fhiclcpp::fhiclcpp
+    cetlib::cetlib
     cetlib_except::cetlib_except
-    ROOT_BASIC_LIB_LIST
-    SQLITE3
+    ROOT::Core ROOT::Hist ROOT::Tree
+    SQLite::SQLite3
     Boost::filesystem
 )
 
-cet_test(test_ProtoDuneChannelGroups SOURCES test_ProtoDuneChannelGroups.cxx
+cet_test(test_ProtoDuneChannelGroups SOURCE test_ProtoDuneChannelGroups.cxx
   LIBRARIES
-    dunecore_ArtSupport
+    dunecore::ArtSupport
     art::Utilities
     canvas::canvas
-    fhiclcpp
-    cetlib::cetlib cetlib_except
+    fhiclcpp::fhiclcpp
+    cetlib::cetlib
     cetlib_except::cetlib_except
-    ROOT_BASIC_LIB_LIST
-    SQLITE3
+    ROOT::Core ROOT::Hist ROOT::Tree
+    SQLite::SQLite3
     Boost::filesystem
 )
 
-cet_test(test_ApaChannelGroups SOURCES test_ApaChannelGroups.cxx
+cet_test(test_ApaChannelGroups SOURCE test_ApaChannelGroups.cxx
   LIBRARIES
-    dunecore_ArtSupport
+    dunecore::ArtSupport
     art::Utilities
     canvas::canvas
-    fhiclcpp
-    cetlib::cetlib cetlib_except
+    fhiclcpp::fhiclcpp
+    cetlib::cetlib
     cetlib_except::cetlib_except
-    ROOT_BASIC_LIB_LIST
-    SQLITE3
+    ROOT::Core ROOT::Hist ROOT::Tree
+    SQLite::SQLite3
     Boost::filesystem
 )
 

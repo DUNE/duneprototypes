@@ -1,40 +1,39 @@
 
 art_make( LIBRARY_NAME ProtoDUNEDataUtils
 	  LIB_LIBRARIES
-                        dunecore_ArtSupport
+                        dunecore::ArtSupport
                         ifbeam::ifbeam
                         ifdh_art::IFBeam_service
-                        lardataobj_RawData
-                        lardataobj_RecoBase
-                        larreco_RecoAlg
-                        larreco_Calorimetry
-                        larreco_RecoAlg_PMAlg
-                        larcorealg_Geometry
-                        larcore_Geometry_Geometry_service
-                        lardata_ArtDataHelper
-                        lardata_Utilities
-                        larsim_Simulation 
-                        lardataobj_Simulation
-                        dunecore_DuneObj
-                        dunepdlegacy_Services_ChannelMap_PdspChannelMapService_service
-                        larsim_MCCheater_PhotonBackTrackerService_service
-                        larsim_MCCheater_BackTrackerService_service
-                        larsim_MCCheater_ParticleInventoryService_service
+                        lardataobj::RawData
+                        lardataobj::RecoBase
+                        larreco::RecoAlg
+                        larreco::Calorimetry
+                        larreco::RecoAlg_PMAlg
+                        larcorealg::Geometry
+                        larcore::Geometry_Geometry_service
+                        lardata::ArtDataHelper
+                        lardata::Utilities
+                        larsim::Simulation 
+                        lardataobj::Simulation
+                        dunecore::DuneObj
+                        dunepdlegacy::Services_ChannelMap_PdspChannelMapService_service
+                        larsim::MCCheater_PhotonBackTrackerService_service
+                        larsim::MCCheater_BackTrackerService_service
+                        larsim::MCCheater_ParticleInventoryService_service
                         nug4::ParticleNavigation 
                         nusimdata::SimulationBase
-                        ART_FRAMEWORK_CORE
-                        ART_FRAMEWORK_PRINCIPAL
-                        ART_FRAMEWORK_SERVICES_REGISTRY
-                        ART_ROOT_IO_TFILE_SUPPORT
+                        art::Framework_Core
+                        art::Framework_Principal
+                        art::Framework_Services_Registry
+                        art_root_io::tfile_support
                         ROOT::Core
-                        ART_ROOT_IO_TFILESERVICE_SERVICE
-                        art::Persistency_Common canvas
-                        art::Persistency_Provenance canvas
-                        art::Utilities canvas
+                        art::Persistency_Common
+                        art::Persistency_Provenance
+                        art::Utilities canvas::canvas
                         messagefacility::MF_MessageLogger
                         fhiclcpp::fhiclcpp
-                        cetlib::cetlib cetlib_except
-                        ROOT_BASIC_LIB_LIST
+                        cetlib::cetlib cetlib_except::cetlib_except
+                        ROOT::Core ROOT::Hist ROOT::Tree
 	  MODULE_LIBRARIES
 	  ProtoDUNEDataUtils
 )

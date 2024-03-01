@@ -2,21 +2,24 @@ cet_enable_asserts()
 art_make( NO_PLUGINS
           LIBRARY_NAME  ProtoDUNEspDataProviders
           LIB_LIBRARIES
-                        lardataalg_DetectorInfo
-  	                wda
+                        lardataalg::DetectorInfo
+                        lardata::headers
+                        larcore::headers
+  	                wda::wda
 	                nuevdb::IFDatabase
-                        larcorealg_Geometry
-                        art_Framework_Core
+                        larcorealg::Geometry
+                        art::Framework_Core
                         art::Framework_Principal
-                        ART_ROOT_IO_ROOTDB
+                        art_root_io::RootDB
                         art::Utilities
                         messagefacility::MF_MessageLogger
-                        ART_FRAMEWORK_SERVICES_REGISTRY
-                        cetlib::cetlib cetlib_except
+                        art::Framework_Services_Registry
+                        cetlib::cetlib cetlib_except::cetlib_except
                         canvas::canvas
                         ifdh::ifdh
+                        ifdh_art::IFBeam_service
                         fhiclcpp::fhiclcpp
-                        ROOT_BASIC_LIB_LIST
+                        ROOT::Core ROOT::Hist ROOT::Tree
                         
         )
 

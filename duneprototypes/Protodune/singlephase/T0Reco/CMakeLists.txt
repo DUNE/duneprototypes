@@ -1,29 +1,28 @@
 
 art_make( BASENAME_ONLY
-          MODULE_LIBRARIES lardataobj_RecoBase
-                           lardataalg_DetectorInfo
-                           lardataobj_AnalysisBase
-                           larcorealg_Geometry
-                           larcore_Geometry_Geometry_service
-                           lardata_Utilities
-                           larsim_Simulation
-			   lardataobj_Simulation
-                           larsim_MCCheater_BackTrackerService_service
-                           larsim_MCCheater_ParticleInventoryService_service
+          MODULE_LIBRARIES lardataobj::RecoBase
+                           lardataalg::DetectorInfo
+                           lardataobj::AnalysisBase
+                           larcorealg::Geometry
+                           larcore::Geometry_Geometry_service
+                           lardata::Utilities
+                           larsim::Simulation
+			   lardataobj::Simulation
+                           larsim::MCCheater_BackTrackerService_service
+                           larsim::MCCheater_ParticleInventoryService_service
                            nusimdata::SimulationBase
-                           ART_FRAMEWORK_CORE
-                           ART_FRAMEWORK_PRINCIPAL
-                           ART_FRAMEWORK_SERVICES_REGISTRY
-                           ART_ROOT_IO_TFILE_SUPPORT
+                           art::Framework_Core
+                           art::Framework_Principal
+                           art::Framework_Services_Registry
+                           art_root_io::tfile_support
 			   ROOT::Core
-                           ART_ROOT_IO_TFILESERVICE_SERVICE
-                           ART_PERSISTENCY_PROVENANCE
+                           art::Persistency_Provenance
                            art::Persistency_Common
-                           art::Utilities canvas
+                           art::Utilities canvas::canvas
                            messagefacility::MF_MessageLogger
                            fhiclcpp::fhiclcpp
-                           cetlib::cetlib cetlib_except
-                           ROOT_BASIC_LIB_LIST
+                           cetlib::cetlib cetlib_except::cetlib_except
+                           ROOT::Core ROOT::Hist ROOT::Tree
 	   		   #ProtoDUNEDataUtils
          )
 

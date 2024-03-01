@@ -1,4 +1,4 @@
-art_make(LIB_LIBRARIES ROOT_BASIC_LIB_LIST)
+art_make(LIB_LIBRARIES ROOT::Core ROOT::Hist ROOT::Tree)
 
 install_headers()
 install_fhicl()

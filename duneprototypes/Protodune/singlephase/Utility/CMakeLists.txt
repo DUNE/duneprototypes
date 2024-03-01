@@ -2,12 +2,12 @@
 
 art_make(BASENAME_ONLY
          LIB_LIBRARIES
-         dunecore_ArtSupport
-         dunecore_DuneCommon_Utility
+         dunecore::ArtSupport
+         dunecore::DuneCommon_Utility
          art::Utilities
          canvas::canvas
          cetlib::cetlib
-         ROOT_BASIC_LIB_LIST
+         ROOT::Core ROOT::Hist ROOT::Tree
          NO_PLUGINS
         )
 

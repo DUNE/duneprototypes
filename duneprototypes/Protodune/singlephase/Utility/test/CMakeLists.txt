@@ -7,15 +7,15 @@
 
 include(CetTest)
 
-cet_test(test_ProtoduneChannelHelper SOURCES test_ProtoduneChannelHelper.cxx
+cet_test(test_ProtoduneChannelHelper SOURCE test_ProtoduneChannelHelper.cxx
   LIBRARIES
     duneprototypes_Protodune_singlephase_Utility
     canvas::canvas
-    fhiclcpp
-    cetlib::cetlib cetlib_except
+    fhiclcpp::fhiclcpp
+    cetlib::cetlib
     cetlib_except::cetlib_except
-    SQLITE3
+    SQLite::SQLite3
     Boost::filesystem
-    ROOT_BASIC_LIB_LIST
+    ROOT::Core ROOT::Hist ROOT::Tree
 )
 
