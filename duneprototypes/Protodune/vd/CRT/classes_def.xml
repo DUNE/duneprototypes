@@ -13,7 +13,9 @@
    <version ClassVersion="12" checksum="370505871"/>
    <version ClassVersion="11" checksum="2091418630"/>
   </class>
-  <class name="CRTVD::Trigger" ClassVersion="11">
+  <class name="CRTVD::Trigger" ClassVersion="13">
+   <version ClassVersion="13" checksum="718746011"/>
+   <version ClassVersion="12" checksum="2952548699"/>
    <version ClassVersion="11" checksum="2571201266"/>
   </class>
 
