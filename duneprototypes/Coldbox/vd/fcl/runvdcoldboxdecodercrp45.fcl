@@ -1,5 +1,5 @@
 #include "PDHDTriggerReader.fcl"
-#include "runpdhdtpcdecodermodule.fcl"
+#include "run_pdhd_tpc_decoder.fcl"
 
 services.PD2HDChannelMapService.FileName: "vdcbce_chanmap_v4.txt"
 physics.producers.tpcrawdecoder.APAList: [ 6 ]
