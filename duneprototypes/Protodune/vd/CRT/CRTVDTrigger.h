@@ -15,6 +15,7 @@
 #define CRTVD_TRIGGER_H
 
 #include "larcoreobj/SimpleTypesAndConstants/geo_vectors.h"
+#include "larcorealg/GeoAlgo/GeoVector.h"
 
 //c++ includes
 #include <cstdint>
@@ -95,48 +96,59 @@ namespace CRTVD
       //Constructor from information that comes from Matt's artdaq::Fragments.  Takes ownership of the CRT::Hits given.  Note that this 
       //is the only time that CRT::Hits can be added to a Trigger in accordance with some data product design notes I found.   
       //TODO: Should timestamp assembly be handled here or elsewhere?
-      Trigger(const unsigned short channel, /*const std::string& detName,*/ const unsigned long long timestamp, 
-              std::vector<CRTVD::Hit>&& hits): fChannel(channel), /*fDetName(detName),*/ fTimestamp(timestamp), fHits(hits) 
+      Trigger(const unsigned short trigtype, const unsigned long long timestamp, 
+              std::vector<CRTVD::Hit>&& hits): fType(trigtype), fTimestamp(timestamp), fHits(hits) 
          {
          CalculateHitsMeanPositions();
 
          }
 
-      Trigger(): fChannel(std::numeric_limits<decltype(fChannel)>::max()), /*fDetName(""),*/ 
+      Trigger(): fType(std::numeric_limits<decltype(fType)>::max()),  
                  fTimestamp(std::numeric_limits<decltype(fTimestamp)>::max()), fHits() {} //Default constructor to satisfy ROOT.  
+
 
       // Calculate hits mean positions
       void CalculateHitsMeanPositions(){
+        // dumb init
+        fTopMeanPosition = geoalgo::Point_t(0., 0., 0.);
+        fBottomMeanPosition = geoalgo::Point_t(0., 0., 0.);
+        int ntophit = 0; int nbothit = 0;
+
          for (auto hit : fHits){
-           if (hit.Channel()<8){
-
-
+           geoalgo::Point_t pos(hit.Position().X(), hit.Position().Y(), hit.Position().Z());
+           if (hit.AuxDetName().find("BOTTOM")==hit.AuxDetName().npos){
+             ntophit++;
+             fTopMeanPosition += pos;
            }
            else{
-
-
-
+             nbothit++;
+             fBottomMeanPosition += pos;
            }
          } // end for
+
+      if (ntophit>0) fTopMeanPosition /= (float) ntophit;
+      if (nbothit>0) fBottomMeanPosition /= (float) nbothit;
+//std::cout  << "CRTVD::Trigger : top and bottom mean hit positions are : \n";
+//std::cout << "TOP : "  << fTopMeanPosition[0] << " " << fTopMeanPosition[1] << " " << fTopMeanPosition[2] << std::endl;
+//std::cout << "BOTTOM : "  << fBottomMeanPosition[0] << " " << fBottomMeanPosition[1] << " " << fBottomMeanPosition[2] << std::endl;
 
       } // end InitHitsMeanPositions()
         
 
       //User access to stored information.  See member variables for explanation
-      inline unsigned short Channel() const { return fChannel; }
-//      const std::string& DetName() const { return fDetName; }
+      inline unsigned short TriggerType() const { return fType; }
       inline unsigned long long Timestamp() const { return fTimestamp; }
       inline const std::vector<CRTVD::Hit>& Hits() const { return fHits; }
 
       //Check whether this Hit was default-constructed
-      inline bool IsDefault() const { return fChannel == std::numeric_limits<decltype(fChannel)>::max(); }
+      inline bool IsDefault() const { return fType == std::numeric_limits<decltype(fType)>::max(); }
 
       //Dumping an object is also helpful for debugging.  
       template <class STREAM>
       void dump(STREAM& stream) const
       {
         stream << "CRTVD::Trigger dump:\n"
-               << "Channel: " << fChannel << "\n"
+               << "Trigger Type: " << fType << "\n"
 //               << "Detector Name: " << fDetName << "\n"
                << "Timestamp: " << fTimestamp << "\n"
                << "Hits:\n";
@@ -146,15 +158,13 @@ namespace CRTVD
       }
 
     private:
-      unsigned short fChannel; //Mapping to CRT module that was Triggered.  Index into the Geometry service's array of AuxDetGeos
-                               //that returns the representation of this module.  Module AuxDetGeo shown contain strips as AuxDetSensitiveGeos 
-                               //(see CRT::Hit::fChannel).  
-                               //TODO: Ideally, this will correspond to CRT electronics channel one day.  
-//      std::string fDetName; //Name of the geometry representation for the module that Triggered itself.  Needed sometimes by the Geometry service.  
+      unsigned short fType; // trigger type. 0 : TOP crt module only, BOTTOM only, 2 : coincidence
 
       unsigned long long fTimestamp; //Timestamp when this Trigger occurred.  First 32 bits are Linux time since epoch; last 32 bits are time in 
                                      //ns. 
       std::vector<CRTVD::Hit> fHits; //All activity in CRT strips within this module when it was read out 
+      geoalgo::Point_t fTopMeanPosition;
+      geoalgo::Point_t fBottomMeanPosition;
   };
 
   //ostream operator overload so users can do mf::LogWarning("CRTTriggerError") << /*stuff*/ << trigger << "\n". 
