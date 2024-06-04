@@ -20,6 +20,7 @@
 #include "art_root_io/TFileService.h"
 
 // services etc...
+#include "larcore/Geometry/WireReadout.h"
 #include "larcore/Geometry/Geometry.h"
 #include "larcore/CoreUtils/ServiceUtil.h"
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
@@ -189,7 +190,7 @@ T0RecoAnodePiercers::T0RecoAnodePiercers(fhicl::ParameterSet const & fcl)
 
         for (auto const& TPC: geom->Iterate<geo::TPCGeo>()) {
 
-		if(TPC.DriftDistance() < 25.0) continue;
+                if(TPC.DriftDistance() < 25.0) continue;
 
                 auto const center = TPC.GetCenter();
 
@@ -203,7 +204,7 @@ T0RecoAnodePiercers::T0RecoAnodePiercers(fhicl::ParameterSet const & fcl)
 		if (tpc_front 	< det_front) 	det_front = tpc_front;
 		if (tpc_back 	> det_back) 	det_back = tpc_back;  
 
-		det_width = TPC.DriftDistance();
+                det_width = TPC.DriftDistance();
 		}
 
 	// Use 'detp' to find 'efield' and 'temp'
@@ -425,21 +426,19 @@ void T0RecoAnodePiercers::produce(art::Event& event){
 				continue;
 			}
 
-		auto const* geom = lar::providerFrom<geo::Geometry>();   
 		auto const* first_hit = hit_v.at(0);
 		const geo::WireID wireID_start = first_hit->WireID();
-                const auto TPCGeoObject_start = geom->TPC(wireID_start.asPlaneID().asTPCID());
-		short int driftDir_start = TPCGeoObject_start.DetectDriftDirection();
+                auto const* geom = lar::providerFrom<geo::Geometry>();
+                auto const [start_axis, start_sign] = geom->TPC(wireID_start).DriftAxisWithSign();
 
-		short int driftDir_end = 0;
 		//cathode_crossing_track = false;
 
+                geo::DriftSign end_sign{geo::DriftSign::Unknown};
 	    for (size_t ii = 1; ii < hit_v.size(); ii++) {
     		const geo::WireID wireID_end = hit_v.at(ii)->WireID();
-                        const auto TPCGeoObject_end = geom->TPC(wireID_end.asPlaneID().asTPCID());
-			driftDir_end = TPCGeoObject_end.DetectDriftDirection(); 
+                    auto const [axis, sign] = geom->TPC(wireID_end).DriftAxisWithSign();
 		
-			if(driftDir_end + driftDir_start == 0){
+                    if(start_axis == axis and to_int(start_sign) + to_int(sign) == 0) {
 				//cathode_crossing_track = true;
 				ii = hit_v.size();
 				}
@@ -448,7 +447,7 @@ void T0RecoAnodePiercers::produce(art::Event& event){
 		// ANODE PIERCERS 
 
 		if(fDebug) std::cout << "\t\tThis track starts in TPC " << wireID_start.TPC 
-		<< " which has a drift direction of " << driftDir_start << std::endl; 
+                << " which has a drift direction of " << start_axis << std::endl;
 
 		// create root trees variables
 
@@ -490,8 +489,8 @@ void T0RecoAnodePiercers::produce(art::Event& event){
 			&& rc_zs < (det_back - fEdgeWidth)) {
 
 			// reconstruct track T0 w.r.t. trigger time
-			if( ( rc_xs > rc_xe && driftDir_start>0 ) || 
-				( rc_xs < rc_xe && driftDir_start<0 ) ) {
+                        if( ( rc_xs > rc_xe && start_sign == geo::DriftSign::Positive ) ||
+                            ( rc_xs < rc_xe && start_sign == geo::DriftSign::Negative ) ) {
 				TPC_entering_candidate = true;
 				if(fDebug) std::cout << "\t\tTrack may enter TPC through "
 				"anode. Reco t0: " << anode_rc_time << " us" << std::endl;
@@ -503,8 +502,8 @@ void T0RecoAnodePiercers::produce(art::Event& event){
 			&& rc_ze < (det_back - fEdgeWidth)) {
 
 			// reconstruct track T0 w.r.t. trigger time	
-			if( ( rc_xe > rc_xs && driftDir_end>0 ) || 
-			( rc_xe < rc_xs && driftDir_end<0 ) ) {	
+                      if( ( rc_xe > rc_xs && end_sign == geo::DriftSign::Positive ) ||
+                          ( rc_xe < rc_xs && end_sign == geo::DriftSign::Negative ) ) {
 				TPC_exiting_candidate = true;
 				if(fDebug) std::cout << "\t\tTrack may exit TPC through "
 					"anode. Reco t0:" << anode_rc_time << " us" << std::endl;

@@ -242,7 +242,7 @@ bool dune::RceRawDecoder::_process(
       << "   fragmentID = " << frag.fragmentID()
       << "   fragmentType = " << (unsigned)frag.type()
       << "   Timestamp =  " << frag.timestamp();
-  art::ServiceHandle<dune::PdspChannelMapService> channelMap;
+  art::ServiceHandle<dune::PdspChannelMapService> wireReadout;
   dune::RceFragment rce(frag);
   
   uint32_t ch_counter = 0;
@@ -299,7 +299,7 @@ bool dune::RceRawDecoder::_process(
 
         ch_counter++;
         int offlineChannel = -1;
-        offlineChannel = channelMap->GetOfflineNumberFromDetectorElements(crateNumber, slotNumber, fiberNumber, i_ch, dune::PdspChannelMapService::kRCE);
+        offlineChannel = wireReadout->GetOfflineNumberFromDetectorElements(crateNumber, slotNumber, fiberNumber, i_ch, dune::PdspChannelMapService::kRCE);
         _h_offline_channels->Fill(offlineChannel);
         raw::RawDigit raw_digit(offlineChannel, n_ticks, v_adc);
         raw_digits.push_back(raw_digit);

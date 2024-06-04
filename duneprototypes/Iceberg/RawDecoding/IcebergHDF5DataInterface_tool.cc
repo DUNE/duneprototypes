@@ -129,7 +129,7 @@ void IcebergHDF5DataInterface::getIcebergHDF5Data(
   using dunedaq::fddetdataformats::WIB2Frame;
   //using dunedaq::detdataformats::wib2::Header;
 
-  art::ServiceHandle<dune::IcebergChannelMapService> channelMap;
+  art::ServiceHandle<dune::IcebergChannelMapService> wireReadout;
   
   std::deque<std::string> det_types
     = getMidLevelGroupNames(the_group);
@@ -214,7 +214,7 @@ void IcebergHDF5DataInterface::getIcebergHDF5Data(
               uint32_t crateloc = 0;
               uint32_t slotloc = slot;
 
-              int offline_chan = channelMap->GetOfflineNumberFromDetectorElements(crateloc, slotloc, fiberloc, chloc, dune::IcebergChannelMapService::kFELIX); 
+              int offline_chan = wireReadout->GetOfflineNumberFromDetectorElements(crateloc, slotloc, fiberloc, chloc, dune::IcebergChannelMapService::kFELIX); 
               if (offline_chan < _min_offline_channel) continue;
               if (_max_offline_channel >= 0 && offline_chan > _max_offline_channel) continue;
               raw::RDTimeStamp rd_ts(frag.get_trigger_timestamp(), offline_chan);

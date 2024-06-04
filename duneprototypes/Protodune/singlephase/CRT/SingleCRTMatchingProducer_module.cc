@@ -31,6 +31,7 @@
 //LArSoft includes
 
 #include "lardataobj/Simulation/AuxDetSimChannel.h"
+#include "larcore/Geometry/AuxDetGeometry.h"
 #include "larcore/Geometry/Geometry.h"
 #include "nusimdata/SimulationBase/MCParticle.h"
 #include "nug4/ParticleNavigation/ParticleList.h"
@@ -291,6 +292,7 @@ void CRT::SingleCRTMatchingProducer::produce(art::Event & event)
 
   //Get a handle to the Geometry service to look up AuxDetGeos from module numbers
   art::ServiceHandle < geo::Geometry > geom;
+  auto const& auxDetGeom = art::ServiceHandle<geo::AuxDetGeometry>()->GetProvider();
   auto const* SCE = lar::providerFrom<spacecharge::SpaceChargeService>();
 
   //Mapping from channel to trigger
@@ -324,7 +326,7 @@ void CRT::SingleCRTMatchingProducer::produce(art::Event & event)
 	 //cout<<trigger.Channel()<<','<<hit.Channel()<<','<<hit.ADC()<<endl;
         nHits++;
 
-        const auto & trigGeo = geom -> AuxDet(trigger.Channel()); // Get geo  
+        const auto & trigGeo = auxDetGeom.AuxDet(trigger.Channel()); // Get geo
         const auto & csens = trigGeo.SensitiveVolume(hit.Channel());
         const auto center = csens.GetCenter();
         if (center.Z() < 100) tempHits_F.push_back(tHits); // Sort F/B from Z
@@ -341,8 +343,8 @@ void CRT::SingleCRTMatchingProducer::produce(art::Event & event)
   for (unsigned int f = 0; f < tempHits_F.size(); f++) {
     for (unsigned int f_test = 0; f_test < tempHits_F.size(); f_test++) {
        if (fabs(tempHits_F[f_test].triggerTime-tempHits_F[f].triggerTime)>fModuletoModuleTimingCut) continue;
-      const auto & trigGeo = geom -> AuxDet(tempHits_F[f].module);
-      const auto & trigGeo2 = geom -> AuxDet(tempHits_F[f_test].module);
+      const auto & trigGeo = auxDetGeom.AuxDet(tempHits_F[f].module);
+      const auto & trigGeo2 = auxDetGeom.AuxDet(tempHits_F[f_test].module);
 
       const auto & hit1Geo = trigGeo.SensitiveVolume(tempHits_F[f].channelGeo);
       const auto hit1Center = hit1Geo.GetCenter();
@@ -391,8 +393,8 @@ void CRT::SingleCRTMatchingProducer::produce(art::Event & event)
     for (unsigned int f_test = 0; f_test < tempHits_B.size(); f_test++) { // Same as above but for back CRT
        if (fabs(tempHits_B[f_test].triggerTime-tempHits_B[f].triggerTime)>fModuletoModuleTimingCut) continue;
 
-      const auto & trigGeo = geom -> AuxDet(tempHits_B[f].module);
-      const auto & trigGeo2 = geom -> AuxDet(tempHits_B[f_test].module);
+      const auto & trigGeo = auxDetGeom.AuxDet(tempHits_B[f].module);
+      const auto & trigGeo2 = auxDetGeom.AuxDet(tempHits_B[f_test].module);
       const auto & hit1Geo = trigGeo.SensitiveVolume(tempHits_B[f].channelGeo);
       const auto hit1Center = hit1Geo.GetCenter();
 

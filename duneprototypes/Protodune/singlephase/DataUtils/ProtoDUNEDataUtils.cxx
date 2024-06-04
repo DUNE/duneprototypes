@@ -50,7 +50,7 @@ int protoana::ProtoDUNEDataUtils::GetNActiveFembsForAPA(art::Event const & evt, 
 
 
   // Get pd channel map
-  art::ServiceHandle<dune::PdspChannelMapService> channelMap;
+  art::ServiceHandle<dune::PdspChannelMapService> wireReadout;
 
   // set only saves unique elements
   std::set<int> apaset;
@@ -63,12 +63,12 @@ int protoana::ProtoDUNEDataUtils::GetNActiveFembsForAPA(art::Event const & evt, 
       // Get the channel number for this digit
       uint32_t chan = digit.Channel();
     
-      int iapa = channelMap->APAFromOfflineChannel(chan);
+      int iapa = wireReadout->APAFromOfflineChannel(chan);
       if(iapa != apa) continue;
       // Get the channel FEMB and WIB
-      int WIB = channelMap->WIBFromOfflineChannel(chan); // 0-4
-      int FEMB = channelMap->FEMBFromOfflineChannel(chan); // 1-4
-      //int FEMBchan = channelMap->FEMBChannelFromOfflineChannel(chan);
+      int WIB = wireReadout->WIBFromOfflineChannel(chan); // 0-4
+      int FEMB = wireReadout->FEMBFromOfflineChannel(chan); // 1-4
+      //int FEMBchan = wireReadout->FEMBChannelFromOfflineChannel(chan);
       int iFEMB = ((WIB*4)+(FEMB-1)); //index of the FEMB 0-19
 
       apaset.insert(iFEMB);
@@ -84,12 +84,12 @@ int protoana::ProtoDUNEDataUtils::GetNActiveFembsForAPA(art::Event const & evt, 
       // Get the channel number for this digit
       uint16_t chan = digit.GetFlags();
     
-      int iapa = channelMap->APAFromOfflineChannel(chan);
+      int iapa = wireReadout->APAFromOfflineChannel(chan);
       if(iapa != apa) continue;
       // Get the channel FEMB and WIB
-      int WIB = channelMap->WIBFromOfflineChannel(chan); // 0-4
-      int FEMB = channelMap->FEMBFromOfflineChannel(chan); // 1-4
-      //int FEMBchan = channelMap->FEMBChannelFromOfflineChannel(chan);
+      int WIB = wireReadout->WIBFromOfflineChannel(chan); // 0-4
+      int FEMB = wireReadout->FEMBFromOfflineChannel(chan); // 1-4
+      //int FEMBchan = wireReadout->FEMBChannelFromOfflineChannel(chan);
       int iFEMB = ((WIB*4)+(FEMB-1)); //index of the FEMB 0-19
 
       apaset.insert(iFEMB);
@@ -109,7 +109,7 @@ bool protoana::ProtoDUNEDataUtils::CheckTimeStampConsistencyForAPAs(art::Event c
 								    ULong64_t &timestamp, ULong64_t &timestamp2,
 								    int &apainconsist) const
 {
-  art::ServiceHandle<dune::PdspChannelMapService> channelMap;
+  art::ServiceHandle<dune::PdspChannelMapService> wireReadout;
   auto const& TSlist = evt.getProduct< std::vector<raw::RDTimeStamp> >(fRawDigitTimeStampTag);
 
   timestamp = 0;
@@ -120,7 +120,7 @@ bool protoana::ProtoDUNEDataUtils::CheckTimeStampConsistencyForAPAs(art::Event c
   for(raw::RDTimeStamp const & rdts : TSlist)
     {
       uint16_t chan = rdts.GetFlags();
-      int iapa = channelMap->APAFromOfflineChannel(chan);
+      int iapa = wireReadout->APAFromOfflineChannel(chan);
       if (apas.find(iapa) != apas.end())
 	{
 	  ULong64_t ts = rdts.GetTimeStamp();

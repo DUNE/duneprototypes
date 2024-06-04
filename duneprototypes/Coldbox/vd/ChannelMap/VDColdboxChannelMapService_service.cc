@@ -13,17 +13,17 @@
 
 dune::VDColdboxChannelMapService::VDColdboxChannelMapService(fhicl::ParameterSet const& pset) {
 
-  std::string channelMapFile = pset.get<std::string>("FileName");
+  std::string wireReadoutFile = pset.get<std::string>("FileName");
   std::string fullname;
   cet::search_path sp("FW_SEARCH_PATH");
-  sp.find_file(channelMapFile, fullname);
+  sp.find_file(wireReadoutFile, fullname);
 
   if (fullname.empty()) {
-    std::cout << "Input file " << channelMapFile << " not found" << std::endl;
+    std::cout << "Input file " << wireReadoutFile << " not found" << std::endl;
     throw cet::exception("File not found");
   }
   else
-    std::cout << "VD Coldbox Channel Map: Building TPC wiremap from file " << channelMapFile << std::endl;
+    std::cout << "VD Coldbox Channel Map: Building TPC wiremap from file " << wireReadoutFile << std::endl;
 
   std::ifstream inFile(fullname, std::ios::in);
   std::string line;

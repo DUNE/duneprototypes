@@ -372,7 +372,7 @@ bool PDSPTPCDataInterface::_process_RCE_AUX(
   //<< "   fragmentID = " << frag.fragmentID()
   //<< "   fragmentType = " << (unsigned)frag.type()
   //<< "   Timestamp =  " << frag.timestamp();
-  art::ServiceHandle<dune::PdspChannelMapService> channelMap;
+  art::ServiceHandle<dune::PdspChannelMapService> wireReadout;
   dune::RceFragment rce(frag);
   
   if (_rce_save_frags_to_files)
@@ -529,14 +529,14 @@ bool PDSPTPCDataInterface::_process_RCE_AUX(
       raw::RawDigit::ADCvector_t v_adc;
       for (size_t i_ch = 0; i_ch < n_ch; i_ch++)
 	{
-	  unsigned int offlineChannel = channelMap->GetOfflineNumberFromDetectorElements(crateloc, slotNumber, fiberNumber, i_ch, dune::PdspChannelMapService::kRCE);
+	  unsigned int offlineChannel = wireReadout->GetOfflineNumberFromDetectorElements(crateloc, slotNumber, fiberNumber, i_ch, dune::PdspChannelMapService::kRCE);
 
 	  if (_max_offline_channel >= 0 && _min_offline_channel >= 0 && _max_offline_channel >= _min_offline_channel && 
 	      (offlineChannel < (size_t) _min_offline_channel || offlineChannel > (size_t) _max_offline_channel) ) continue;
 
 	  v_adc.clear();
 
-	  if (_rce_fix110 && crateNumber == 1 && slotNumber == 0 && fiberNumber == 1 && channelMap->ChipFromOfflineChannel(offlineChannel) == 4 && n_ticks > _rce_fix110_nticks)
+	  if (_rce_fix110 && crateNumber == 1 && slotNumber == 0 && fiberNumber == 1 && wireReadout->ChipFromOfflineChannel(offlineChannel) == 4 && n_ticks > _rce_fix110_nticks)
 	    {
 	      for (size_t i_tick = 0; i_tick < n_ticks-_rce_fix110_nticks; i_tick++)
 		{
@@ -712,7 +712,7 @@ bool PDSPTPCDataInterface::_process_FELIX_AUX(art::Event &evt,
       std::cout.copyfmt(oldState);
     }
 
-  art::ServiceHandle<dune::PdspChannelMapService> channelMap;
+  art::ServiceHandle<dune::PdspChannelMapService> wireReadout;
 
   //Load overlay class.
   dune::FelixFragment felix(frag);
@@ -829,7 +829,7 @@ bool PDSPTPCDataInterface::_process_FELIX_AUX(art::Event &evt,
     // David Adams's request for channels to start at zero for coldbox test data
     if (crateloc == 0 || crateloc > 6) crateloc = _default_crate_if_unexpected;  
 
-    unsigned int offlineChannel = channelMap->GetOfflineNumberFromDetectorElements(crateloc, slot, fiberloc, chloc, dune::PdspChannelMapService::kFELIX); 
+    unsigned int offlineChannel = wireReadout->GetOfflineNumberFromDetectorElements(crateloc, slot, fiberloc, chloc, dune::PdspChannelMapService::kFELIX); 
 
     // skip this channel if we are asked to.
 
