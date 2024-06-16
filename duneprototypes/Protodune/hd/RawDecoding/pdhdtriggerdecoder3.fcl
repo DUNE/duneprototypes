@@ -15,7 +15,7 @@ physics:
 {
   producers:
   {
-    tprawdecoder: @local::PDHDTriggerReader3Defaults
+    triggerrawdecoder: @local::PDHDTriggerReader3Defaults
   }
 
   produce: [ tprawdecoder ] 
