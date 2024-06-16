@@ -1,0 +1,64 @@
+#include "services_dune.fcl"
+#include "BeamEvent.fcl"
+#include "RunRawDecoder.fcl"
+
+process_name: BeamEvent
+
+services:
+{
+  # Load the service that manages root files for histograms.
+  TimeTracker:       {}
+  MemoryTracker:     {}
+  RandomNumberGenerator: {} #ART native random number generator
+  message:              @local::dune_message_services_prod_debug
+
+  TFileService: { #closeFileFast: true
+                  fileName: "beamevent_hist.root" #can be overridden by '-T'
+                }
+  IFBeam:            {}
+}
+services.message.destinations.LogStandardOut.threshold: "INFO"
+
+#source is now a root file
+source:
+{
+  module_type: RootInput
+  maxEvents: -1
+  #fileNames: [""]
+}
+
+outputs:
+{
+ out1:
+  {
+    module_type: RootOutput
+    fileName:    "%ifb_beam.root"  #default file name, can override from command line with -o or --output
+    dataTier:    "reconstructed"
+    
+  }
+}
+
+physics:
+{
+ producers:
+ {
+  #timingrawdecoder: @local::timing_raw_decoder
+  #ctbrawdecoder:    @local::ctb_raw_decoder
+  beamevent:          @local::proto_beamevent
+ }
+
+ #produce:  [ timingrawdecoder, ctbrawdecoder, beamevent ]
+ produce:  [ beamevent ]
+ stream1: [ out1 ]
+
+ trigger_paths:     [ produce ]
+ end_paths:         [ stream1 ]
+}
+physics.producers.beamevent.SaveOutTree: "true"
+physics.producers.beamevent.PrintDebug: "true"
+#physics.producers.beamevent.URLStr: "https://ifb-data.fnal.gov:8104/ifbeam"
+
+physics.producers.beamevent.ForceRead:            "false"
+physics.producers.beamevent.MatchTime:            "true"
+physics.producers.beamevent.MultipleTimes: [] 
+physics.producers.beamevent.FixedTime:     0.
