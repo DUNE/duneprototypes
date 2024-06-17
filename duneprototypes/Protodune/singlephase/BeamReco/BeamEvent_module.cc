@@ -85,6 +85,7 @@ public:
 
   void TimeIn(art::Event &, uint64_t);
   void GetSpillInfo(art::Event &);
+  void SetDummySpillInfo();
   void MatchBeamToTPC();
   void MatchS11ToGen();
   void SetBeamEvent(); 
@@ -259,7 +260,7 @@ private:
   double fNP04FrontZ;  
   double fBeamX, fBeamY, fBeamZ;
 
-  bool   fForceNewFetch;
+  bool   fForceNewFetch, fSkipSpillInfo;
   bool   fXCETDebug;
   bool   fMatchTime;
   bool   fForceRead;
@@ -399,6 +400,7 @@ proto::BeamEvent::BeamEvent(fhicl::ParameterSet const & p)
     fBeamZ(p.get<double>("BeamZ")),
 
     fForceNewFetch(p.get<bool>("ForceNewFetch")),
+    fSkipSpillInfo(p.get<bool>("SkipSpillInfo", false)),
     fXCETDebug(p.get<bool>("XCETDebug")),
     fMatchTime(p.get<bool>("MatchTime")),
     fForceRead(p.get<bool>("ForceRead")),
@@ -755,6 +757,11 @@ void proto::BeamEvent::reset(){
 }
 
 
+void proto::BeamEvent::SetDummySpillInfo() {
+  SpillStart = -999.; 
+  SpillStartValid = false;
+}
+
 ////////////////////////
 // Producer Method (reads in the event and derives values)
 void proto::BeamEvent::produce(art::Event & e){
@@ -781,8 +788,11 @@ void proto::BeamEvent::produce(art::Event & e){
   //Get Spill Information
   //This stores Spill Start, Spill End, 
   //And Prev Spill Start
-  GetSpillInfo(e);
-
+  if (fSkipSpillInfo) {
+  }
+  else {
+    GetSpillInfo(e);
+  }
   
   //Check if we have a valid beam trigger
   //If not, just place an empty beamevt
