@@ -1,0 +1,4 @@
+#include "run_pdhd_wibeth3_tpc_decoder.fcl"
+physics.producers.tpcrawdecoder.DecoderToolParams.DebugLevel: 0
+services.PD2HDChannelMapService.FileName: "iceberg_wibeth_chanmap_v1.txt"
+physics.producers.tpcrawdecoder.APAList: [ 8 ]

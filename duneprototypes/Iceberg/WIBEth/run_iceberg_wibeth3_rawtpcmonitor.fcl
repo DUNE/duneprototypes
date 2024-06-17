@@ -1,0 +1,21 @@
+# Decode ICEBERG data and run the TPC monitor module
+# Takes advantage of the PDHD data interface tool and module
+# Configured to use the new WIBEth frames
+# The readout window size was set for run 000001, taken December 13,2023
+
+#include "PDHDDataInterfaceWIBEth3.fcl"
+#include "HDF5RawInput3.fcl"
+#include "PDHDTPCReader.fcl"
+#include "Iceberg_decode_rawtpcmonitor.fcl"
+
+source: @local::hdf5rawinput3
+services.HDF5RawFile3Service:  {}
+
+physics.producers.tpcrawdecoder: @local::PDHDTPCReaderDefaults
+physics.producers.tpcrawdecoder.DecoderToolParams: @local::PDHDDataInterfaceWIBEth3Defaults
+physics.producers.tpcrawdecoder.DecoderToolParams.DebugLevel: 0
+physics.producers.tpcrawdecoder.APAList: [ 8 ]
+
+services.PD2HDChannelMapService.FileName: "iceberg_wibeth_chanmap_v1.txt"
+services.DetectorPropertiesService.NumberTimeSamples: 8256
+services.DetectorPropertiesService.ReadOutWindowSize: 8256
