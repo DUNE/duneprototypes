@@ -18,7 +18,7 @@ physics:
     triggerrawdecoder: @local::PDHDTriggerReader3Defaults
   }
 
-  produce: [ tprawdecoder ] 
+  produce: [ triggerrawdecoder ] 
   output: [ out1 ]
   trigger_paths : [ produce ]
   end_paths: [ output ]
