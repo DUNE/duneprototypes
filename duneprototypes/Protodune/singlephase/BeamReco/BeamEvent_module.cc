@@ -27,6 +27,7 @@
 #include "duneprototypes/Protodune/singlephase/CTB/data/pdspctb.h"
 #include "lardataobj/RawData/RDTimeStamp.h"
 #include "dunecore/DuneObj/ProtoDUNETimeStamp.h"
+#include "detdataformats/trigger/TriggerCandidateData.hpp"
 #include <bitset>
 #include <iomanip>
 #include <utility>
@@ -193,6 +194,7 @@ private:
   std::string fBundleName;
   std::string fXCETBundleName;
   std::string fOutputLabel;
+  std::string fTimingLabel, fTriggerLabel;
   std::string fURLStr;
   double fBFEpsilon, fXCETEpsilon;
   double fXCETFetchShift;
@@ -278,6 +280,19 @@ private:
   double fDownstreamToGenTrig;
   double fUpstreamToDownstream;
 
+  //Defines whether this is for ProtoDUNE-SP/HD etc.
+  //0 -- PDSP
+  //1 -- PDHD
+  //2 -- PDVD
+  int fRunType;
+
+  enum RunType {
+    kPDSP = 0,
+    kPDHD = 1,
+    kPDVD = 2
+  };
+
+
   bool   fPrintDebug;
   bool   fSaveOutTree;
   bool   fDebugMomentum;
@@ -300,8 +315,6 @@ private:
   std::unique_ptr<ifbeam_ns::BeamFolder> bfp_xcet;
   art::ServiceHandle<ifbeam_ns::IFBeam> ifb;
 
-  art::Handle< std::vector<raw::RDTimeStamp> > RDTimeStampHandle;
-
 //  double L1=1.980, L2=1.69472, L3=2.11666;
   double magnetLen = 1., magnetField = 1000.;
   std::vector<double> current;
@@ -320,6 +333,8 @@ proto::BeamEvent::BeamEvent(fhicl::ParameterSet const & p)
       fBundleName(p.get<std::string>("BundleName")),
     fXCETBundleName(p.get<std::string>("XCETBundleName")),
     fOutputLabel(p.get<std::string>("OutputLabel")),
+    fTimingLabel(p.get<std::string>("TimingLabel", "timingrawdecoder:daq")),
+    fTriggerLabel(p.get<std::string>("TriggerLabel", "triggerrawdecoder:daq")),
     fURLStr(p.get<std::string>("URLStr")),
     fBFEpsilon(p.get<double>("BFEpsilon")),
     fXCETEpsilon(p.get<double>("XCETEpsilon")),
@@ -406,12 +421,11 @@ proto::BeamEvent::BeamEvent(fhicl::ParameterSet const & p)
     fDownstreamToGenTrig(p.get<double>("DownstreamToGenTrig")),
     fUpstreamToDownstream(p.get<double>("UpstreamToDownstream")),
 
+    fRunType(p.get<int>("RunType", 0)),
     fPrintDebug(p.get<bool>("PrintDebug")),
     fSaveOutTree(p.get<bool>("SaveOutTree")),
     fDebugMomentum(p.get<bool>("DebugMomentum")),
-    fDebugTOFs(p.get<bool>("DebugTOFs"))
-
-     {
+    fDebugTOFs(p.get<bool>("DebugTOFs")) {
   // Declare products this module will provide
   produces<std::vector<beam::ProtoDUNEBeamEvent>>();  
 
@@ -461,14 +475,28 @@ std::vector<double> proto::BeamEvent::FetchAndReport(long long time, std::string
 //Returns the timestamp of the high level trigger.
 void proto::BeamEvent::GetRawDecoderInfo(art::Event & e){
 
+
   if( fPrintDebug ){ 
     MF_LOG_INFO("BeamEvent") << "\n";
     MF_LOG_INFO("BeamEvent") << "Getting Raw Decoder Info" << "\n";
   }
 
-  art::InputTag itag1("timingrawdecoder","daq");
-  RDTimeStampHandle = e.getHandle< std::vector<raw::RDTimeStamp> >(itag1);
 
+  if (fRunType == RunType::kPDHD) {
+    using TriggerCandidate = dunedaq::trgdataformats::TriggerCandidateData;
+    auto trigger_candidate_handle
+        = e.getValidHandle<std::vector<TriggerCandidate>>(fTriggerLabel);
+
+    std::cout << "Got Trigger Candidates " <<
+                 trigger_candidate_handle->size() << std::endl;
+  }
+
+  //art::InputTag itag1("timingrawdecoder","daq");
+  auto RDTimeStampHandle = e.getValidHandle<std::vector<raw::RDTimeStamp>>(
+      fTimingLabel);
+
+  //TODO -- See if this can just be a direct access by index
+  //        cause I don't know why it's like this
   for (auto const & RDTS : *RDTimeStampHandle){
 
     uint64_t high = RDTS.GetTimeStamp_High();
@@ -477,7 +505,8 @@ void proto::BeamEvent::GetRawDecoderInfo(art::Event & e){
     uint64_t joined = (high | low);
 
     RDTSTime = joined;
-    RDTSTrigger = RDTS.GetFlags();
+    if (fRunType == RunType::kPDSP) 
+      RDTSTrigger = RDTS.GetFlags();
 
     if( fPrintDebug ){
       MF_LOG_INFO("BeamEvent") << "High: " << RDTS.GetTimeStamp_High() << "\n";
@@ -493,6 +522,7 @@ void proto::BeamEvent::GetRawDecoderInfo(art::Event & e){
     long long RDTSTickNano = RDTSTime - RDTSTickSec;
   
     //Units are 20 nanoseconds ticks
+    //TODO -- CHECK THAT THIS IS STILL THE SAME
     RDTSTimeSec  = 20.e-9 * RDTSTickSec;
     RDTSTimeNano = 20.    * RDTSTickNano;
     RDTSSec  = 20.e-9 * RDTSTickSec;

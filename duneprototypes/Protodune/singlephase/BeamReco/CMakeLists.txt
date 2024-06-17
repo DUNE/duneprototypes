@@ -1,4 +1,5 @@
 
+include_directories("${dunedetdataformats_DIR}/../../../include")
 art_make(  MODULE_LIBRARIES
                         dunecore::ArtSupport
                         ifbeam::ifbeam
