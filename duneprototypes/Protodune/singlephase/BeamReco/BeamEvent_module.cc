@@ -486,11 +486,33 @@ void proto::BeamEvent::GetRawDecoderInfo(art::Event & e){
 
   if (fRunType == RunType::kPDHD) {
     using TriggerCandidate = dunedaq::trgdataformats::TriggerCandidateData;
+    using TCType = dunedaq::trgdataformats::TriggerCandidateData::Type;
     auto trigger_candidate_handle
         = e.getValidHandle<std::vector<TriggerCandidate>>(fTriggerLabel);
 
-    std::cout << "Got Trigger Candidates " <<
-                 trigger_candidate_handle->size() << std::endl;
+    size_t ntc = trigger_candidate_handle->size();
+    //We should only have 1 trigger candidate (I think..)
+    if (ntc != 1) { 
+      throw cet::exception("BeamEvent_module.cc") <<
+            "Somehow have multiple trigger candidates: " << ntc;
+    }
+
+    //Get the first one
+    const auto & trigger_candidate = (*trigger_candidate_handle)[0];
+    std::cout << "This TC is of type " <<
+                 dunedaq::trgdataformats::get_trigger_candidate_type_names().at(
+                     trigger_candidate.type) << std::endl;
+    //Because I'm dumb and hardcoded this need to translate for PDHD
+    RDTSTrigger = (trigger_candidate.type == TCType::kCTBBeam ? 12 : 8);
+                    
+
+    //June 17, 2024 -- Current trigger times for beam include
+    //                 Need to see actual operating conditions to 
+    //                 understand what the differences/contexts are
+    //kCTBBeam = 14,
+    //kCTBBeamHiLoPressChkv = 15,
+    //kCTBBeamLoPressChkv = 16,
+    //kCTBBeamHiPressChkv = 17,
   }
 
   //art::InputTag itag1("timingrawdecoder","daq");
