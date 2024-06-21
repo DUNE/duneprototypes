@@ -286,6 +286,7 @@ private:
   //1 -- PDHD
   //2 -- PDVD
   int fRunType;
+  double fRDTSFactor = 1;
 
   enum RunType {
     kPDSP = 0,
@@ -826,11 +827,12 @@ void proto::BeamEvent::produce(art::Event & e){
   if( ( (RDTSTrigger == 12) ) || fForceRead ){
 
     //Start getting beam event info
-    uint64_t fetch_time = uint64_t( RDTSTime * 2e-8 );
-    uint64_t fetch_time_down = uint64_t( RDTSTime * 2e-8 );
+    uint64_t fetch_time = uint64_t( RDTSTime * fRDTSFactor );
+    uint64_t fetch_time_down = uint64_t( RDTSTime * fRDTSFactor );
 
     if( fPrintDebug )
-      MF_LOG_INFO("BeamEvent") << "RDTSTime: " <<  uint64_t( RDTSTime * 2e-8 ) << "\n";
+      MF_LOG_INFO("BeamEvent") << "RDTSTime: " <<  uint64_t( RDTSTime * fRDTSFactor ) <<
+                                  " " << double(RDTSTime * fRDTSFactor) << "\n";
 
     //Check if we are still using the same spill information.
     //
@@ -1977,6 +1979,10 @@ void proto::BeamEvent::beginJob()
 
   //Rotate the basis vectors of the FBMs
   BeamMonitorBasisVectors();
+
+  //PDSP time system was in units of 20ns ticks
+  fRDTSFactor = (fRunType == kPDSP ? 2e-8 : 1.6e-8);
+  std::cout << "Factor: " << fRDTSFactor << std::endl;
 }
 
 uint64_t proto::BeamEvent::joinHighLow(double high, double low){
