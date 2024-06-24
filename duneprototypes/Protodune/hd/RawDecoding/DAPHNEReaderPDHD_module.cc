@@ -62,6 +62,9 @@ private:
   TTree * fWaveformTree;
 
   bool fExportWaveformTree;
+  bool fInvertWaveforms;
+
+  void InvertWaveforms(WaveformVector & waveforms);
   //vars per event
   //int _Run;
   // clang complained -- commenting out
@@ -84,6 +87,15 @@ private:
 };
 }
 
+void pdhd::DAPHNEReaderPDHD::InvertWaveforms(
+    WaveformVector & waveforms) {
+  for (auto & wf : waveforms) {
+    for (auto & digit : wf.Waveform()) {
+      digit *= -1;
+    }
+  }
+}
+
 void pdhd::DAPHNEReaderPDHD::beginJob() {
   art::ServiceHandle<art::TFileService> tfs;
 
@@ -103,8 +115,9 @@ pdhd::DAPHNEReaderPDHD::DAPHNEReaderPDHD(fhicl::ParameterSet const& p)
     fOutputLabel(p.get<std::string>("OutputLabel", "daq")),
     fFileInfoLabel(p.get<std::string>("FileInfoLabel", "daq")),
     fSubDetString(p.get<std::string>("SubDetString","HD_PDS")),
-    fExportWaveformTree(p.get<bool>("ExportWaveformTree",true)) {
-  produces<std::vector<raw::OpDetWaveform>> (fOutputLabel);
+    fExportWaveformTree(p.get<bool>("ExportWaveformTree",true)),
+    fInvertWaveforms(p.get<bool>("InvertWaveforms", false)) {
+  produces<WaveformVector> (fOutputLabel);
 }
 
 void pdhd::DAPHNEReaderPDHD::produce(art::Event& evt) {
@@ -127,6 +140,9 @@ void pdhd::DAPHNEReaderPDHD::produce(art::Event& evt) {
     chan_wf_vector.second.clear();
   }
   //std::cout << "EventNumber " << _Event << std::endl;
+
+  //Do inversion if requested 
+  if (fInvertWaveforms) InvertWaveforms(opdet_waveforms);
 
   evt.put(
       std::make_unique<decltype(opdet_waveforms)>(std::move(opdet_waveforms)),

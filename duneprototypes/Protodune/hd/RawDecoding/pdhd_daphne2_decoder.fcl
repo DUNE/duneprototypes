@@ -41,3 +41,4 @@ outputs:
 source: @local::hdf5rawinput3
 process_name: pdhddaphnedecoderjob
 physics.producers.pdhddaphne.DAPHNEInterface: { tool_type: "DAPHNEInterface2" }
+#physics.producers.pdhddaphne.InvertWaveforms: true

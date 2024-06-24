@@ -3,5 +3,7 @@ DAPHNEReaderPDHD: {
   module_type: "DAPHNEReaderPDHD"
   InputLabel: "daq"
   OutputLabel: "daq"
+
+  InvertWaveforms: false
 }
 END_PROLOG
