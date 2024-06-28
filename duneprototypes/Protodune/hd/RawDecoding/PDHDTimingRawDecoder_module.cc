@@ -24,6 +24,8 @@
 #include "dunecore/DuneObj/DUNEHDF5FileInfo2.h"
 #include "dunecore/HDF5Utils/HDF5RawFile3Service.h"
 
+#include "detdataformats/hsi/HSIFrame.hpp"
+
 #include "TTree.h"
 #include "art_root_io/TFileService.h"
 
@@ -60,6 +62,11 @@ pdhd::PDHDTimingRawDecoder::PDHDTimingRawDecoder(fhicl::ParameterSet const& p)
 }
 
 void pdhd::PDHDTimingRawDecoder::produce(art::Event& event) {
+  using dunedaq::daqdataformats::SourceID;
+  using dunedaq::daqdataformats::FragmentType;
+  using dunedaq::daqdataformats::Fragment;
+  using dunedaq::daqdataformats::FragmentHeader;
+  using dunedaq::detdataformats::HSIFrame;
   // Get the HDF5 file.
   art::ServiceHandle<dune::HDF5RawFile3Service> rawFileService;
   auto raw_file = rawFileService->GetPtr();
@@ -83,6 +90,35 @@ void pdhd::PDHDTimingRawDecoder::produce(art::Event& event) {
   //Put it in the art event
   event.put(std::make_unique<std::vector<raw::RDTimeStamp>>(
       std::move(timestamps)), fOutputLabel);
+
+
+  std::cout << "Getting HSI Frames" << std::endl;
+  auto hsi_source_ids = raw_file->get_source_ids_for_subsystem(
+      record_id, SourceID::Subsystem::kHwSignalsInterface);
+  for (const auto & source_id : hsi_source_ids) {
+    std::cout << source_id.to_string() << std::endl;
+
+    auto hsi_fragment = raw_file->get_frag_ptr(record_id, source_id);
+    std::cout << hsi_fragment->get_header() << std::endl;
+
+    size_t hsi_frag_size = hsi_fragment->get_size();
+    if (hsi_frag_size <= sizeof(FragmentHeader)) {
+      throw cet::exception("PDHDTimingRawDecoder_module") <<
+            "frag header too small";
+    }
+
+
+    size_t nframes = (hsi_frag_size - sizeof(FragmentHeader))/sizeof(HSIFrame);
+    std::cout << nframes << " HSI Frames" << std::endl;
+    for (size_t i = 0; i < nframes; ++i) {
+      auto frame
+          = reinterpret_cast<HSIFrame*>(
+              static_cast<uint8_t*>(hsi_fragment->get_data()) + i*sizeof(HSIFrame));
+      std::cout << "Link: " << frame->link << "\n" << 
+                   "TS Low: " << frame->timestamp_low << "\n" <<
+                   "TS High: " << frame->timestamp_high << std::endl;
+    }
+  }
 }
 
 DEFINE_ART_MODULE(pdhd::PDHDTimingRawDecoder)
