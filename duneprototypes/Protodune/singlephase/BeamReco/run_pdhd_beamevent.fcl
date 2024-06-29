@@ -44,7 +44,7 @@ physics:
  {
   #timingrawdecoder: @local::timing_raw_decoder
   #ctbrawdecoder:    @local::ctb_raw_decoder
-  beamevent:          @local::proto_beamevent
+  beamevent:          @local::pdhd_beamevent
  }
 
  #produce:  [ timingrawdecoder, ctbrawdecoder, beamevent ]
@@ -56,10 +56,7 @@ physics:
 }
 physics.producers.beamevent.SaveOutTree: true
 physics.producers.beamevent.PrintDebug: true
-#physics.producers.beamevent.URLStr: "https://ifb-data.fnal.gov:8104/ifbeam"
 
-physics.producers.beamevent.RunType: 1 #Run Type == 1 for PDHD
-physics.producers.beamevent.SkipSpillInfo: true
 physics.producers.beamevent.ForceRead:            false
 physics.producers.beamevent.MatchTime:            true
 physics.producers.beamevent.MultipleTimes: [] 

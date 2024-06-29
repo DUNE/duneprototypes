@@ -100,6 +100,7 @@ public:
  
   void  InitXBPFInfo(beam::ProtoDUNEBeamSpill *);
   void  parseGeneralXBPF(std::string, uint64_t, size_t);
+  void  FillFBM(std::vector<double> & data, beam::FBM & fbm, int i);
   void  parseXBPF(uint64_t);
 
   void  parseXTOF(uint64_t);
@@ -218,6 +219,8 @@ private:
   double fBProf1Shift;
   double fBProf2Shift;
   double fBProf3Shift;
+
+  std::string fMagnetCurrentName;
 
   std::map<std::string, std::string > fDeviceTypes;
   std::map< std::string, double > fFiberDimension;
@@ -363,6 +366,7 @@ proto::BeamEvent::BeamEvent(fhicl::ParameterSet const & p)
     fBProf1Shift(p.get<double>("BProf1Shift")), 
     fBProf2Shift(p.get<double>("BProf2Shift")), 
     fBProf3Shift(p.get<double>("BProf3Shift")), 
+    fMagnetCurrentName(p.get<std::string>("MagnetCurrentName")),
     fXBPFPrefix(p.get<std::string>("XBPFPrefix")),
     fXTOFPrefix(p.get<std::string>("XTOFPrefix")),
     fXCETPrefix(p.get<std::string>("XCETPrefix")),
@@ -505,6 +509,12 @@ void proto::BeamEvent::GetRawDecoderInfo(art::Event & e){
                      trigger_candidate.type) << std::endl;
     //Because I'm dumb and hardcoded this need to translate for PDHD
     RDTSTrigger = (trigger_candidate.type == TCType::kCTBBeam ? 12 : 8);
+
+    std::cout << "This TC has times:" <<
+                 "\n\tStart: " << trigger_candidate.time_start <<
+                 "\n\tEnd: " << trigger_candidate.time_end <<
+                 "\n\tCandidate: " << trigger_candidate.time_candidate <<
+                 std::endl;
                     
 
     //June 17, 2024 -- Current trigger times for beam include
@@ -646,7 +656,6 @@ void proto::BeamEvent::MatchS11ToGen(){
   beamspill->SetUnmatched();
 }
 
-
 void proto::BeamEvent::MatchBeamToTPC(){
 
   if( fPrintDebug )
@@ -656,25 +665,12 @@ void proto::BeamEvent::MatchBeamToTPC(){
     double GenTrigSec  = beamspill->GetT0(iT).first;
     double GenTrigNano = beamspill->GetT0(iT).second;
 
-    //Separates seconds portion of the ticks 
-    //From the nanoseconds
-    long long RDTSTickSec = (RDTSTime * 2) / (int)(TMath::Power(10,8));
-    RDTSTickSec = RDTSTickSec * (int)(TMath::Power(10,8)) / 2;
-    long long RDTSTickNano = RDTSTime - RDTSTickSec;
+    double gen = GenTrigSec + 1.e-9*GenTrigNano;
+    double diff = RDTSTime*fRDTSFactor - gen - SpillOffset;
 
-    //Units are 20 nanoseconds ticks
-    double RDTSTimeSec  = 20.e-9 * RDTSTickSec;
-    double RDTSTimeNano = 20.    * RDTSTickNano;
-
-    double diffSec = RDTSTimeSec - GenTrigSec - SpillOffset;
-    double diffNano = 1.e-09*(RDTSTimeNano - GenTrigNano);
-
-    if( fPrintDebug ){
-      MF_LOG_INFO("BeamEvent") << "RDTSTimeSec - GenTrigSec " << RDTSTimeSec - GenTrigSec << "\n";
-      MF_LOG_INFO("BeamEvent") << "diff: " << diffSec << " " << diffNano << "\n";
+    if (fPrintDebug) {
+      MF_LOG_INFO("BeamEvent") << iT << " diff: " << diff << "\n";
     }
-
-    double diff = diffSec + diffNano; 
   
     if( ( fTimingCalibration - fCalibrationTolerance < diff ) && (fTimingCalibration + fCalibrationTolerance > diff) ){
 
@@ -782,7 +778,8 @@ void proto::BeamEvent::reset(){
 
 void proto::BeamEvent::SetDummySpillInfo() {
   SpillStart = -999.; 
-  SpillStartValid = false;
+  SpillStartValid = true;
+  SpillOffset = 0.;
 }
 
 ////////////////////////
@@ -812,6 +809,7 @@ void proto::BeamEvent::produce(art::Event & e){
   //This stores Spill Start, Spill End, 
   //And Prev Spill Start
   if (fSkipSpillInfo) {
+    SetDummySpillInfo();
   }
   else {
     GetSpillInfo(e);
@@ -846,7 +844,7 @@ void proto::BeamEvent::produce(art::Event & e){
     //Greater than 5, it's in a new spill, so fetch again
     //
     //Can be overridden with a flag from the fcl
-    if( ( ( PrevStart != SpillStart) || ( !SpillStartValid && ( abs(RDTSTimeSec - PrevRDTSTimeSec) > 5 ) ) )
+    if( ( ( PrevStart != SpillStart) || ( /*!SpillStartValid && */( abs(RDTSTimeSec - PrevRDTSTimeSec) > 5 ) ) )
     || fForceNewFetch){
       reset_gentrigs();
 
@@ -983,9 +981,12 @@ void proto::BeamEvent::produce(art::Event & e){
       parseXCETDB(fetch_time);
 
       try{
-        current = FetchAndReport(fetch_time_down, "dip/acc/NORTH/NP04/POW/MBPL022699:current", bfp);
+        current = FetchAndReport(fetch_time_down, fMagnetCurrentName/*"dip/acc/NORTH/NP04/POW/MBPL022699:current"*/, bfp);
         gotCurrent = true;
         beamspill->SetMagnetCurrent(current[0]);
+
+        if (fPrintDebug)
+          MF_LOG_WARNING("BeamEvent") << "current: " << current[0] << "\n";
       }
       catch( std::exception const&){
         MF_LOG_WARNING("BeamEvent") << "Could not get magnet current\n";
@@ -1023,7 +1024,8 @@ void proto::BeamEvent::produce(art::Event & e){
       //
 
       if(SpillStartValid && !fForceMatchS11){
-        TimeIn(e, fetch_time_down);
+        if (!fSkipSpillInfo)
+          TimeIn(e, fetch_time_down);
 
         if( fPrintDebug )
           MF_LOG_INFO("BeamEvent") << "SpillOffset " << SpillOffset << "\n";
@@ -1035,7 +1037,7 @@ void proto::BeamEvent::produce(art::Event & e){
         //Additionally, check if the MBPL timestamp is valid,
         //There are some instances in the database of it being abnormally low
         //If so, then just do the S11 matching
-        if( acqStampValid ){
+        if( acqStampValid || fSkipSpillInfo ){
           MatchBeamToTPC();
         }
         else{
@@ -1105,7 +1107,7 @@ void proto::BeamEvent::produce(art::Event & e){
 
   //Or. If this was not a beam trigger, and the RDTSTime
   //Comes from a new spill while the SpillStart was invalid, pass it. 
-  else if( ( ( PrevStart != SpillStart ) || ( !SpillStartValid && ( abs(RDTSTimeSec - PrevRDTSTimeSec) > 5 ) ) ) 
+  else if( ( ( PrevStart != SpillStart ) || ( /*!SpillStartValid && */( abs(RDTSTimeSec - PrevRDTSTimeSec) > 5 ) ) ) 
     && RDTSTrigger != 12 ){
     prev_beamspill = *beamspill;   
   }
@@ -1743,6 +1745,31 @@ void proto::BeamEvent::parseXCETDB(uint64_t time){
 }
 
 
+void proto::BeamEvent::FillFBM(std::vector<double> & data, beam::FBM & fbm, int i) {
+  if (fRunType == kPDSP) {
+    for(size_t j = 0; j < 10; ++j){
+
+      double theData = data[20*i + (2*j + 1)];
+
+      //std::cout << "theData: " << theData << std::endl;
+
+      if(j < 4)
+        fbm.timeData[j] = theData;           
+      else
+        fbm.fiberData[j - 4] = theData;
+       
+    }
+  }
+  else {
+    for (size_t j = 0; j < 4; ++j) {
+      fbm.timeData[j] = data[10*i + j];
+    }
+    for (size_t j = 0; j < 6; ++j) {
+      fbm.fiberData[j] = data[10*i + 4 + j];
+    }
+  }
+}
+
 ////////////////////////
 // 
 void proto::BeamEvent::parseGeneralXBPF(std::string name, uint64_t time, size_t ID){
@@ -1800,8 +1827,8 @@ void proto::BeamEvent::parseGeneralXBPF(std::string name, uint64_t time, size_t 
   }
  
   //std::cout.precision(20);
-  for(size_t i = 0; i < counts[1]; ++i){      
-    for(int j = 0; j < 10; ++j){
+  for(size_t i = 0; i < counts[1]; ++i){
+    /*for(int j = 0; j < 10; ++j){
 
       double theData = data[20*i + (2*j + 1)];
 
@@ -1812,7 +1839,8 @@ void proto::BeamEvent::parseGeneralXBPF(std::string name, uint64_t time, size_t 
       else
 	fbm.fiberData[j - 4] = theData;
        
-    } 
+    } */
+    FillFBM(data, fbm, i);
 
     // Check the time data for corruption
     if(fbm.timeData[1] < .0000001)

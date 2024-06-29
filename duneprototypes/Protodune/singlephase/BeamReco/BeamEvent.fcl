@@ -193,6 +193,16 @@ proto_beamevent:
 #units of ns
   UpstreamToDownstream:  500.
 
+  MagnetCurrentName: "dip/acc/NORTH/NP04/POW/MBPL022699:current"
+  SkipSpillInfo: false
+  RunType: 0
 }
+
+pdhd_beamevent: @local::proto_beamevent
+pdhd_beamevent.BundleName: "DUNE_CERN_JUN2024_ANALYSIS"
+pdhd_beamevent.TimingCalibration: -.5412e-3 
+pdhd_beamevent.MagnetCurrentName: "dip/acc/NORTH/NP04/POW/MBPL022699:i_Meas"
+pdhd_beamevent.SkipSpillInfo: true
+pdhd_beamevent.RunType: 1
 
 END_PROLOG
