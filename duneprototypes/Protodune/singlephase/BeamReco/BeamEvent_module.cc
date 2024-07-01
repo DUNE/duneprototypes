@@ -495,12 +495,10 @@ void proto::BeamEvent::GetRawDecoderInfo(art::Event & e){
     auto trigger_candidate_handle
         = e.getValidHandle<std::vector<TriggerCandidate>>(fTriggerLabel);
 
+    //TODO -- Get the trigger candidates and loop over them,
+    //        need to look for the cherenkov statuses
     size_t ntc = trigger_candidate_handle->size();
-    //We should only have 1 trigger candidate (I think..)
-    if (ntc != 1) { 
-      throw cet::exception("BeamEvent_module.cc") <<
-            "Somehow have multiple trigger candidates: " << ntc;
-    }
+    std::cout << "Have " << ntc << " " << std::endl;
 
     //Get the first one
     const auto & trigger_candidate = (*trigger_candidate_handle)[0];
@@ -1828,18 +1826,6 @@ void proto::BeamEvent::parseGeneralXBPF(std::string name, uint64_t time, size_t 
  
   //std::cout.precision(20);
   for(size_t i = 0; i < counts[1]; ++i){
-    /*for(int j = 0; j < 10; ++j){
-
-      double theData = data[20*i + (2*j + 1)];
-
-      //std::cout << "theData: " << theData << std::endl;
-
-      if(j < 4)
-	fbm.timeData[j] = theData;           
-      else
-	fbm.fiberData[j - 4] = theData;
-       
-    } */
     FillFBM(data, fbm, i);
 
     // Check the time data for corruption
