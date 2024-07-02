@@ -498,7 +498,19 @@ void proto::BeamEvent::GetRawDecoderInfo(art::Event & e){
     //TODO -- Get the trigger candidates and loop over them,
     //        need to look for the cherenkov statuses
     size_t ntc = trigger_candidate_handle->size();
-    std::cout << "Have " << ntc << " " << std::endl;
+    std::cout << "Have " << ntc << " TCs" << std::endl;
+    for (const auto & tc : (*trigger_candidate_handle)) {
+      std::cout << "\tType: " <<
+                   dunedaq::trgdataformats::get_trigger_candidate_type_names().at(
+                     tc.type) <<
+                   "\n\tStart: " << tc.time_start <<
+                   "\n\tCandidate: " << tc.time_candidate <<
+                   "\n\tEnd: " << tc.time_end <<
+                   std::endl;
+                    
+
+    }
+
 
     //Get the first one
     const auto & trigger_candidate = (*trigger_candidate_handle)[0];
@@ -508,12 +520,6 @@ void proto::BeamEvent::GetRawDecoderInfo(art::Event & e){
     //Because I'm dumb and hardcoded this need to translate for PDHD
     RDTSTrigger = (trigger_candidate.type == TCType::kCTBBeam ? 12 : 8);
 
-    std::cout << "This TC has times:" <<
-                 "\n\tStart: " << trigger_candidate.time_start <<
-                 "\n\tEnd: " << trigger_candidate.time_end <<
-                 "\n\tCandidate: " << trigger_candidate.time_candidate <<
-                 std::endl;
-                    
 
     //June 17, 2024 -- Current trigger times for beam include
     //                 Need to see actual operating conditions to 
