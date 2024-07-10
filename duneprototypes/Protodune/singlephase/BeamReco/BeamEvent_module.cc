@@ -41,6 +41,7 @@
 
 namespace proto {
   class BeamEvent;
+  using TCType = dunedaq::trgdataformats::TriggerCandidateData::Type;
 }
 
 enum tofChan{
@@ -170,6 +171,10 @@ private:
   int    fOutC0 = 0, fOutC1 = 0;
 
   std::vector<double> genTrigFracs, genTrigCoarses, genTrigSecs;
+  std::vector<double> br1AFracs, br1ACoarses, br1ASecs;
+  std::vector<double> br1BFracs, br1BCoarses, br1BSecs;
+  std::vector<double> br2AFracs, br2ACoarses, br2ASecs;
+  std::vector<double> br2BFracs, br2BCoarses, br2BSecs;
   bool fMatched;
 
   int RDTSTrigger = 0;
@@ -329,6 +334,22 @@ private:
   // unused double mag_P2 = 0.;
   double mag_P3 = -4.68880000e-6;
   double mag_P4 = 324.573967;
+
+
+  const std::vector<TCType> beam_types = {
+    TCType::kCTBBeam, TCType::kCTBBeamChkvHL,
+    TCType::kCTBBeamChkvH, TCType::kCTBBeamChkvL,
+    TCType::kCTBBeamChkvHx, TCType::kCTBBeamChkvLx,
+    TCType::kCTBBeamChkvHLx, TCType::kCTBBeamChkvHxL,
+    TCType::kCTBBeamChkvHxLx
+  };
+
+  const std::vector<TCType> cosmic_types = {
+    TCType::kCTBOffSpillCosmic,
+    TCType::kCTBOffSpillCosmicJura,
+    TCType::kCTBCosmic,
+    TCType::kDTSCosmic
+  };
 
 };
 
@@ -491,26 +512,77 @@ void proto::BeamEvent::GetRawDecoderInfo(art::Event & e){
 
   if (fRunType == RunType::kPDHD) {
     using TriggerCandidate = dunedaq::trgdataformats::TriggerCandidateData;
-    using TCType = dunedaq::trgdataformats::TriggerCandidateData::Type;
+    //using TCType = dunedaq::trgdataformats::TriggerCandidateData::Type;
     auto trigger_candidate_handle
         = e.getValidHandle<std::vector<TriggerCandidate>>(fTriggerLabel);
 
     //TODO -- Get the trigger candidates and loop over them,
     //        need to look for the cherenkov statuses
     size_t ntc = trigger_candidate_handle->size();
-    std::cout << "Have " << ntc << " TCs" << std::endl;
+    if (fPrintDebug) std::cout << "Have " << ntc << " TCs" << std::endl;
+    bool found_beam = false;
+    bool found_cosmic = false;
+    //bool found_ckov = false;
     for (const auto & tc : (*trigger_candidate_handle)) {
-      std::cout << "\tType: " <<
+      if (fPrintDebug) std::cout << "\tType: " <<
                    dunedaq::trgdataformats::get_trigger_candidate_type_names().at(
                      tc.type) <<
                    "\n\tStart: " << tc.time_start <<
                    "\n\tCandidate: " << tc.time_candidate <<
                    "\n\tEnd: " << tc.time_end <<
                    std::endl;
-                    
+      //See if any TC is any beam type
+      auto find_type = std::find(beam_types.begin(), beam_types.end(), tc.type);
+      found_beam |= (find_type != beam_types.end());
 
+      //Check for Cherenkov-specific TC
+      if ((find_type != beam_types.end()) && (tc.type != TCType::kCTBBeam)) {
+        /*if (found_ckov) {
+          //Raise exception?
+        }*/
+
+        //found_ckov = true;
+        if (tc.type == TCType::kCTBBeamChkvHL) {
+          std::cout << "High Low" << std::endl;
+        }
+        else if (tc.type == TCType::kCTBBeamChkvH) {
+          std::cout << "High" << std::endl;
+        }
+        else if (tc.type == TCType::kCTBBeamChkvL) {
+          std::cout << "Low" << std::endl;
+        }
+        else if (tc.type == TCType::kCTBBeamChkvHx) {
+          std::cout << "No High" << std::endl;
+        }
+        else if (tc.type == TCType::kCTBBeamChkvLx) {
+          std::cout << "No Low" << std::endl;
+        }
+        else if (tc.type == TCType::kCTBBeamChkvHLx) {
+          std::cout << "High. No Low" << std::endl;
+        }
+        else if (tc.type == TCType::kCTBBeamChkvHxL) {
+          std::cout << "Low. No High" << std::endl;
+        }
+        else if (tc.type == TCType::kCTBBeamChkvHxLx) {
+          std::cout << "No Low. No High" << std::endl;
+        }
+      }
+
+      //Check for cosmics
+      auto find_cosmic = std::find(cosmic_types.begin(), cosmic_types.end(),
+                                   tc.type);
+      found_cosmic |= (find_cosmic != cosmic_types.end());
     }
 
+    if (found_beam && fPrintDebug) std::cout << "Found beam" << std::endl;
+
+
+    //This should never happen -- fail loudly if it does
+    if (found_cosmic && found_beam) {
+      throw cet::exception("BeamEvent_module.cc") <<
+          "MAJOR ERROR!!! FOUND EVENT WITH BOTH A BEAM TRIGGER AND" <<
+          " A COSMIC TRIGGER. CONTACT CTB/DAQ EXPERTS";
+    }
 
     //Get the first one
     const auto & trigger_candidate = (*trigger_candidate_handle)[0];
@@ -518,16 +590,8 @@ void proto::BeamEvent::GetRawDecoderInfo(art::Event & e){
                  dunedaq::trgdataformats::get_trigger_candidate_type_names().at(
                      trigger_candidate.type) << std::endl;
     //Because I'm dumb and hardcoded this need to translate for PDHD
-    RDTSTrigger = (trigger_candidate.type == TCType::kCTBBeam ? 12 : 8);
+    RDTSTrigger = (found_beam ? 12 : 8);
 
-
-    //June 17, 2024 -- Current trigger times for beam include
-    //                 Need to see actual operating conditions to 
-    //                 understand what the differences/contexts are
-    //kCTBBeam = 14,
-    //kCTBBeamHiLoPressChkv = 15,
-    //kCTBBeamLoPressChkv = 16,
-    //kCTBBeamHiPressChkv = 17,
   }
 
   //art::InputTag itag1("timingrawdecoder","daq");
@@ -749,9 +813,21 @@ void proto::BeamEvent::SetBeamEvent(){
 
 
 void proto::BeamEvent::reset_gentrigs(){
-  genTrigFracs.clear();
-  genTrigCoarses.clear();
-  genTrigSecs.clear();
+  br1AFracs.clear();
+  br1ACoarses.clear();
+  br1ASecs.clear();
+
+  br1BFracs.clear();
+  br1BCoarses.clear();
+  br1BSecs.clear();
+
+  br2AFracs.clear();
+  br2ACoarses.clear();
+  br2ASecs.clear();
+
+  br2BFracs.clear();
+  br2BCoarses.clear();
+  br2BSecs.clear();
 }
 
 void proto::BeamEvent::reset(){
@@ -1350,6 +1426,10 @@ void proto::BeamEvent::parseXTOF(uint64_t time){
       if (fXTOF1ACoarse == 0.0 && fXTOF1AFrac == 0.0 && fXTOF1ASec == 0.0) break;
       unorderedTOF1ATime.push_back(std::make_pair(fXTOF1ASec, (fXTOF1ACoarse*8. + fXTOF1AFrac/512.)) );
 
+      br1ASecs.push_back(fXTOF1ASec);
+      br1AFracs.push_back(fXTOF1AFrac);
+      br1ACoarses.push_back(fXTOF1ACoarse);
+
       if(fDebugTOFs)fXTOF1ATree->Fill();
     }
       
@@ -1366,6 +1446,9 @@ void proto::BeamEvent::parseXTOF(uint64_t time){
 
       if (fXTOF1BCoarse == 0.0 && fXTOF1BFrac == 0.0 && fXTOF1BSec == 0.0) break;
       unorderedTOF1BTime.push_back(std::make_pair(fXTOF1BSec, (fXTOF1BCoarse*8. + fXTOF1BFrac/512.)) );
+      br1BSecs.push_back(fXTOF1BSec);
+      br1BFracs.push_back(fXTOF1BFrac);
+      br1BCoarses.push_back(fXTOF1BCoarse);
       if(fDebugTOFs)fXTOF1BTree->Fill();
     }
 
@@ -1388,6 +1471,9 @@ void proto::BeamEvent::parseXTOF(uint64_t time){
         diff2A.push_back( 1.e9*(unorderedTOF2ATime.back().first - unorderedGenTrigTime[j].first) + (unorderedTOF2ATime.back().second - unorderedGenTrigTime[j].second) );
       }
       
+      br2ASecs.push_back(fXTOF2ASec);
+      br2AFracs.push_back(fXTOF2AFrac);
+      br2ACoarses.push_back(fXTOF2ACoarse);
       if(fDebugTOFs)fXTOF2ATree->Fill();
 
     }  
@@ -1411,6 +1497,10 @@ void proto::BeamEvent::parseXTOF(uint64_t time){
       for(size_t j = 0; j < timestampCountGeneralTrigger[0]; ++j){
         diff2B.push_back( 1.e9*(unorderedTOF2BTime.back().first - unorderedGenTrigTime[j].first) + (unorderedTOF2BTime.back().second - unorderedGenTrigTime[j].second) );
       }
+
+      br2BSecs.push_back(fXTOF2BSec);
+      br2BFracs.push_back(fXTOF2BFrac);
+      br2BCoarses.push_back(fXTOF2BCoarse);
 
       if(fDebugTOFs)fXTOF2BTree->Fill();
     }
@@ -1446,7 +1536,10 @@ void proto::BeamEvent::parseXTOF(uint64_t time){
         double TOF2A_ns  = unorderedTOF2ATime[ip2A].second;         
         double delta_2A = 1.e9*(the_gen_sec - TOF2A_sec) + the_gen_ns - TOF2A_ns;
 
-        if( delta_2A < 0. ) break;
+        if( delta_2A < 0. ) {
+          MF_LOG_INFO("BeamEvent") << iT << " " << ip2A << " Breaking 2A Gen " << delta_2A << "\n";
+          break;
+        }
         else if( delta_2A > fDownstreamToGenTrig ) continue;
 
         //if here, 0. < delta < 50ns
@@ -1459,7 +1552,10 @@ void proto::BeamEvent::parseXTOF(uint64_t time){
           double TOF1A_ns  = unorderedTOF1ATime[ip1A].second;         
           double delta = 1.e9*( TOF2A_sec - TOF1A_sec ) + TOF2A_ns - TOF1A_ns;
 
-          if( delta < 0. ) break;
+          if( delta < 0. ) {
+            MF_LOG_INFO("BeamEvent") << "Breaking 2A 1A " << delta << "\n";
+            break;
+          }
           else if( delta > 0. && delta < fUpstreamToDownstream){
             if( fPrintDebug )
               MF_LOG_INFO("BeamEvent") << "Found match 1A to 2A " << delta << "\n";
@@ -1933,6 +2029,23 @@ void proto::BeamEvent::beginJob()
     fOutTree->Branch("genTrigFracs", &genTrigFracs);
     fOutTree->Branch("genTrigCoarses", &genTrigCoarses);
     fOutTree->Branch("genTrigSecs", &genTrigSecs);
+
+    fOutTree->Branch("br1AFracs", &br1AFracs);
+    fOutTree->Branch("br1ACoarses", &br1ACoarses);
+    fOutTree->Branch("br1ASecs", &br1ASecs);
+
+    fOutTree->Branch("br1BFracs", &br1BFracs);
+    fOutTree->Branch("br1BCoarses", &br1BCoarses);
+    fOutTree->Branch("br1BSecs", &br1BSecs);
+
+    fOutTree->Branch("br2AFracs", &br2AFracs);
+    fOutTree->Branch("br2ACoarses", &br2ACoarses);
+    fOutTree->Branch("br2ASecs", &br2ASecs);
+
+    fOutTree->Branch("br2BFracs", &br2BFracs);
+    fOutTree->Branch("br2BCoarses", &br2BCoarses);
+    fOutTree->Branch("br2BSecs", &br2BSecs);
+
     fOutTree->Branch("matched", &fMatched);
 
     fOutTree->Branch("TOF", &fOutTOF );

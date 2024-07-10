@@ -56,8 +56,8 @@ physics:
 }
 physics.producers.beamevent.SaveOutTree: true
 physics.producers.beamevent.PrintDebug: true
+physics.producers.beamevent.DebugTOFs: true
+
 
 physics.producers.beamevent.ForceRead:            false
 physics.producers.beamevent.MatchTime:            true
-physics.producers.beamevent.MultipleTimes: [] 
-physics.producers.beamevent.FixedTime:     0.
