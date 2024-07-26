@@ -46,9 +46,13 @@ def make_v1_map(args):
     5:5, 6:5, 7:5, 8:5,
     9:7, 10:7,
   }
-  ## Runs >= 28035 have DAPHNE board 7 swapped with board 10
-  ## Call this v2 and switch in the map above
-  if args.v > 1:
+  '''Runs [28035, 28070) have DAPHNE board 7 swapped with board 10
+     Note, however: 28035 was misconfigured for APA1, and has different channel
+                 numbers. We won't make a separate channel map for this 
+                 because that data on APA 1 will be useless. Data won't be
+                 saved but oh well.
+  '''
+  if args.swap_7_10:
     apa1_slots[9] = 10
     apa1_slots[10] = 10
 
@@ -185,8 +189,12 @@ def make_v0_map(args):
 
 if __name__ == '__main__':
   parser = ap() 
-  parser.add_argument('-o', required=True)
-  parser.add_argument('-v', default=0, type=int)
+  parser.add_argument('-o', required=True, help='Output name')
+  parser.add_argument('-v', default=0, type=int, help='Version number',
+                      choices=[0,1])
+  parser.add_argument('--swap_7_10', action='store_true',
+                     help=('Runs [28035, 28070) have the controller boards '
+                           'swapped. Need to account for this'))
   args = parser.parse_args()
 
   makers = {
