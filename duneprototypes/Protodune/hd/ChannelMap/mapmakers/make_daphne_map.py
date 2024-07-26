@@ -2,11 +2,14 @@ from argparse import ArgumentParser as ap
 import numpy as np
 
 def append_lines(lines, apa_channels, apa_slots, apa_number):
+  # The offline channel numbers (map values) are defined according to their 3D position
+  # so translate the APA number to the offline channel number accordingly
   apa_starts = {2:80, 1:120, 4:0, 3:40}
   link = 0
   for pos,daphne_channels in apa_channels.items():
     start = apa_starts[apa_number]
     slot = apa_slots[pos]
+    ##Reverse every other position on specific apas
     if (apa_number in [1, 2]) and ((pos % 2) != 0): ##Beam right side 
       daphne_channels.reverse()
     elif (apa_number in [3, 4]) and ((pos % 2) == 0): ##Beam left side
@@ -37,11 +40,17 @@ def make_v1_map(args):
     9:[17, 15, 12, 10], 
     10:[7, 5, 2, 0], ##
   }
+
   apa1_slots = {
     1:4, 2:4, 3:4, 4:4,
     5:5, 6:5, 7:5, 8:5,
     9:7, 10:7,
   }
+  ## Runs >= 28035 have DAPHNE board 7 swapped with board 10
+  ## Call this v2 and switch in the map above
+  if args.v > 1:
+    apa1_slots[9] = 10
+    apa1_slots[10] = 10
 
   apa2_channels = {
     1:[27, 25, 22, 20],
