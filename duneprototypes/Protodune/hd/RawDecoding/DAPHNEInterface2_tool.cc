@@ -17,7 +17,7 @@ using dunedaq::daqdataformats::FragmentHeader;
 using DAPHNEStreamFrame = dunedaq::fddetdataformats::Daphnestreamframe2;
 using DAPHNEFrame = dunedaq::fddetdataformats::Daphneframe2;
 
-class DAPHNEInterface1 : public DAPHNEInterfaceBase {
+class DAPHNEInterface2 : public DAPHNEInterfaceBase {
 
  private:
   static const size_t FragmentHeaderSize = sizeof(FragmentHeader);
@@ -73,19 +73,40 @@ class DAPHNEInterface1 : public DAPHNEInterfaceBase {
       auto frame
           = reinterpret_cast<DAPHNEStreamFrame*>(
               static_cast<uint8_t*>(frag->get_data()) + i*StreamFrameSize);
-      ProcessStreamFrame(frame, wf_map, daphne_tree);
+      ProcessStreamFrame(frame, wf_map, daphne_tree, frag);
     }
   }
 
   void ProcessStreamFrame(
       DAPHNEStreamFrame * frame,
       std::unordered_map<unsigned int, std::vector<raw::OpDetWaveform>> & wf_map,
-      utils::DAPHNETree * daphne_tree) {
+      utils::DAPHNETree * daphne_tree,
+      std::unique_ptr<Fragment> & frag) {
     art::ServiceHandle<dune::DAPHNEChannelMapService> channel_map;
     auto b_link = frame->daq_header.link_id;
     auto b_slot = frame->daq_header.slot_id;
   
-  
+
+    //Get the timestamps and determine if
+    //this frame is within the fragment window
+    //auto frag_ts = frag->get_trigger_timestamp();
+    auto frag_begin = frag->get_window_begin();
+    auto frag_end = frag->get_window_end();
+    auto frame_ts = frame->get_timestamp();
+    //Bookkeep for saving ADCs
+    size_t start = 0;
+    size_t end = static_cast<size_t>(frame->s_adcs_per_channel);
+    auto frame_end = frame_ts + end;
+
+    //Shift if early or late accordingly
+    if (frame_ts < frag_begin) {
+      start = (frag_begin - frame_ts);
+    }
+    else if (frame_end > frag_end) {
+      end -= (frame_end - frag_end);
+    }
+    size_t nticks = end - start; 
+
     //Each streaming frame comes with data from 4 channels
     std::array<size_t, 4> frame_channels = {
       frame->header.channel_0,
@@ -108,13 +129,15 @@ class DAPHNEInterface1 : public DAPHNEInterfaceBase {
       //Make output
       auto & waveform = daphne::utils::MakeWaveform(
             offline_channel,
-            frame->s_adcs_per_channel,
+            //frame->s_adcs_per_channel,
+            nticks,
             frame->get_timestamp(),
             wf_map,
             true);
   
       // Loop over ADC values in the frame for channel i 
-      for (size_t j = 0; j < static_cast<size_t>(frame->s_adcs_per_channel); ++j) {
+      //Use the possibly shifted start and end ticks
+      for (size_t j = start; j < end; ++j) {
         waveform.push_back(frame->get_adc(j, i));
         if (daphne_tree != nullptr)
           daphne_tree->fADCValue[j] = frame->get_adc(j, i);
@@ -191,7 +214,7 @@ class DAPHNEInterface1 : public DAPHNEInterfaceBase {
 
  public:
 
-  DAPHNEInterface1(fhicl::ParameterSet const& p) {};
+  DAPHNEInterface2(fhicl::ParameterSet const& p) {};
 
   void Process(
       art::Event &evt,
@@ -238,4 +261,4 @@ class DAPHNEInterface1 : public DAPHNEInterfaceBase {
 };
 }
 
-DEFINE_ART_CLASS_TOOL(daphne::DAPHNEInterface1)
+DEFINE_ART_CLASS_TOOL(daphne::DAPHNEInterface2)
