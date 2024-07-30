@@ -131,7 +131,7 @@ class DAPHNEInterface2 : public DAPHNEInterfaceBase {
             offline_channel,
             //frame->s_adcs_per_channel,
             nticks,
-            frame->get_timestamp(),
+            frame->get_timestamp() + start, //Shift the timestamp
             wf_map,
             true);
   
