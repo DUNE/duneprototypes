@@ -1,0 +1,16 @@
+BEGIN_PROLOG
+  pdhdfembfilter: {
+    LogLevel: 0
+    module_type: "PDHDFEMBFilter"
+    RawDigitLabel: "tpcrawdecoder:daq"
+    RequireSameSize: true
+    RequireAllChannels: true
+    CheckStatWords: true
+    AllowedStatBits: [1]
+    SkipDigitCheck: false
+  }
+
+  pdhdfembfilter_nodigits: @local::pdhdfembfilter
+  pdhdfembfilter_nodigits.SkipDigitCheck: true
+
+END_PROLOG

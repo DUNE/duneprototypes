@@ -1,0 +1,33 @@
+#include "PDHDTimingRawDecoder.fcl"
+#include "HDF5RawInput3.fcl"
+services: {
+  TimeTracker:  {}
+  HDF5RawFile3Service:  {}
+  TFileService: {
+    fileName: "pdhd_timing_decoder.root"
+  } 
+
+}
+
+physics: {
+  producers: {
+    pdhdtiming: @local::PDHDTimingRawDecoder
+  }
+
+  produce: [ pdhdtiming ] 
+  output: [ out1 ]
+  trigger_paths : [ produce ]
+  end_paths: [ output ]
+}
+
+outputs: {
+  out1:
+  {
+    compressionLevel: 1
+    module_type: RootOutput
+    fileName: "%ifb_timing.root"
+  }
+}
+
+source: @local::hdf5rawinput3
+process_name: pdhdtimingjob 
