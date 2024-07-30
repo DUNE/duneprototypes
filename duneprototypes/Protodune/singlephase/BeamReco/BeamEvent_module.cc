@@ -510,97 +510,14 @@ void proto::BeamEvent::GetRawDecoderInfo(art::Event & e){
   }
 
 
-  if (fRunType == RunType::kPDHD) {
-    using TriggerCandidate = dunedaq::trgdataformats::TriggerCandidateData;
-    //using TCType = dunedaq::trgdataformats::TriggerCandidateData::Type;
-    auto trigger_candidate_handle
-        = e.getValidHandle<std::vector<TriggerCandidate>>(fTriggerLabel);
-
-    //TODO -- Get the trigger candidates and loop over them,
-    //        need to look for the cherenkov statuses
-    size_t ntc = trigger_candidate_handle->size();
-    if (fPrintDebug) std::cout << "Have " << ntc << " TCs" << std::endl;
-    bool found_beam = false;
-    bool found_cosmic = false;
-    //bool found_ckov = false;
-    for (const auto & tc : (*trigger_candidate_handle)) {
-      if (fPrintDebug) std::cout << "\tType: " <<
-                   dunedaq::trgdataformats::get_trigger_candidate_type_names().at(
-                     tc.type) <<
-                   "\n\tStart: " << tc.time_start <<
-                   "\n\tCandidate: " << tc.time_candidate <<
-                   "\n\tEnd: " << tc.time_end <<
-                   std::endl;
-      //See if any TC is any beam type
-      auto find_type = std::find(beam_types.begin(), beam_types.end(), tc.type);
-      found_beam |= (find_type != beam_types.end());
-
-      //Check for Cherenkov-specific TC
-      if ((find_type != beam_types.end()) && (tc.type != TCType::kCTBBeam)) {
-        /*if (found_ckov) {
-          //Raise exception?
-        }*/
-
-        //found_ckov = true;
-        if (tc.type == TCType::kCTBBeamChkvHL) {
-          std::cout << "High Low" << std::endl;
-        }
-        else if (tc.type == TCType::kCTBBeamChkvH) {
-          std::cout << "High" << std::endl;
-        }
-        else if (tc.type == TCType::kCTBBeamChkvL) {
-          std::cout << "Low" << std::endl;
-        }
-        else if (tc.type == TCType::kCTBBeamChkvHx) {
-          std::cout << "No High" << std::endl;
-        }
-        else if (tc.type == TCType::kCTBBeamChkvLx) {
-          std::cout << "No Low" << std::endl;
-        }
-        else if (tc.type == TCType::kCTBBeamChkvHLx) {
-          std::cout << "High. No Low" << std::endl;
-        }
-        else if (tc.type == TCType::kCTBBeamChkvHxL) {
-          std::cout << "Low. No High" << std::endl;
-        }
-        else if (tc.type == TCType::kCTBBeamChkvHxLx) {
-          std::cout << "No Low. No High" << std::endl;
-        }
-      }
-
-      //Check for cosmics
-      auto find_cosmic = std::find(cosmic_types.begin(), cosmic_types.end(),
-                                   tc.type);
-      found_cosmic |= (find_cosmic != cosmic_types.end());
-    }
-
-    if (found_beam && fPrintDebug) std::cout << "Found beam" << std::endl;
 
 
-    //This should never happen -- fail loudly if it does
-    if (found_cosmic && found_beam) {
-      throw cet::exception("BeamEvent_module.cc") <<
-          "MAJOR ERROR!!! FOUND EVENT WITH BOTH A BEAM TRIGGER AND" <<
-          " A COSMIC TRIGGER. CONTACT CTB/DAQ EXPERTS";
-    }
-
-    //Get the first one
-    const auto & trigger_candidate = (*trigger_candidate_handle)[0];
-    std::cout << "This TC is of type " <<
-                 dunedaq::trgdataformats::get_trigger_candidate_type_names().at(
-                     trigger_candidate.type) << std::endl;
-    //Because I'm dumb and hardcoded this need to translate for PDHD
-    RDTSTrigger = (found_beam ? 12 : 8);
-
-  }
-
-  //art::InputTag itag1("timingrawdecoder","daq");
   auto RDTimeStampHandle = e.getValidHandle<std::vector<raw::RDTimeStamp>>(
       fTimingLabel);
-
+  auto const & RDTS = (*RDTimeStampHandle)[0];
   //TODO -- See if this can just be a direct access by index
   //        cause I don't know why it's like this
-  for (auto const & RDTS : *RDTimeStampHandle){
+  //for (auto const & RDTS : *RDTimeStampHandle){
 
     uint64_t high = RDTS.GetTimeStamp_High();
     uint64_t low  = RDTS.GetTimeStamp_Low();
@@ -631,8 +548,110 @@ void proto::BeamEvent::GetRawDecoderInfo(art::Event & e){
     RDTSSec  = 20.e-9 * RDTSTickSec;
     RDTSNano = 20.    * RDTSTickNano;
 
-  }
+  //}
 
+  if (fRunType == RunType::kPDHD) {
+    using TriggerCandidate = dunedaq::trgdataformats::TriggerCandidateData;
+    auto trigger_candidate_handle
+        = e.getValidHandle<std::vector<TriggerCandidate>>(fTriggerLabel);
+
+    //TODO -- Get the trigger candidates and loop over them,
+    //        need to look for the cherenkov statuses
+    size_t ntc = trigger_candidate_handle->size();
+    if (fPrintDebug) std::cout << "Have " << ntc << " TCs" << std::endl;
+    bool found_beam = false;
+    bool found_cosmic = false;
+    bool found_ckov = false;
+    for (const auto & tc : (*trigger_candidate_handle)) {
+      if (fPrintDebug) std::cout << "\tType: " <<
+                   dunedaq::trgdataformats::get_trigger_candidate_type_names().at(
+                     tc.type) <<
+                   "\n\tStart: " << tc.time_start <<
+                   "\n\tCandidate: " << tc.time_candidate <<
+                   "\n\tEnd: " << tc.time_end <<
+                   "\n\tMatch to Trigger: " <<
+                   (tc.time_candidate == RDTS.GetTimeStamp()) <<
+                   std::endl;
+      if (tc.time_candidate != RDTS.GetTimeStamp()) continue;
+      //See if any TC is any beam type
+      auto find_type = std::find(beam_types.begin(), beam_types.end(), tc.type);
+      found_beam |= (find_type != beam_types.end());
+
+      //Check for Cherenkov-specific TC
+      if ((find_type != beam_types.end()) && (tc.type != TCType::kCTBBeam)) {
+        if (found_ckov) {
+          throw cet::exception("BeamEvent_module.cc") <<
+          "UNEXPECTED ERROR: FOUND MULTIPLE CTB TCs MATCHING THE EVENT TIMESTAMP";
+        }
+
+        found_ckov = true;
+
+        beam::CKov status0, status1;
+        status0.timeStamp = -1.;
+        status1.timeStamp = -1.;
+        status0.trigger = -1;
+        status1.trigger = -1;
+
+        if (tc.type == TCType::kCTBBeamChkvHL) {
+          if (fPrintDebug) std::cout << "High Low" << std::endl;
+          status0.trigger = 1;
+          status1.trigger = 1;
+        }
+        else if (tc.type == TCType::kCTBBeamChkvH) {
+          if (fPrintDebug) std::cout << "High" << std::endl;
+          status0.trigger = 1;
+        }
+        else if (tc.type == TCType::kCTBBeamChkvL) {
+          if (fPrintDebug) std::cout << "Low" << std::endl;
+          status1.trigger = 1;
+        }
+        else if (tc.type == TCType::kCTBBeamChkvHx) {
+          if (fPrintDebug) std::cout << "No High" << std::endl;
+          status0.trigger = 0;
+        }
+        else if (tc.type == TCType::kCTBBeamChkvLx) {
+          if (fPrintDebug) std::cout << "No Low" << std::endl;
+          status1.trigger = 0;
+        }
+        else if (tc.type == TCType::kCTBBeamChkvHLx) {
+          if (fPrintDebug) std::cout << "High. No Low" << std::endl;
+          status1.trigger = 0;
+          status0.trigger = 1;
+        }
+        else if (tc.type == TCType::kCTBBeamChkvHxL) {
+          if (fPrintDebug) std::cout << "Low. No High" << std::endl;
+          status1.trigger = 1;
+          status0.trigger = 0;
+        }
+        else if (tc.type == TCType::kCTBBeamChkvHxLx) {
+          if (fPrintDebug) std::cout << "No Low. No High" << std::endl;
+          status1.trigger = 0;
+          status0.trigger = 0;
+        }
+        beamevt->SetCKov0(status0);
+        beamevt->SetCKov1(status1);
+      }
+
+      //Check for cosmics
+      auto find_cosmic = std::find(cosmic_types.begin(), cosmic_types.end(),
+                                   tc.type);
+      found_cosmic |= (find_cosmic != cosmic_types.end());
+    }
+
+    if (found_beam && fPrintDebug) std::cout << "Found beam" << std::endl;
+
+
+    //This should never happen -- fail loudly if it does
+    if (found_cosmic && found_beam) {
+      throw cet::exception("BeamEvent_module.cc") <<
+          "MAJOR ERROR!!! FOUND EVENT WITH BOTH A BEAM TRIGGER AND" <<
+          " A COSMIC TRIGGER. CONTACT CTB/DAQ EXPERTS";
+    }
+
+    //Because I'm dumb and hardcoded this need to translate for PDHD
+    RDTSTrigger = (found_beam ? 12 : 8);
+
+  }
 }
 
 void proto::BeamEvent::GetSpillInfo(art::Event & e){
@@ -791,8 +810,11 @@ void proto::BeamEvent::SetBeamEvent(){
   beamevt->CalibrateTOFs();
   beamevt->DecodeTOF();
   beamevt->SetMagnetCurrent( beamspill->GetMagnetCurrent() );
-  beamevt->SetCKov0( beamspill->GetCKov0( activeTrigger ) );
-  beamevt->SetCKov1( beamspill->GetCKov1( activeTrigger ) );
+
+  if (fRunType == kPDSP) {
+    beamevt->SetCKov0( beamspill->GetCKov0( activeTrigger ) );
+    beamevt->SetCKov1( beamspill->GetCKov1( activeTrigger ) );
+  }
 
 
   if( fPrintDebug ){
