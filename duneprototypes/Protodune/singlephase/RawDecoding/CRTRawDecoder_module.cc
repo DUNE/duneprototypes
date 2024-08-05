@@ -12,16 +12,15 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
-#include "art/Framework/Principal/Run.h"
-#include "art/Framework/Principal/SubRun.h"
+// #include "art/Framework/Principal/Run.h"
+// #include "art/Framework/Principal/SubRun.h"
 #include "art_root_io/TFileService.h"
 #include "canvas/Utilities/InputTag.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 //LArSoft includes
-#include "larcore/Geometry/Geometry.h"
-#include "larcorealg/Geometry/GeometryCore.h"
+#include "larcore/Geometry/AuxDetGeometry.h"
 
 //dune-artdaq includes
 #include "artdaq-core/Data/ContainerFragment.hh"
@@ -279,8 +278,7 @@ namespace CRT
     createSyncPlots();
   
     //Set up channel mapping base on user configuration
-    art::ServiceHandle<geo::Geometry> geom;
-    const auto nModules = geom->NAuxDets();
+    const auto nModules = art::ServiceHandle<geo::AuxDetGeometry>()->GetProvider().NAuxDets();
     if(fMatchOfflineMapping) 
     {
 //      std::vector<const geo::AuxDetGeo*> auxDets; //The function to retrieve this vector seems to have been made protected
@@ -329,7 +327,7 @@ namespace CRT
 
   void CRT::CRTRawDecoder::createSyncPlots()
   {
-    const auto nModules = art::ServiceHandle<geo::Geometry>()->NAuxDets();
+    const auto nModules = art::ServiceHandle<geo::AuxDetGeometry>()->GetProvider().NAuxDets();
     art::ServiceHandle<art::TFileService> tfs;
     fSyncPlots.clear(); //Clear any previous pointers to histograms.  Some TFile owned them.  
     for(size_t module = 0; module < nModules; ++module) fSyncPlots.emplace_back(*tfs, module); //32 modules in the ProtoDUNE-SP CRT

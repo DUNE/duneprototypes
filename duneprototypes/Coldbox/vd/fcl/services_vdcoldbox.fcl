@@ -8,9 +8,10 @@ BEGIN_PROLOG
 
 #
 vdcb_services: {
-  ExptGeoHelperInterface:       @local::dune_geometry_helper
+  WireReadout:       @local::dune_wire_readout
   GeometryConfigurationWriter:  {}
-  Geometry:                     @local::dunevdcb_geo	
+AuxDetGeometry: @local::dunevdcb_auxdet_geo
+  Geometry:                     @local::dunevdcb_geo
   DetectorClocksService:        @local::protodune_detectorclocks
   DetectorPropertiesService:    @local::protodune_detproperties
   LArPropertiesService:         @local::dunefd_properties
@@ -29,10 +30,10 @@ vdcb_services.DetectorPropertiesService.TimeOffsetZ: 0
 
 # Efield settings for Nov. 2021 Run: apart from drift field
 # the other two are not relevant
-#data.vdcb_nov21_Efield:  [0.45, 1.0, 1.0] 
+#data.vdcb_nov21_Efield:  [0.45, 1.0, 1.0]
 # VGalymov, changed Nov-Dec 2021 efield 11/04/2022 to ~0.4 kV/cm
-data.vdcb_nov21_Efield:  [0.404, 1.0, 1.0] 
-data.vdcb_dec21_Efield:  [0.411, 1.0, 1.0] 
+data.vdcb_nov21_Efield:  [0.404, 1.0, 1.0]
+data.vdcb_dec21_Efield:  [0.411, 1.0, 1.0]
 
 # set efield
 vdcb_services.DetectorPropertiesService.Efield: @local::data.vdcb_nov21_Efield
@@ -98,7 +99,7 @@ vdcb_sim_base_services: {
    BackTrackerService:           @local::dunefd_backtrackerservice
    ParticleListAction:           @local::dune_particle_list_action
    PhysicsList:                  @local::dune_physics_list_fastoptical
-##   MCTruthEventAction: 		 {}
+##   MCTruthEventAction:                 {}
     LArG4Parameters:              @local::dunefd_largeantparameters
 }
 vdcb_sim_base_services.OpDetResponseInterface.QuantumEfficiency: 0.03 # (tkosc) otherwise larsoft complains, manually changed, but should be investigated
@@ -115,7 +116,7 @@ vdcb_tde_ionandscint_external: @local::dunefd_ionandscint #_larql
 vdcb_tde_ionandscint_external.Instances: "LArG4DetectorServicevolExternalActive"
 vdcb_tde_elecdrift: @local::dunefd_elecdrift
 vdcb_tde_pdfastsim_par_ar_fastonly: @local::dunevd_pdfastsim_par_ar_fastonly
-vdcb_tde_pdfastsim_par_ar_external_fastonly: @local::dunevd_pdfastsim_pvs_external 
+vdcb_tde_pdfastsim_par_ar_external_fastonly: @local::dunevd_pdfastsim_pvs_external
 
 
 # To complete ...
@@ -133,8 +134,9 @@ vdcb_bot_reco_services: {
 
 #
 # Top CRP services
-# 
+#
 vdcb_crp2_services: @local::vdcb_crp1_top_services
+vdcb_crp2_services.AuxDetGeometry: @local::dunecrpcb_auxdet_geo
 vdcb_crp2_services.Geometry: @local::dunecrpcb_geo
 vdcb_crp2_services.DetectorPropertiesService.Efield: @local::data.vdcb_nov21_Efield
 vdcb_crp2_services.DetectorPropertiesService.NumberTimeSamples: 10000

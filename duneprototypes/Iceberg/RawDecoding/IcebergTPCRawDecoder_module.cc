@@ -504,7 +504,7 @@ bool IcebergTPCRawDecoder::_process_RCE_AUX(
   //<< "   fragmentID = " << frag.fragmentID()
   //<< "   fragmentType = " << (unsigned)frag.type()
   //<< "   Timestamp =  " << frag.timestamp();
-  art::ServiceHandle<dune::IcebergChannelMapService> channelMap;
+  art::ServiceHandle<dune::IcebergChannelMapService> wireReadout;
   
   artdaq::Fragment cfragloc(frag);
   size_t cdsize = cfragloc.dataSizeBytes();
@@ -793,7 +793,7 @@ bool IcebergTPCRawDecoder::_process_RCE_AUX(
       for (size_t i_ch = 0; i_ch < n_ch; i_ch++)
         {
           // hardcode crate number 1 so we don't get warning messages
-          unsigned int offlineChannel = channelMap->GetOfflineNumberFromDetectorElements(1, slotNumber, fiberNumber, i_ch, dune::IcebergChannelMapService::kRCE);
+          unsigned int offlineChannel = wireReadout->GetOfflineNumberFromDetectorElements(1, slotNumber, fiberNumber, i_ch, dune::IcebergChannelMapService::kRCE);
 
           v_adc.clear();
 
@@ -1037,7 +1037,7 @@ bool IcebergTPCRawDecoder::_process_FELIX_AUX(const artdaq::Fragment& frag, RawD
   //    return false;
   //  }
 
-  art::ServiceHandle<dune::IcebergChannelMapService> channelMap;
+  art::ServiceHandle<dune::IcebergChannelMapService> wireReadout;
 
   //Load overlay class.
 
@@ -1352,7 +1352,7 @@ bool IcebergTPCRawDecoder::_process_FELIX_AUX(const artdaq::Fragment& frag, RawD
       }
 
     // for iceberg, hardcode the crate number to suppress warnings
-    unsigned int offlineChannel = channelMap->GetOfflineNumberFromDetectorElements(1, slotloc2, fiberloc2, chloc, dune::IcebergChannelMapService::kFELIX); 
+    unsigned int offlineChannel = wireReadout->GetOfflineNumberFromDetectorElements(1, slotloc2, fiberloc2, chloc, dune::IcebergChannelMapService::kFELIX); 
 
     //std::cout << "Calling channel map: " << (int) slotloc2 << " " << fiberloc2 << " " << chloc << " " << offlineChannel << std::endl;
 

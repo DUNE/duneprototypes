@@ -20,6 +20,7 @@
 #include "art_root_io/TFileService.h"
 
 // services etc...
+#include "larcore/Geometry/WireReadout.h"
 #include "larcore/Geometry/Geometry.h"
 #include "larcore/CoreUtils/ServiceUtil.h"
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
@@ -452,18 +453,16 @@ void T0RecoSCECalibrations::analyze(art::Event const & e){
     }
 
     // Determine if the track crosses the cathode 
-    auto const* geom = lar::providerFrom<geo::Geometry>();   
     auto const* hit = Hit_v.at(0);
     const geo::WireID wireID = hit->WireID();
-    const auto TPCGeoObject = geom->TPC(wireID.asPlaneID().asTPCID());
-    short int driftDir1 = TPCGeoObject.DetectDriftDirection();
+    art::ServiceHandle<geo::Geometry> geom;
+    auto const [axis_1, sign_1] = geom->TPC(wireID).DriftAxisWithSign();
     bool cross_cathode = false;
     for (size_t ii = 1; ii < Hit_v.size(); ii++) {
       const geo::WireID wireID2 = Hit_v.at(ii)->WireID();
-      const auto TPCGeoObject2 = geom->TPC(wireID2.asPlaneID().asTPCID());
-      short int driftDir2 = TPCGeoObject2.DetectDriftDirection(); 
+      auto const [axis_2, sign_2] = geom->TPC(wireID2).DriftAxisWithSign();
                 
-      if(driftDir1 + driftDir2 == 0){
+      if(axis_1 == axis_2 and to_int(sign_1) + to_int(sign_2) == 0){
         cross_cathode = true;
         if(_debug) std::cout << "\tCrosses cathode!" << std::endl;
         //continue;
@@ -522,8 +521,8 @@ void T0RecoSCECalibrations::analyze(art::Event const & e){
       rc_ze = bottom.Z();
         
       length = sqrt(pow(rc_xs - rc_xe,2.0) + pow(rc_ys - rc_ye,2.0) + pow(rc_zs - rc_ze,2.0));
-      if(rc_xs<0.0) driftDir = -1;
-      else driftDir = 1;
+      if(rc_xs<0.0) driftDir = to_int(geo::DriftSign::Negative);
+      else driftDir = to_int(geo::DriftSign::Positive);
                 
       tree->Fill();
       trackNum++;
@@ -579,8 +578,8 @@ void T0RecoSCECalibrations::analyze(art::Event const & e){
     } else {
       if(fCathode) {std::cout << "\tSKIPPING ANODE-PEIRCING TRACKS" << std::endl; continue;}
         
-      if(_debug) std::cout << "\t\tThis track starts in TPC " << wireID.TPC << " which has a drift direction of " << driftDir1 << std::endl; 
-      driftDir = driftDir1;
+      if(_debug) std::cout << "\t\tThis track starts in TPC " << wireID.TPC << " which has a drift direction of " << to_int(sign_1) << std::endl;
+      driftDir = to_int(sign_1);
         
       // create root trees variables
       auto const &top = sorted_trk.at(0);
