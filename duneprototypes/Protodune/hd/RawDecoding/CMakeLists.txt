@@ -27,7 +27,7 @@ cet_build_plugin(PDHDFEMBFilter art::module LIBRARIES
                  art_root_io::tfile_support
                  ROOT::Core
                  art::Persistency_Provenance
-                 duneprototypes_Protodune_hd_ChannelMap_PD2HDChannelMapService_service
+                 duneprototypes::Protodune_hd_ChannelMap_PD2HDChannelMapService_service
                  messagefacility::MF_MessageLogger
 		 lardataobj::RawData
                  ROOT::Core ROOT::Hist ROOT::Tree
