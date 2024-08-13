@@ -85,6 +85,9 @@ namespace tpc_monitor{
     std::map<int, std::map< int, TH1D*>>       fChanADC;
     std::map<int, std::map< int, TH2F*>>       fPersistentFFT;
 
+    // FFT per FEMB -- first index is crate - 1, second is FEMB in the APA  (1:20)
+
+    std::map<int, std::map<int, TProfile*>>    fFEMBFFT;
     
     // 2D histograms of all Mean/RMS by offline channel number
     // Intended as a color map with each bin to represent a single channel
@@ -164,6 +167,12 @@ namespace tpc_monitor{
 	    fPersistentFFT[iapa][iplane] = tfs->make<TH2F>(hnamebase+"PersistentFFT",hnamebase+"Persistent FFT;Frequency [kHz];Amplitude [dB]",fNTicks/2,0,fNTicks/2*fBinWidth,150,-100.0,50.0);
 	    fChanFFTProfile[iapa][iplane] = tfs->make<TProfile>(hnamebase+"FFTProfile",hnamebase+"FFT;Frequency [kHz];Amplitude [dB]",fNTicks/2,0,fNTicks/2*fBinWidth);
 	  }
+	for (int ifemb=1; ifemb<21; ++ifemb)
+	  {
+	    TString hname = apalabel.at(iapa) + "_FEMB";
+	    hname += ifemb;
+	    fFEMBFFT[iapa][ifemb] = tfs->make<TProfile>(hname+"FFTProfile",hname+"FFT;Frequency [kHz];Amplitude [dB]",fNTicks/2,0,fNTicks/2*fBinWidth);
+	  }
       }
 
     //All in one view
@@ -205,7 +214,7 @@ namespace tpc_monitor{
     int Event  = event.id().event(); 
     //fRun    = event.run();
     //fSubRun = event.subRun();
-    std::cout << "PDSP TPC Monitor EventNumber = " << Event << std::endl;
+    std::cout << "PDHD TPC Monitor EventNumber = " << Event << std::endl;
 
     // Get the objects holding raw information: RawDigit for TPC data
     art::InputTag itag1(fTPCInput, fTPCInstance);
@@ -297,6 +306,8 @@ namespace tpc_monitor{
       auto fftptr = fChanFFT[apa][plane];
       auto fftprofileptr = fChanFFTProfile[apa][plane];
       auto fftpersistentptr = fPersistentFFT[apa][plane];
+      auto fftfembptr = fFEMBFFT[apa][chanInfo.femb];
+      
       for(int k=0;k<(int)nADC_uncompPed/2;k++) {
 	double bc = histfft->GetBinContent(k+1);
 	if (bc > -1E6 && bc < 1E6)
@@ -304,6 +315,7 @@ namespace tpc_monitor{
 	    fftptr->Fill(planechan,(k+0.5)*fBinWidth, bc);
 	    fftprofileptr->Fill((k+0.5)*fBinWidth, bc);
 	    fftpersistentptr->Fill((k+0.5)*fBinWidth, bc);
+	    fftfembptr->Fill((k+0.5)*fBinWidth, bc);
 	  }
       }
 
@@ -313,14 +325,12 @@ namespace tpc_monitor{
       fChanMean[apa][plane]->Fill(planechan,mean);
       fChanRMS[apa][plane]->Fill(planechan,rms);
 
-      //get ready to fill the summary plots
-      //get the channel's FEMB and WIB
-      int WIB = chanInfo.wib; //0-4
-      int FEMB = chanInfo.link*2 + chanInfo.femb_on_link + 1; //1-4
+      // fill the summary plots
+
       int FEMBchan = chanInfo.cebchan;
-      int iFEMB = ((WIB*4)+(FEMB-1)); //index of the FEMB 0-19
-      //Get the location of any FEMBchan in the hitogram
-      //put as a function for clenliness.
+      int iFEMB = chanInfo.femb - 1;
+      //Get the location of any FEMBchan in the histogram
+      //put as a function for cleanliness.
       int xBin = ((FEMBchanToHistogramMap(FEMBchan,0))+(iFEMB*4)+xEdgeAPA[apa]); // (fembchan location on histogram) + shift from mobo + shift from apa
       int yBin = ((FEMBchanToHistogramMap(FEMBchan,1))+yEdgeAPA[(apa%2)]); //(fembchan location on histogram) + shift from apa 
 
