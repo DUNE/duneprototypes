@@ -37,7 +37,7 @@ cet_build_plugin(PDHDFEMBFilter art::module LIBRARIES
 )
 
 
-cet_build_plugin(PDHDNoiseFilter art::module LIBRARIES
+cet_build_plugin(PDHDGroundShakeFilter art::module LIBRARIES
                  art::Framework_Core
                  art::Framework_Principal
                  art::Framework_Services_Registry

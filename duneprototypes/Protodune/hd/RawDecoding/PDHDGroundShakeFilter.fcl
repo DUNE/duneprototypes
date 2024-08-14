@@ -1,7 +1,7 @@
 BEGIN_PROLOG
-  pdhdnoisefilter: {
+  pdhdgroundshakefilter: {
     LogLevel: 0
-    module_type: "PDHDNoiseFilter"
+    module_type: "PDHDGroundShakeFilter"
     RawDigitLabel: "tpcrawdecoder:daq"
   }
 

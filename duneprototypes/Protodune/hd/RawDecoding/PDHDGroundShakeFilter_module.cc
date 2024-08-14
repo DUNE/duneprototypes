@@ -21,10 +21,10 @@ namespace pdhd {
 
 using RawDigitVector = std::vector<raw::RawDigit>;
 
-class PDHDNoiseFilter : public art::EDFilter {
+class PDHDGroundShakeFilter : public art::EDFilter {
  public:
-  explicit PDHDNoiseFilter(fhicl::ParameterSet const & pset);
-  virtual ~PDHDNoiseFilter() {};
+  explicit PDHDGroundShakeFilter(fhicl::ParameterSet const & pset);
+  virtual ~PDHDGroundShakeFilter() {};
   virtual bool filter(art::Event& e);
 
  private:
@@ -33,12 +33,12 @@ class PDHDNoiseFilter : public art::EDFilter {
 
 };
 
-PDHDNoiseFilter::PDHDNoiseFilter::PDHDNoiseFilter(fhicl::ParameterSet const & pset):
+PDHDGroundShakeFilter::PDHDGroundShakeFilter::PDHDGroundShakeFilter(fhicl::ParameterSet const & pset):
   EDFilter(pset),
   fRawDigitLabel(pset.get<std::string>("RawDigitLabel")){}
 
 
-bool PDHDNoiseFilter::filter(art::Event & evt) {
+bool PDHDGroundShakeFilter::filter(art::Event & evt) {
 
 
   // auto const &rawdigits = *evt.getValidHandle<vector<raw::RawDigit>>(rawdigits_tag);
@@ -89,6 +89,6 @@ bool PDHDNoiseFilter::filter(art::Event & evt) {
 
 
 
-DEFINE_ART_MODULE(PDHDNoiseFilter)
+DEFINE_ART_MODULE(PDHDGroundShakeFilter)
 
 }
