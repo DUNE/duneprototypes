@@ -1,0 +1,9 @@
+BEGIN_PROLOG
+  pdhdnoisefilter: {
+    LogLevel: 0
+    module_type: "PDHDNoiseFilter"
+    RawDigitLabel: "tpcrawdecoder:daq"
+  }
+
+
+END_PROLOG

@@ -32,6 +32,25 @@ cet_build_plugin(PDHDFEMBFilter art::module LIBRARIES
 		 lardataobj::RawData
                  ROOT::Core ROOT::Hist ROOT::Tree
                  BASENAME_ONLY
+                 dunecore::HDF5Utils_HDF5RawFile3Service_service
+                 dunecore::dunedaqhdf5utils2
+)
+
+
+cet_build_plugin(PDHDNoiseFilter art::module LIBRARIES
+                 art::Framework_Core
+                 art::Framework_Principal
+                 art::Framework_Services_Registry
+                 art_root_io::tfile_support
+                 ROOT::Core
+                 art::Persistency_Provenance
+                 duneprototypes_Protodune_hd_ChannelMap_PD2HDChannelMapService_service
+                 messagefacility::MF_MessageLogger
+         lardataobj::RawData
+                 ROOT::Core ROOT::Hist ROOT::Tree
+                 BASENAME_ONLY
+                 dunecore::HDF5Utils_HDF5RawFile3Service_service
+                 dunecore::dunedaqhdf5utils2
 )
 
 cet_build_plugin(DAPHNEReaderPDHD art::module LIBRARIES
