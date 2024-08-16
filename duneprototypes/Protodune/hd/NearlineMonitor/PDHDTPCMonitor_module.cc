@@ -88,6 +88,11 @@ namespace tpc_monitor{
     // FFT per FEMB -- first index is crate - 1, second is FEMB in the APA  (1:20)
 
     std::map<int, std::map<int, TProfile*>>    fFEMBFFT;
+
+    // Mean and RMS -- one entry per channel per event, separated by APA (first index) and plane (second index)
+
+    std::map<int,  std::map<int, TH1F*>>       fMeanHist;
+    std::map<int,  std::map<int, TH1F*>>       fRMSHist;
     
     // 2D histograms of all Mean/RMS by offline channel number
     // Intended as a color map with each bin to represent a single channel
@@ -151,8 +156,10 @@ namespace tpc_monitor{
 	for (int iplane=0; iplane<4; ++iplane)
 	  {
 	    TString hnamebase = apalabel.at(iapa) + "_" + planelabel.at(iplane) + "_";
-	    fChanMean[iapa][iplane] = tfs->make<TProfile>(hnamebase+"Mean",hnamebase+"Mean;channel;Mean ADC",planechancount.at(iplane),-0.5,planechancount.at(iplane)-0.5);
-	    fChanRMS[iapa][iplane] = tfs->make<TProfile>(hnamebase+"RMS",hnamebase+"RMS;channel;RMS ADC",planechancount.at(iplane),-0.5,planechancount.at(iplane)-0.5);
+	    fChanMean[iapa][iplane] = tfs->make<TProfile>(hnamebase+"Mean",hnamebase+"Mean;Channel;Mean ADC",planechancount.at(iplane),-0.5,planechancount.at(iplane)-0.5);
+	    fChanRMS[iapa][iplane] = tfs->make<TProfile>(hnamebase+"RMS",hnamebase+"RMS;Channel;RMS ADC",planechancount.at(iplane),-0.5,planechancount.at(iplane)-0.5);
+	    fMeanHist[iapa][iplane] = tfs->make<TH1F>(hnamebase+"MeanChans",hnamebase+"Mean;Mean ADC;Channels",100,0,10000);
+	    fRMSHist[iapa][iplane] = tfs->make<TH1F>(hnamebase+"RMSChans",hnamebase+"RMS;RMS ADC;Channels",100,0,50);
 	    fChanHitOccupancy[iapa][iplane] = tfs->make<TProfile>(hnamebase+"HitOccup",hnamebase+"Hit Occupancy;channel;Hits/Trigger Record",planechancount.at(iplane),-0.5,planechancount.at(iplane)-0.5);
 	    fChanFFT[iapa][iplane] = tfs->make<TH2F>(hnamebase+"FFT2D",hnamebase+"FFT;channel;Frequency [kHz]",planechancount.at(iplane),-0.5,planechancount.at(iplane)-0.5,fNTicks/2,0,fNTicks/2*fBinWidth);
  	    fChanFFT[iapa][iplane]->Rebin2D(fRebinX, fRebinY);
@@ -323,8 +330,10 @@ namespace tpc_monitor{
       float mean = digit.GetPedestal();
       float rms = digit.GetSigma();
       fChanMean[apa][plane]->Fill(planechan,mean);
+      fMeanHist[apa][plane]->Fill(mean);
       fChanRMS[apa][plane]->Fill(planechan,rms);
-
+      fRMSHist[apa][plane]->Fill(rms);
+      
       // fill the summary plots
 
       int FEMBchan = chanInfo.cebchan;
