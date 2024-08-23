@@ -848,6 +848,8 @@ namespace tpc_monitor{
     return;
   }
 
+  // Maggie Greenwood's global mean and RMS histograms need a map.  This comes from PDSP.
+  // may need to recode this for PDHD.
   //----------------------------------------------------------------------
   //define the mapping of FEMBchans to the histogram.
   int TpcMonitor::FEMBchanToHistogramMap(int FEMBchan, int coord){
