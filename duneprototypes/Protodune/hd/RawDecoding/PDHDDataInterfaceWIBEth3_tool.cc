@@ -183,62 +183,66 @@ public:
  
 	    auto frag = rf->get_frag_ptr(rid, source_id);
 	    auto frag_size = frag->get_size();
-            auto frag_timestamp = frag->get_trigger_timestamp();
-            auto frag_window_begin = frag->get_window_begin();
-            auto frag_window_end = frag->get_window_end();
+        auto frag_timestamp = frag->get_trigger_timestamp();
+        auto frag_window_begin = frag->get_window_begin();
+        auto frag_window_end = frag->get_window_end();
 
-            auto total_wib_ticks = std::lround(
+        auto total_wib_ticks = std::lround(
                 (frag_window_end - frag_window_begin)*16./512.
-            );
+                );
 
 	    size_t fhs = sizeof(dunedaq::daqdataformats::FragmentHeader);
 	    if (frag_size <= fhs) continue; // Too small to even have a header
 	    size_t n_frames = (frag_size - fhs)/sizeof(WIBEthFrame);
 	    if (fDebugLevel > 0)
 	      {
-		std::cout << "n_frames calc.: " << frag_size << " " << fhs << " " << sizeof(WIBEthFrame) << " " << n_frames << std::endl;
+		    std::cout << "n_frames calc.: " << frag_size << " " << fhs << " " << sizeof(WIBEthFrame) << " " << n_frames << std::endl;
 	      }
 
 	    std::vector<raw::RawDigit::ADCvector_t> adc_vectors(64);   // 64 channels per WIBEth frame
 	    unsigned int slot = 0, link = 0, crate = 0, stream = 0, locstream = 0;
           
-            //We expect to have extra wib ticks, so figure out how many
-            //in total we cut out.
-            auto leftover_wib_ticks = n_frames*64 - total_wib_ticks;
-            uint64_t latest_time = 0;
+        //We expect to have extra wib ticks, so figure out how many
+        //in total we cut out.
+        auto leftover_wib_ticks = n_frames*64 - total_wib_ticks;
+        uint64_t latest_time = 0;
 
-            //For bookkeeping if we need to reorder
-            std::vector<std::pair<uint64_t, size_t>> timestamp_indices;
+        //For bookkeeping if we need to reorder
+        std::vector<std::pair<uint64_t, size_t>> timestamp_indices;
 
-            //This will track if we see any problems
-            bool any_bad = false;
+        //This will track if we see any problems
+        bool any_bad = false;
 
-            //For reordering
-            std::vector<std::vector<raw::RawDigit::ADCvector_t>> temp_adcs;
-            //Tracks whether a given frame has hit the end
-            bool reached_end = false;
+        //For reordering
+        std::vector<std::vector<raw::RawDigit::ADCvector_t>> temp_adcs;
+        //Tracks whether a given frame has hit the end
+        bool reached_end = false;
+
+        //need to keep track of the timestamp of our first sample
+        uint64_t first_sample_timestamp=0;
+
 	    for (size_t i = 0; i < n_frames; ++i)
 	      {
                 //Makes a 64-channel wide vector
                 temp_adcs.emplace_back(64);
 
                 std::bitset<8> condition;
-		if (fDebugLevel > 2)
-		  {
-		    // dump WIB frames in binary
-		    std::cout << "Frame number: " << i << std::endl;
-		    size_t wfs32 = sizeof(WIBEthFrame)/4;
-		    uint32_t *fdp = reinterpret_cast<uint32_t*>(static_cast<uint8_t*>(frag->get_data()) + i*sizeof(WIBEthFrame));
-		    std::cout << std::dec;
-		    for (size_t iwdt = 0; iwdt < std::min(wfs32, (size_t) 4); iwdt++)  // dumps just the first 4 words.  use wfs32 if you want them all
-		      {
-			std::cout << iwdt << " : 10987654321098765432109876543210" << std::endl;
-			std::cout << iwdt << " : " << std::bitset<32>{fdp[iwdt]} << std::endl;
-		      }
-		    std::cout << std::dec;
-		  }
+		        if (fDebugLevel > 2)
+                {
+                    // dump WIB frames in binary
+                    std::cout << "Frame number: " << i << std::endl;
+                    size_t wfs32 = sizeof(WIBEthFrame)/4;
+		            uint32_t *fdp = reinterpret_cast<uint32_t*>(static_cast<uint8_t*>(frag->get_data()) + i*sizeof(WIBEthFrame));
+		            std::cout << std::dec;
+		            for (size_t iwdt = 0; iwdt < std::min(wfs32, (size_t) 4); iwdt++)  // dumps just the first 4 words.  use wfs32 if you want them all
+                    {
+                        std::cout << iwdt << " : 10987654321098765432109876543210" << std::endl;
+                        std::cout << iwdt << " : " << std::bitset<32>{fdp[iwdt]} << std::endl;
+                    }
+                    std::cout << std::dec;
+                }
 
-		auto frame = reinterpret_cast<WIBEthFrame*>(static_cast<uint8_t*>(frag->get_data()) + i*sizeof(WIBEthFrame));
+		        auto frame = reinterpret_cast<WIBEthFrame*>(static_cast<uint8_t*>(frag->get_data()) + i*sizeof(WIBEthFrame));
 
                 //Get the timestamps from the WIB Frames.
                 //Best practice is to ensure that the
@@ -310,7 +314,7 @@ public:
                 timestamp_indices.emplace_back(frame_timestamp, i);
 
                 //Determine if we're in the first frame
-                bool first_frame = (frag_window_begin > frame_timestamp);
+                bool first_frame = (frag_window_begin >= frame_timestamp);
                 int start_tick = 0;
                 if (first_frame) {
                   //Turn these into doubles so we can go negative
@@ -324,9 +328,14 @@ public:
                     std::cout << "WARNING. FIRST FRAME BY TIME, BUT NOT BY ITERATION" << std::endl;
                   }
                   leftover_wib_ticks -= start_tick;
+
                 }
 
-		int adcvs = adc_vectors.size();  // convert to int
+                if(i==0){
+                    first_sample_timestamp = frame_timestamp + start_tick*512/16;
+                }
+
+		        int adcvs = adc_vectors.size();  // convert to int
                 int last_tick = 64;
                 //if the readout time is past the frame, don't change anything
                 //if frame is past readout time, determine where to stop
@@ -337,14 +346,14 @@ public:
                     std::cout << "Last frame. last tick: " << last_tick << std::endl;
                 }
 
-		for (int jChan = 0; jChan < adcvs; ++jChan)   // these are ints because get_adc wants ints.
-		  {
-		    for (int kSample = start_tick; kSample < last_tick; ++kSample)
-		      {
-			adc_vectors[jChan].push_back(frame->get_adc(jChan,kSample));
+		        for (int jChan = 0; jChan < adcvs; ++jChan)   // these are ints because get_adc wants ints.
+		        {
+		            for (int kSample = start_tick; kSample < last_tick; ++kSample)
+		            {
+			            adc_vectors[jChan].push_back(frame->get_adc(jChan,kSample));
                         temp_adcs.back()[jChan].push_back(frame->get_adc(jChan,kSample));
-		      }
-		  }
+		            }
+		        }
               
 		if (i == 0)
 		  {
@@ -463,7 +472,7 @@ public:
 		unsigned int offline_chan = hdchaninfo.offlchan;
 		if (offline_chan > fMaxChan) continue;
 
-		raw::RDTimeStamp rd_ts(frag->get_trigger_timestamp(), offline_chan);
+		raw::RDTimeStamp rd_ts(first_sample_timestamp, offline_chan);
 		timestamps.push_back(rd_ts);
 
 		float median = 0., sigma = 0.;
