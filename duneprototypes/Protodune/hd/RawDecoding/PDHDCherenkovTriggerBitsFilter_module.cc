@@ -32,6 +32,8 @@ class PDHDCherenkovTriggerBitsFilter : public art::EDFilter {
     std::string fTriggerTimestampLabel;
     std::string fLLTLabel;
 
+    bool fPassIfNoLLTs;
+
     std::set<std::string> fCherenkovTriggers;
     int fTimeToleranceDTSTicks;
 
@@ -43,6 +45,7 @@ PDHDCherenkovTriggerBitsFilter::PDHDCherenkovTriggerBitsFilter::PDHDCherenkovTri
   : EDFilter(pset)
   , fTriggerTimestampLabel(pset.get<std::string>("TriggerTimestampLabel"))
   , fLLTLabel(pset.get<std::string>("LLTLabel"))
+  , fPassIfNoLLTs(pset.get<bool>("PassIfNoLLTs",false))
   , fTimeToleranceDTSTicks(pset.get<int>("TimeToleranceDTSTicks",5))
   , fDebugLevel(pset.get<int>("DebugLevel",0))
 {
@@ -74,7 +77,7 @@ bool PDHDCherenkovTriggerBitsFilter::filter(art::Event & evt) {
     auto &llt_hsi_frames = *evt.getValidHandle<std::vector<dunedaq::detdataformats::HSIFrame>>(fLLTLabel);
     if(llt_hsi_frames.size()==0) {
         std::cout << "WARNING: NO LLT WORDS FOUND!" << std::endl;
-        return false;
+        return fPassIfNoLLTs;
     }
 
     if(fDebugLevel>0){

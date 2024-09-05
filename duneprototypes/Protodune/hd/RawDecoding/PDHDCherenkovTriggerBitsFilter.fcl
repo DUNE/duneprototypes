@@ -8,6 +8,7 @@ PDHDCherebkovTriggerBitsFilterDefault:
        TriggerTimestampLabel: "timingrawdecoder:daq"
        LLTLabel: "ctbrawdecoder:daqLLT"
        CherenkovTriggers: ["HxLx","HLx"]
+       PassIfNoLLTs: false
        DebugLevel: 0
 }
 
