@@ -1,0 +1,38 @@
+#include "services_dune.fcl"
+
+process_name: CBOpChannelGeo 
+
+services:{
+    TFileService:                 { fileName: "checkopchannel.root" }
+    TimeTracker:                  {}
+    RandomNumberGenerator:        {}
+    ExptGeoHelperInterface:       @local::dune_geometry_helper
+    Geometry:                     @local::dunecrpcb_geo
+    LArPropertiesService:         @local::dunefd_properties
+    DetectorClocksService:        @local::protodune_detectorclocks
+    DetectorPropertiesService:    @local::protodune_detproperties
+    SpaceCharge:                  @local::dunefd_spacecharge
+}
+
+source:
+{
+  module_type: RootInput
+  maxEvents: -1
+  fileNames: [ "detsim.root" ]
+}
+
+outputs: {}
+
+
+physics:
+{
+  analyzers:
+  {
+    checkopchannel:
+    {
+        module_type:                     "CheckOpChannelGeo"
+    }
+  }
+  analysis: [ checkopchannel ]
+  end_paths: [ analysis ]
+}
