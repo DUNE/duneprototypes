@@ -1,10 +1,10 @@
 #include "DAPHNEReaderPDHD.fcl"
-#include "HDF5RawInput2.fcl"
+#include "HDF5RawInput3.fcl"
 
 services:
 {
   TimeTracker:  {}
-  HDF5RawFile2Service:  {}
+  HDF5RawFile3Service:  {}
   TFileService: {
     fileName: "pdhd_daphne_decodermodule.root"
   } 
@@ -38,6 +38,6 @@ outputs:
   }
 }
 
-source: @local::hdf5rawinput2
+source: @local::hdf5rawinput3
 process_name: pdhddaphnedecoderjob
-physics.producers.pdhddaphne.DAPHNEInterface: { tool_type: "DAPHNEInterface1" }
+physics.producers.pdhddaphne.DAPHNEInterface: { tool_type: "DAPHNEInterface2" }

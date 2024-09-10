@@ -1,0 +1,9 @@
+BEGIN_PROLOG
+  pdhdgroundshakefilter: {
+    LogLevel: 0
+    module_type: "PDHDGroundShakeFilter"
+    RawDigitLabel: "tpcrawdecoder:daq"
+  }
+
+
+END_PROLOG

@@ -15,7 +15,7 @@ dune::DAPHNEChannelMapService::DAPHNEChannelMapService(fhicl::ParameterSet const
     throw cet::exception("File not found");
   }
   else
-    std::cout << "DAPHNE Channel Map: Building TPC wiremap from file " << channelMapFile << std::endl;
+    std::cout << "DAPHNE Channel Map: Building DAPHNE channel map from file " << channelMapFile << std::endl;
 
   fChannelMap.ReadMapFromFile(fullname);
 }

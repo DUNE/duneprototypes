@@ -44,7 +44,7 @@
 
 int main(int argc, char **argv)
 {
-  std::string channelMapFile("PD2HDChannelMap_WIBEth_electronics_v1.txt");
+  std::string channelMapFile("PD2HDChannelMap_WIBEth_visiblewires_v1.txt");
 
   std::ifstream inFile(channelMapFile, std::ios::in);
   std::string line;

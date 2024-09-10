@@ -11,6 +11,7 @@ PDHDTPCReaderDefaults:
   OutputInstance: "daq"
   APAList:     [ 1, 2, 3, 4 ]
   DecoderToolParams: @local::PDHDDataInterfaceWIB3Defaults 
+  OutputStatusTree: true
 }
 
 END_PROLOG

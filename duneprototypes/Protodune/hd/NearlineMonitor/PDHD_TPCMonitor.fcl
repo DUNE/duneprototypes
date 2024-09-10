@@ -1,0 +1,19 @@
+BEGIN_PROLOG
+
+PDHD_TPCMonitor_Defaults:
+{
+      module_type:     "PDHDTPCMonitor"
+      TPCInputModule:  "tpcrawdecoder"
+      TPCInstanceName: "daq"
+      RebinFactorX:     1
+      RebinFactorY:     10
+      HitThreshColl:    140  # for hit occupancy plots -- ADC from ped, collection planes
+      HitThreshInd:     140  # for hit occupancy plots -- ADC from ped, collection planes
+      HitDeadtimeColl:  100  # for hit occupancy plots -- ticks after threshold crossed before ready for next
+      HItDeadtimeInd:   100  # for hit occupancy plots -- ticks after threshold crossed before ready for next
+      NTicks:           5859 # so we can book the FFT histograms
+      CollPed:          800 # for booking ADC histograms
+      IndPed:           8200 # for booking ADC histograms
+}
+
+END_PROLOG

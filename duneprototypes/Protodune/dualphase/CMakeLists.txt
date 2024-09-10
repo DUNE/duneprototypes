@@ -75,6 +75,7 @@ cet_build_plugin(
                         
                         cetlib::cetlib cetlib_except::cetlib_except
                         ROOT::Core ROOT::Hist ROOT::Tree
+		                PostgreSQL::PostgreSQL
                         BASENAME_ONLY
 )
 
