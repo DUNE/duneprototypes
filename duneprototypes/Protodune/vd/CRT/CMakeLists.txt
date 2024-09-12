@@ -9,7 +9,6 @@ art_make( MODULE_LIBRARIES
 			art::Framework_Services_Registry
 			art_root_io::tfile_support
 			ROOT::Core
-<<<<<<< HEAD
  			art::Persistency_Common
 			art::Persistency_Provenance
 			art::Utilities canvas::canvas
@@ -23,16 +22,6 @@ art_make( MODULE_LIBRARIES
            DICT_LIBRARIES
                         lardataobj::Simulation
                         nusimdata::SimulationBase
-=======
- 			art::Persistency_Common canvas
-			art::Persistency_Provenance canvas
-			art::Utilities canvas
-			cetlib::cetlib cetlib_except
-			lardataobj_AnalysisBase
-			ROOT_BASIC_LIB_LIST
-                        larcoreobj_SimpleTypesAndConstants
-                        larcorealg::GeoAlgo
->>>>>>> 82760826859464f08cb018489c16009e21304cea
 )
 
 install_headers()
