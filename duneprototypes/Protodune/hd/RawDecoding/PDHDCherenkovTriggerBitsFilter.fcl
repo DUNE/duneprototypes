@@ -1,0 +1,15 @@
+# defaults for the PDHDCTBRawDecoder module
+
+BEGIN_PROLOG
+
+PDHDCherebkovTriggerBitsFilterDefault:
+{
+       module_type: "PDHDCherenkovTriggerBitsFilter"
+       TriggerTimestampLabel: "timingrawdecoder:daq"
+       LLTLabel: "ctbrawdecoder:daqLLT"
+       CherenkovTriggers: ["HxLx","HLx"]
+       PassIfNoLLTs: false
+       DebugLevel: 0
+}
+
+END_PROLOG
