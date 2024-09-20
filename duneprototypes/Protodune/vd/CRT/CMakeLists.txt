@@ -15,11 +15,13 @@ art_make( MODULE_LIBRARIES
 			cetlib::cetlib cetlib_except::cetlib_except
 			lardataobj::AnalysisBase
 			larcorealg::Geometry
+                        larcorealg::GeoAlgo
                         larcore::headers
 			ROOT::Core ROOT::Hist ROOT::Tree
                         larcoreobj::headers
                         larsim::MCCheater_ParticleInventoryService_service
            DICT_LIBRARIES
+                        larcorealg::GeoAlgo
                         lardataobj::Simulation
                         nusimdata::SimulationBase
 )
