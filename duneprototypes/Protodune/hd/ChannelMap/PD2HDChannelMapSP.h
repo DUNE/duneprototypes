@@ -61,6 +61,8 @@ public:
 
   HDChanInfo_t GetChanInfoFromOfflChan(unsigned int offlchan) const;
 
+  unsigned int GetNChannels() {return fNChans;};
+
 private:
 
   const unsigned int fNChans = 2560*4;

@@ -34,6 +34,7 @@ public:
    unsigned int wibframechan) const;
 
   dune::PD2HDChannelMapSP::HDChanInfo_t GetChanInfoFromOfflChan(unsigned int offlchan) const;
+  unsigned int GetNChannels() {return fHDChanMap.GetNChannels();};
 
 private:
 

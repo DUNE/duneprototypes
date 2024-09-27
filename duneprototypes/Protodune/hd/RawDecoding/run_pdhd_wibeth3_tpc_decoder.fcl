@@ -5,6 +5,7 @@
 source: @local::hdf5rawinput3
 
 physics.producers.tpcrawdecoder.DecoderToolParams: @local::PDHDDataInterfaceWIBEth3Defaults
+physics.producers.tpcrawdecoder.OutputStatusTree: true
 
 # redefine services block since we don't want to instantiate
 # the HDF5RawFile2Service which is included in run_pdhd_tpc_decoder.fcl

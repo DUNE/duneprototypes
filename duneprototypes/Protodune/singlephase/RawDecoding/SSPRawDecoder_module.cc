@@ -19,6 +19,8 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art_root_io/TFileService.h"
+#include "canvas/Persistency/Common/Assns.h"
+#include "art/Persistency/Common/PtrMaker.h"
 #include "dunepdlegacy/Services/ChannelMap/PdspChannelMapService.h"
 
 // artdaq and dunepdlegacy includes
@@ -28,6 +30,7 @@
 // larsoft includes
 #include "larcore/CoreUtils/ServiceUtil.h"
 #include "lardataobj/RawData/OpDetWaveform.h"
+#include "lardataobj/RawData/RDTimeStamp.h"
 #include "lardataobj/RecoBase/OpHit.h"
 #include "lardata/DetectorInfoServices/DetectorClocksService.h"
 #include "larcoreobj/SimpleTypesAndConstants/RawTypes.h"
@@ -171,13 +174,6 @@ private:
   std::map<size_t,TH1D*> trigger_type_; // internal vs. external  (16 internal, 48 external)
 
   //int smooth; // unused
-  
-  std::vector<raw::OpDetWaveform> waveforms; 
-  std::vector<raw::OpDetWaveform> ext_waveforms;
-  std::vector<raw::OpDetWaveform> int_waveforms;
-  std::vector<recob::OpHit> hits;
-  std::vector<recob::OpHit> ext_hits;
-  std::vector<recob::OpHit> int_hits;
 
 };
 
@@ -188,11 +184,17 @@ dune::SSPRawDecoder::SSPRawDecoder(fhicl::ParameterSet const & pset)
   reconfigure(pset);
   if (!fSplitTriggers) {
     produces< std::vector<raw::OpDetWaveform> > (fOutputDataLabel);
+    produces< std::vector<raw::RDTimeStamp> > (fOutputDataLabel);
+    produces<art::Assns<raw::OpDetWaveform,raw::RDTimeStamp> > (fOutputDataLabel);
     produces< std::vector<recob::OpHit> > (fOutputDataLabel);
   }
   else{
     produces< std::vector<raw::OpDetWaveform> > (fExtTrigOutputLabel);
+    produces< std::vector<raw::RDTimeStamp> > (fExtTrigOutputLabel);
+    produces<art::Assns<raw::OpDetWaveform,raw::RDTimeStamp> > (fExtTrigOutputLabel);
     produces< std::vector<raw::OpDetWaveform> > (fIntTrigOutputLabel);
+    produces< std::vector<raw::RDTimeStamp> > (fIntTrigOutputLabel);
+    produces<art::Assns<raw::OpDetWaveform,raw::RDTimeStamp> > (fIntTrigOutputLabel);
     produces< std::vector<recob::OpHit> > (fExtTrigOutputLabel);
     produces< std::vector<recob::OpHit> > (fIntTrigOutputLabel);
   }
@@ -335,11 +337,11 @@ void dune::SSPRawDecoder::getFragments(art::Event &evt, std::vector<artdaq::Frag
     {
       try { have_data &= (containerFragments->size() > 0); }
       catch(std::exception const&)  {
-	MF_LOG_ERROR("SSPRawDecoder") << "Run: " << evt.run()
-				      << ", SubRun: " << evt.subRun()
-				      << ", Event: " << eventNumber
-				      << " Container Fragments found but size is invalid";
-	have_data = false;
+        MF_LOG_ERROR("SSPRawDecoder") << "Run: " << evt.run()
+                                      << ", SubRun: " << evt.subRun()
+                                      << ", Event: " << eventNumber
+                                      << " Container Fragments found but size is invalid";
+        have_data = false;
       }
     }
 
@@ -382,12 +384,12 @@ void dune::SSPRawDecoder::getFragments(art::Event &evt, std::vector<artdaq::Frag
     {
       try { rawFragments->size(); }
       catch(std::exception const&) {
-	//std::cout << "WARNING: Raw SSP data not found in event " << eventNumber << std::endl;
-	MF_LOG_ERROR("SSPRawDecoder") << "Run: " << evt.run()
-				      << ", SubRun: " << evt.subRun()
-				      << ", Event: " << eventNumber
-				      << " Non-Container Fragments found but size is invalid";
-	have_data2=false;
+        //std::cout << "WARNING: Raw SSP data not found in event " << eventNumber << std::endl;
+        MF_LOG_ERROR("SSPRawDecoder") << "Run: " << evt.run()
+                                      << ", SubRun: " << evt.subRun()
+                                      << ", Event: " << eventNumber
+                                      << " Non-Container Fragments found but size is invalid";
+        have_data2=false;
       }
     }
 
@@ -445,16 +447,24 @@ void dune::SSPRawDecoder::produce(art::Event & evt){
   uint64_t ssptrigtime = 0;
   std::map<int, int> packets_per_fragment;
 
-  // just to make sure -- the std::move from the previous event should clear them out, but this is
-  // not guaranteed by the standard.
-
-  waveforms.clear();
-  int_waveforms.clear();
-  ext_waveforms.clear();
-  hits.clear();
-  int_hits.clear();
-  ext_hits.clear();
+  // move these from private members to local variables so they go out of scope when we are done
   
+  std::vector<raw::OpDetWaveform> waveforms;
+  std::vector<raw::RDTimeStamp> waveform_timestamps;
+  art::Assns<raw::OpDetWaveform,raw::RDTimeStamp> waveform_tsassocs;
+  
+  std::vector<raw::OpDetWaveform> ext_waveforms;
+  std::vector<raw::RDTimeStamp> ext_waveform_timestamps;
+  art::Assns<raw::OpDetWaveform,raw::RDTimeStamp> ext_waveform_tsassocs;
+
+  std::vector<raw::OpDetWaveform> int_waveforms;
+  std::vector<raw::RDTimeStamp> int_waveform_timestamps;
+  art::Assns<raw::OpDetWaveform,raw::RDTimeStamp> int_waveform_tsassocs;
+
+  std::vector<recob::OpHit> hits;
+  std::vector<recob::OpHit> ext_hits;
+  std::vector<recob::OpHit> int_hits;
+
   /// Process all packets:
   
   auto const clockData = art::ServiceHandle<detinfo::DetectorClocksService const>()->DataFor(evt);
@@ -632,15 +642,18 @@ void dune::SSPRawDecoder::produce(art::Event & evt){
       // Split into internal and external triggers if that has been set.
       if (!fSplitTriggers) {
         waveforms.emplace_back( Waveform );
+        waveform_timestamps.emplace_back(trig.timestamp_nova,0);
         hits.emplace_back( ConstructOpHit(clockData, trig, mappedchannel) );
       }
       else{
         if (trig.type == 48 ) {
           ext_waveforms.emplace_back( Waveform );
+          ext_waveform_timestamps.emplace_back(trig.timestamp_nova,0);
           ext_hits.emplace_back( ConstructOpHit(clockData, trig, mappedchannel) );
         }
         else if (trig.type == 16) {
           int_waveforms.emplace_back( Waveform );
+          int_waveform_timestamps.emplace_back(trig.timestamp_nova,0);
           int_hits.emplace_back( ConstructOpHit(clockData, trig, mappedchannel) );
         }
         else {
@@ -660,13 +673,36 @@ void dune::SSPRawDecoder::produce(art::Event & evt){
   n_event_packets_->Fill(allPacketsProcessed);
   
   if (!fSplitTriggers) {
+    art::PtrMaker<raw::OpDetWaveform> odwfpm(evt,fOutputDataLabel);
+    art::PtrMaker<raw::RDTimeStamp> rdtspm(evt,fOutputDataLabel);
+    for (size_t i=0; i<waveforms.size(); ++i) {
+      waveform_tsassocs.addSingle(odwfpm(i),rdtspm(i));
+    }
     evt.put(std::make_unique<decltype(waveforms)>(std::move(waveforms)), fOutputDataLabel);
+    evt.put(std::make_unique<decltype(waveform_timestamps)>(std::move(waveform_timestamps)), fOutputDataLabel);
+    evt.put(std::make_unique<decltype(waveform_tsassocs)>(std::move(waveform_tsassocs)), fOutputDataLabel);    
     evt.put(std::make_unique<decltype(hits)>(     std::move(hits)),      fOutputDataLabel);
   }
   else {
+    art::PtrMaker<raw::OpDetWaveform> odwfpm_ext(evt,fExtTrigOutputLabel);
+    art::PtrMaker<raw::RDTimeStamp> rdtspm_ext(evt,fExtTrigOutputLabel);
+    for (size_t i=0; i<ext_waveforms.size(); ++i) {
+      ext_waveform_tsassocs.addSingle(odwfpm_ext(i),rdtspm_ext(i));
+    }
+
+    art::PtrMaker<raw::OpDetWaveform> odwfpm_int(evt,fIntTrigOutputLabel);
+    art::PtrMaker<raw::RDTimeStamp> rdtspm_int(evt,fIntTrigOutputLabel);
+    for (size_t i=0; i<int_waveforms.size(); ++i) {
+      int_waveform_tsassocs.addSingle(odwfpm_int(i),rdtspm_int(i));
+    }
+    
     evt.put(std::make_unique<decltype(ext_waveforms)>(std::move(ext_waveforms)), fExtTrigOutputLabel);
+    evt.put(std::make_unique<decltype(ext_waveform_timestamps)>(std::move(ext_waveform_timestamps)), fExtTrigOutputLabel);
+    evt.put(std::make_unique<decltype(ext_waveform_tsassocs)>(std::move(ext_waveform_tsassocs)), fExtTrigOutputLabel);    
     evt.put(std::make_unique<decltype(ext_hits)>(     std::move(ext_hits)),      fExtTrigOutputLabel);
     evt.put(std::make_unique<decltype(int_waveforms)>(std::move(int_waveforms)), fIntTrigOutputLabel);
+    evt.put(std::make_unique<decltype(int_waveform_timestamps)>(std::move(int_waveform_timestamps)), fIntTrigOutputLabel);
+    evt.put(std::make_unique<decltype(int_waveform_tsassocs)>(std::move(int_waveform_tsassocs)), fIntTrigOutputLabel);    
     evt.put(std::make_unique<decltype(int_hits)>(     std::move(int_hits)),      fIntTrigOutputLabel);
   }
 }

@@ -4716,7 +4716,7 @@ if (fSaveHitInfo){
     fData->hit_view[i]   = hitlist[i]->WireID().Plane;
     fData->hit_wire[i]    = hitlist[i]->WireID().Wire;
     fData->hit_peakT[i]   = hitlist[i]->PeakTime();
-    fData->hit_chargesum[i]  = hitlist[i]->SummedADC();
+    fData->hit_chargesum[i]  = hitlist[i]->ROISummedADC();
     fData->hit_chargeintegral[i]  = hitlist[i]->Integral();
     fData->hit_ph[i]  = hitlist[i]->PeakAmplitude();
     fData->hit_startT[i] = hitlist[i]->StartTick();
@@ -5566,7 +5566,7 @@ if (fSaveTrackInfo) {
             TrackerData.hittrkpeakT[HitIterator2] = vhit[h]->PeakTime();
             TrackerData.hittrkchargeintegral[HitIterator2] = vhit[h]->Integral();
             TrackerData.hittrkph[HitIterator2] = vhit[h]->PeakAmplitude();
-            TrackerData.hittrkchargesum[HitIterator2] = vhit[h]->SummedADC();
+            TrackerData.hittrkchargesum[HitIterator2] = vhit[h]->ROISummedADC();
             TrackerData.hittrkstarT[HitIterator2] = vhit[h]->StartTick();
             TrackerData.hittrkendT[HitIterator2] = vhit[h]->EndTick();
             TrackerData.hittrkrms[HitIterator2] = vhit[h]->RMS();

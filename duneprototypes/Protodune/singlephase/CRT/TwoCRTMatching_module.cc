@@ -1013,7 +1013,7 @@ if(geom->PositionToTPCID(geo::Point_t(trackEndPositionX, trackEndPositionY, trac
 	  trkhitz=TrkPos.Z();
 	  WireID=hitlist[tpIndex]->WireID().Wire;
 	  TPCID=hitlist[tpIndex]->WireID().TPC;
-	  sumADC=hitlist[tpIndex]->SummedADC();
+	  sumADC=hitlist[tpIndex]->ROISummedADC();
 	  sigmaHit=hitlist[tpIndex]->SigmaIntegral();
 	  rangeTime=hitlist[tpIndex]->EndTick()-hitlist[tpIndex]->StartTick();
 	  fCRTdQTree->Fill();
