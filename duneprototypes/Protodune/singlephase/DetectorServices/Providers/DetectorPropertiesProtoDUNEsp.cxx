@@ -335,7 +335,7 @@ namespace spdp{
     // Calculate kinematic quantities.
 
     double bg = mom / mass;           // beta*gamma.
-    double gamma = square(1. + bg*bg);  // gamma.
+    double gamma = sqrt(1. + bg*bg);  // gamma.
     double beta = bg / gamma;         // beta (velocity).
     double mer = 0.001 * me / mass;   // electron mass / mass of incident particle.
     double tmax = 2.*me* bg*bg / (1. + 2.*gamma*mer + mer*mer);  // Maximum delta ray energy (MeV).
