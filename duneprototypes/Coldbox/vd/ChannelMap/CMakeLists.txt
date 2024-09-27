@@ -8,6 +8,9 @@ install_source()
 file(GLOB channel_map_file *chanmap*.txt)
 install_fw( LIST ${channel_map_file} )
 
+file(GLOB channel_map_file *ChannelMap*.txt)
+install_fw( LIST ${channel_map_file} )
+
 # Add plugin for each service
 
 if( DEFINED ENV{CANVAS_DIR} )
