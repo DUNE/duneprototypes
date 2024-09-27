@@ -26,6 +26,7 @@
 #include "canvas/Persistency/Common/FindManyP.h"
 //LArSoft includes
 
+#include "larcore/Geometry/AuxDetGeometry.h"
 #include "larcore/Geometry/Geometry.h"
 #include "lardataobj/Simulation/AuxDetHit.h"
 #include "lardataobj/RecoBase/TrackingTypes.h"
@@ -153,6 +154,7 @@ void CRT::CRTVDSim::produce(art::Event & e)
 
   // Retrieve geometry service
   art::ServiceHandle<geo::Geometry> geom;
+  auto const& auxDetGeom = art::ServiceHandle<geo::AuxDetGeometry>()->GetProvider();
   bool isDriftY = false;
   std::string gdml = geom->GDMLFile();
   if ( gdml.find("driftY")!=gdml.npos || gdml.find("drifty")!=gdml.npos ) isDriftY = true;
@@ -184,7 +186,8 @@ std::cout << "energy deposited : = " << eDep.GetEnergyDeposited() << std::endl;
 */
 
       // Smear hit position from true position
-      const geo::AuxDetGeo& adg = geom->AuxDet( eDep.GetID()/8 );
+      const geo::AuxDetGeo& adg = auxDetGeom.AuxDet( (eDep.GetID()-1)/8 );
+
 // adg.PrintAuxDetInfo(std::cout, "" , 3); std::cout << "\n";
       float x = midpoint.X();
       float y = midpoint.Y();

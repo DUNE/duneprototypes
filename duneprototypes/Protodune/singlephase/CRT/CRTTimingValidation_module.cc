@@ -11,12 +11,9 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
-#include "art/Framework/Principal/Run.h"
-#include "art/Framework/Principal/SubRun.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "canvas/Utilities/InputTag.h"
 #include "fhiclcpp/ParameterSet.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
 #include "canvas/Persistency/Common/Assns.h"
 #include "canvas/Persistency/Common/FindManyP.h"
 #include "art_root_io/TFileService.h"
@@ -24,17 +21,7 @@
 //LArSoft includes
 
 #include "lardataobj/Simulation/AuxDetSimChannel.h"
-#include "larcore/Geometry/Geometry.h"
-#include "nusimdata/SimulationBase/MCParticle.h"
-#include "nug4/ParticleNavigation/ParticleList.h"
-
-#include "larsim/MCCheater/BackTrackerService.h"
-#include "lardataobj/RecoBase/Track.h"
-#include "lardataobj/RecoBase/Hit.h"
-#include "larsim/MCCheater/ParticleInventoryService.h"
-
-#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
-#include "lardata/DetectorInfoServices/DetectorClocksService.h"
+#include "larcore/Geometry/AuxDetGeometry.h"
 
 #include "duneprototypes/Protodune/singlephase/CTB/data/pdspctb.h"
 #include "lardataobj/RawData/RDTimeStamp.h"
@@ -44,20 +31,14 @@
 #include "duneprototypes/Protodune/singlephase/CRT/data/CRTTrigger.h"
 
 //ROOT includes
-#include "TH1.h"
-#include "TH2.h"
-#include "TCanvas.h"
-#include "TImage.h"
 #include "TTree.h"
-#include "TH1D.h"
-#include "TStyle.h"
-#include "TString.h"
 
 //c++ includes
 #include <bitset>
-#include <numeric> //std::accumulate was moved from <algorithm> to <numeric> in c++14
 #include <iostream>
 #include <cmath>
+#include <unordered_map>
+#include <vector>
 
 using namespace std;   // Namespaces established to make life easier
 using namespace ROOT::Math;
@@ -259,7 +240,7 @@ void CRT::CRTTimingValidation::analyze(art::Event
   art::FindManyP < sim::AuxDetSimChannel > trigToSim(triggers, event, fCRTLabel);
 
   //Get a handle to the Geometry service to look up AuxDetGeos from module numbers
-  art::ServiceHandle < geo::Geometry > geom;
+  auto const& auxDetGeom = art::ServiceHandle<geo::AuxDetGeometry>()->GetProvider();
 
   //Mapping from channel to trigger
   std::unordered_map < size_t, double > prevTimes;
@@ -275,7 +256,7 @@ void CRT::CRTTimingValidation::analyze(art::Event
 
 	//cout<<ctbPixels[0]<<endl;
 
-        const auto & trigGeo = geom -> AuxDet(trigger.Channel()); // Get geo  
+        const auto & trigGeo = auxDetGeom.AuxDet(trigger.Channel()); // Get geo
         const auto & csens = trigGeo.SensitiveVolume(0);
         const auto center = csens.GetCenter();
         if (center.Z() < 100 and moduleCheckX(trigger.Channel())==1) trigger_F_X.push_back(tTrigger);

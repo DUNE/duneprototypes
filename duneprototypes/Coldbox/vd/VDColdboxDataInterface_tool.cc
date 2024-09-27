@@ -248,7 +248,7 @@ void VDColdboxDataInterface::getFragmentsForEvent(
   using dunedaq::fddetdataformats::WIBFrame;
   using dunedaq::fddetdataformats::WIBHeader;
 
-  art::ServiceHandle<dune::VDColdboxChannelMapService> channelMap;
+  art::ServiceHandle<dune::VDColdboxChannelMapService> wireReadout;
   
   std::deque<std::string> det_types
     = getMidLevelGroupNames(the_group);
@@ -304,7 +304,7 @@ void VDColdboxDataInterface::getFragmentsForEvent(
               const raw::RawDigit::ADCvector_t & v_adc = adc_vectors[iChan];
       	//std::cout << "Channel: " << iChan << " N ticks: " << v_adc.size() << " Timestamp: " << frag.get_trigger_timestamp() << std::endl;
 
-              int offline_chan = channelMap->getOfflChanFromSlotFiberChan(slot, fiber, iChan);
+              int offline_chan = wireReadout->getOfflChanFromSlotFiberChan(slot, fiber, iChan);
               if (offline_chan < 0) continue;
 	        if (offline_chan > maxchan) continue;
       	raw::RDTimeStamp rd_ts(frag.get_trigger_timestamp(), offline_chan);

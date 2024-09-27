@@ -61,6 +61,7 @@ namespace spdp{
       /// List of service providers we depend on
       using providers_type = lar::ProviderPack<
         geo::GeometryCore,
+        geo::WireReadoutGeom,
         detinfo::LArProperties
         >;
 
@@ -159,6 +160,7 @@ namespace spdp{
       DetectorPropertiesProtoDUNEsp();
       DetectorPropertiesProtoDUNEsp(fhicl::ParameterSet const& pset,
                          const geo::GeometryCore* geo,
+                         const geo::WireReadoutGeom* wireReadout,
                          const detinfo::LArProperties* lp,
                          std::set<std::string> const& ignore_params = {}
                          );
@@ -322,7 +324,7 @@ namespace spdp{
       // in principle could be replaced by a single providerpacl_type.
       const detinfo::LArProperties* fLP;
       const geo::GeometryCore* fGeo;
-
+      const geo::WireReadoutGeom* fWireReadoutGeom;
 
 
       bool                        fGetHVDriftfromMetaData;
