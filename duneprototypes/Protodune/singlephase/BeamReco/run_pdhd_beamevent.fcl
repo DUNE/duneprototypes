@@ -3,6 +3,7 @@
 #include "PDHDTimingRawDecoder.fcl"
 #include "messageservices_dune.fcl"
 #include "BeamEvent.fcl"
+#include "PDHDCTBRawDecoder.fcl"
 
 process_name: BeamEvent
 
@@ -40,12 +41,13 @@ physics:
  producers:
  {
   triggerrawdecoder: @local::PDHDTriggerReader3Defaults
+  ctbrawdecoder: @local::PDHDCTBRawDecoderDefaults
   timingrawdecoder: @local::PDHDTimingRawDecoder
   beamevent:          @local::pdhd_beamevent
  }
 
  #produce:  [ timingrawdecoder, ctbrawdecoder, beamevent ]
- produce:  [ triggerrawdecoder, timingrawdecoder, beamevent ]
+ produce:  [ triggerrawdecoder, ctbrawdecoder, timingrawdecoder, beamevent ]
  stream1: [ out1 ]
 
  trigger_paths:     [ produce ]

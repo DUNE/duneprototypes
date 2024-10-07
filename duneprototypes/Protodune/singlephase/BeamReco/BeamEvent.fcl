@@ -205,5 +205,7 @@ pdhd_beamevent.TimingCalibration: -.3791e-3
 pdhd_beamevent.MagnetCurrentName: "dip/acc/NORTH/NP04/POW/MBPL022699:i_Meas"
 pdhd_beamevent.SkipSpillInfo: true
 pdhd_beamevent.RunType: 1
+pdhd_beamevent.TriggerTimestampLabel: "timingrawdecoder:daq"
+pdhd_beamevent.LLTLabel: "ctbrawdecoder:daqLLT"
 
 END_PROLOG

@@ -28,6 +28,7 @@
 #include "lardataobj/RawData/RDTimeStamp.h"
 #include "dunecore/DuneObj/ProtoDUNETimeStamp.h"
 #include "detdataformats/trigger/TriggerCandidateData.hpp"
+#include "detdataformats/hsi/HSIFrame.hpp"
 #include <bitset>
 #include <iomanip>
 #include <utility>
@@ -56,6 +57,10 @@ typedef std::numeric_limits< double > dbl;
 class proto::BeamEvent : public art::EDProducer {
 public:
   explicit BeamEvent(fhicl::ParameterSet const & p);
+
+
+  static constexpr unsigned int const LLT_LPCHKV_MASK = 1 << 3; //LLT_3
+  static constexpr unsigned int const LLT_HPCHKV_MASK = 1 << 2; //LLT_2
 
   // The compiler-generated destructor is fine for non-base
   // classes without bare pointers or other resource use.
@@ -201,7 +206,8 @@ private:
   std::string fBundleName;
   std::string fXCETBundleName;
   std::string fOutputLabel;
-  std::string fTimingLabel, fTriggerLabel;
+  std::string fTimingLabel, fTriggerLabel, fLLTLabel;
+  int fTimeToleranceDTSTicks;
   std::string fURLStr;
   double fBFEpsilon, fXCETEpsilon;
   double fXCETFetchShift;
@@ -338,18 +344,18 @@ private:
 
   const std::vector<TCType> beam_types = {
     TCType::kCTBBeam, TCType::kCTBBeamChkvHL,
-    TCType::kCTBBeamChkvH, TCType::kCTBBeamChkvL,
-    TCType::kCTBBeamChkvHx, TCType::kCTBBeamChkvLx,
+    /*TCType::kCTBBeamChkvH, TCType::kCTBBeamChkvL,
+    TCType::kCTBBeamChkvHx, TCType::kCTBBeamChkvLx,*/
     TCType::kCTBBeamChkvHLx, TCType::kCTBBeamChkvHxL,
     TCType::kCTBBeamChkvHxLx
   };
 
-  const std::vector<TCType> cosmic_types = {
+  /*const std::vector<TCType> cosmic_types = {
     TCType::kCTBOffSpillCosmic,
     TCType::kCTBOffSpillCosmicJura,
     TCType::kCTBCosmic,
     TCType::kDTSCosmic
-  };
+  };*/
 
 };
 
@@ -361,6 +367,8 @@ proto::BeamEvent::BeamEvent(fhicl::ParameterSet const & p)
     fOutputLabel(p.get<std::string>("OutputLabel")),
     fTimingLabel(p.get<std::string>("TimingLabel", "timingrawdecoder:daq")),
     fTriggerLabel(p.get<std::string>("TriggerLabel", "triggerrawdecoder:daq")),
+    fLLTLabel(p.get<std::string>("LLTLabel", "ctbrawdecoder:daqLLT")),
+    fTimeToleranceDTSTicks(p.get<int>("fTimeToleranceDTSTicks", 5)),
     fURLStr(p.get<std::string>("URLStr")),
     fBFEpsilon(p.get<double>("BFEpsilon")),
     fXCETEpsilon(p.get<double>("XCETEpsilon")),
@@ -551,17 +559,18 @@ void proto::BeamEvent::GetRawDecoderInfo(art::Event & e){
   //}
 
   if (fRunType == RunType::kPDHD) {
+
     using TriggerCandidate = dunedaq::trgdataformats::TriggerCandidateData;
     auto trigger_candidate_handle
         = e.getValidHandle<std::vector<TriggerCandidate>>(fTriggerLabel);
 
     //TODO -- Get the trigger candidates and loop over them,
-    //        need to look for the cherenkov statuses
+    //        look for beam 
     size_t ntc = trigger_candidate_handle->size();
     if (fPrintDebug) std::cout << "Have " << ntc << " TCs" << std::endl;
     bool found_beam = false;
     bool found_cosmic = false;
-    bool found_ckov = false;
+    //bool found_ckov = false;
     for (const auto & tc : (*trigger_candidate_handle)) {
       if (fPrintDebug) std::cout << "\tType: " <<
                    dunedaq::trgdataformats::get_trigger_candidate_type_names().at(
@@ -578,19 +587,13 @@ void proto::BeamEvent::GetRawDecoderInfo(art::Event & e){
       found_beam |= (find_type != beam_types.end());
 
       //Check for Cherenkov-specific TC
-      if ((find_type != beam_types.end()) && (tc.type != TCType::kCTBBeam)) {
+      /*if ((find_type != beam_types.end()) && (tc.type != TCType::kCTBBeam)) {
         if (found_ckov) {
           throw cet::exception("BeamEvent_module.cc") <<
           "UNEXPECTED ERROR: FOUND MULTIPLE CTB TCs MATCHING THE EVENT TIMESTAMP";
         }
 
         found_ckov = true;
-
-        beam::CKov status0, status1;
-        status0.timeStamp = -1.;
-        status1.timeStamp = -1.;
-        status0.trigger = -1;
-        status1.trigger = -1;
 
         if (tc.type == TCType::kCTBBeamChkvHL) {
           if (fPrintDebug) std::cout << "High Low" << std::endl;
@@ -630,12 +633,12 @@ void proto::BeamEvent::GetRawDecoderInfo(art::Event & e){
         }
         beamevt->SetCKov0(status0);
         beamevt->SetCKov1(status1);
-      }
+      }*/
 
       //Check for cosmics
-      auto find_cosmic = std::find(cosmic_types.begin(), cosmic_types.end(),
+      /*auto find_cosmic = std::find(cosmic_types.begin(), cosmic_types.end(),
                                    tc.type);
-      found_cosmic |= (find_cosmic != cosmic_types.end());
+      found_cosmic |= (find_cosmic != cosmic_types.end());*/
     }
 
     if (found_beam && fPrintDebug) std::cout << "Found beam" << std::endl;
@@ -651,6 +654,62 @@ void proto::BeamEvent::GetRawDecoderInfo(art::Event & e){
     //Because I'm dumb and hardcoded this need to translate for PDHD
     RDTSTrigger = (found_beam ? 12 : 8);
 
+    auto &llt_hsi_frames = *e.getValidHandle<
+        std::vector<dunedaq::detdataformats::HSIFrame>>(fLLTLabel);
+
+    /*if (llt_hsi_frames.size()==0) { // TODO -- DECIDE WHAT TO DO
+        std::cout << "WARNING: NO LLT WORDS FOUND!" << std::endl;
+        return fPassIfNoLLTs;
+    }*/
+
+    if (fPrintDebug) {
+        std::cout << "Found " << llt_hsi_frames.size() <<
+                     " LLT HSI frames." << std::endl;
+    }
+
+    //bool found_lpchkv_hit = false;
+    //bool found_hpchkv_hit = false;
+    beam::CKov status0, status1;
+    status0.timeStamp = -1.;
+    status1.timeStamp = -1.;
+    status0.trigger = 0;
+    status1.trigger = 0;
+
+
+    for(auto const& llt_frame : llt_hsi_frames){
+
+      if(fPrintDebug){
+          std::cout << "\t\tLLT -- Timestamp=" << llt_frame.get_timestamp()
+                    << "  TriggerBits=" << llt_frame.trigger << std::endl;
+      }
+
+      long long int llt_timestamp = llt_frame.get_timestamp();
+      long long int the_timestamp = (long long int)RDTS.GetTimeStamp();
+      if (std::abs(llt_timestamp - the_timestamp) >
+          fTimeToleranceDTSTicks)
+        continue;
+
+      if(fPrintDebug){
+          std::cout << "\t\tMatching LLT (tdiff=" <<
+                       std::abs(llt_timestamp-the_timestamp) << ")."
+                    << " LP hit? " << (llt_frame.trigger & LLT_LPCHKV_MASK)
+                    << " HP hit? " << (llt_frame.trigger & LLT_HPCHKV_MASK)
+                    << std::endl;
+      }
+
+      if (llt_frame.trigger & LLT_LPCHKV_MASK) {
+        status1.trigger = 1;
+        status1.timeStamp = llt_timestamp;
+        //found_lpchkv_hit = true;
+      }
+      if (llt_frame.trigger & LLT_HPCHKV_MASK) {
+        status0.trigger = 1;
+        status0.timeStamp = llt_timestamp;
+        //found_hpchkv_hit = true;
+      }
+    }
+    beamevt->SetCKov0(status0);
+    beamevt->SetCKov1(status1);
   }
 }
 
