@@ -1,0 +1,16 @@
+# defaults for the PDHDCTBRawDecoder module
+
+BEGIN_PROLOG
+
+PDHDCTBRawDecoderDefaults:
+{
+  module_type: "PDHDCTBRawDecoder"
+  InputLabel:  "daq"
+  ProcessLLTs: true
+  ProcessHLTs: true
+  OutputInstanceLLT: "ctbLLT"
+  OutputInstanceHLT: "ctbHLT"
+  DebugLevel: 0
+}
+
+END_PROLOG
