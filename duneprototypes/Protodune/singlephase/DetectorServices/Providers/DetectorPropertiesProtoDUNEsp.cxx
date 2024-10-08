@@ -545,7 +545,7 @@ namespace spdp{
       for(auto const& tpcg : fGeo->Iterate<geo::TPCGeo>(cryostat.ID())) {
         auto const& tpcid = tpcg.ID();
         auto const tpc = tpcid.TPC;
-        const double dir(to_int(tpcg.DriftSign()));
+        const double dir(-to_int(tpcg.DriftSign()));
         drift_direction[cstat][tpc] = dir;
         int nplane = fWireReadoutGeom->Nplanes(tpcid);
         x_ticks_offsets[cstat][tpc].resize(nplane, 0.);
