@@ -30,8 +30,8 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
-#include "art/Framework/Principal/Run.h"
-#include "art/Framework/Principal/SubRun.h"
+// #include "art/Framework/Principal/Run.h"
+// #include "art/Framework/Principal/SubRun.h"
 #include "canvas/Persistency/Common/PtrVector.h"
 #include "canvas/Utilities/InputTag.h"
 #include "fhiclcpp/ParameterSet.h"
@@ -42,7 +42,7 @@
 
 //LArSoft includes
 #include "lardataobj/Simulation/AuxDetSimChannel.h"
-#include "larcore/Geometry/Geometry.h"
+#include "larcore/Geometry/AuxDetGeometry.h"
 
 //local includes
 //#include "CRTTrigger.h"
@@ -147,7 +147,7 @@ void CRT::CRTSim::produce(art::Event & e)
   art::PtrMaker<CRT::Trigger> makeTrigPtr(e);
 
   //Get access to geometry for each event (TODO: -> subrun?) in case CRTs move later
-  art::ServiceHandle<geo::Geometry> geom;
+  auto const& auxDetGeom = art::ServiceHandle<geo::AuxDetGeometry>()->GetProvider();
 
   //Group AuxDetSimChannels by module they came from for easier access later.  Storing AuxDetSimChannels as art::Ptrs so I can make Assns later.
   //TODO: I'm spending a lot of effort and confusing code on keeping track of sim::AuxDetSimChannels for Assns at the end of this module.  
@@ -156,7 +156,7 @@ void CRT::CRTSim::produce(art::Event & e)
   for(size_t channelPos = 0; channelPos < channels->size(); ++channelPos)
   {
     const auto id = (*channels)[channelPos].AuxDetID();
-    const auto& det = geom->AuxDet(id);
+    const auto& det = auxDetGeom.AuxDet(id);
     if(det.Name().find("CRT") != std::string::npos) //If this is a CRT AuxDet
     {
       moduleToChannels[id].push_back(makeSimPtr(channelPos)); 

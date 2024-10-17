@@ -110,7 +110,7 @@ public:
   void getFragmentsForEvent(dunedaq::hdf5libs::HDF5RawDataFile::record_id_t &rid, RawDigits& raw_digits, RDTimeStamps &timestamps, int apano)
   {
     using dunedaq::fddetdataformats::WIBEthFrame;
-    art::ServiceHandle<dune::PD2HDChannelMapService> channelMap;
+    art::ServiceHandle<dune::PD2HDChannelMapService> wireReadout;
     art::ServiceHandle<dune::HDF5RawFile2Service> rawFileService;
     auto rf = rawFileService->GetPtr();
     auto sourceids = rf->get_source_ids(rid);
@@ -247,7 +247,7 @@ public:
 
 		size_t wibframechan = iChan + 64*locstream; 
 
-		auto hdchaninfo = channelMap->GetChanInfoFromWIBElements (crate, slotloc, link, wibframechan);
+                auto hdchaninfo = wireReadout->GetChanInfoFromWIBElements (crate, slotloc, link, wibframechan); 
 		if (fDebugLevel > 2)
 		  {
 		    std::cout << "PDHDDataInterfaceToolWIBEth: wibframechan, valid: " << wibframechan << " " << hdchaninfo.valid << std::endl;

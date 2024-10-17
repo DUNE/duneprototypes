@@ -431,7 +431,7 @@ void dune::SSPRawDecoder::endJob(){
 void dune::SSPRawDecoder::produce(art::Event & evt){
 
   art::ServiceHandle<art::TFileService> tFileService;
-  art::ServiceHandle<dune::PdspChannelMapService> channelMap;
+  art::ServiceHandle<dune::PdspChannelMapService> wireReadout;
 
   //MF_LOG_INFO("SSPRawDecoder") << "-------------------- SSP RawDecoder -------------------";
   // Implementation of required member function here.
@@ -553,7 +553,7 @@ void dune::SSPRawDecoder::produce(art::Event & evt){
       // map the channel number to offline if requested
       
       unsigned int mappedchannel = channel;
-      if (fUseChannelMap) mappedchannel = channelMap->SSPOfflineChannelFromOnlineChannel(channel);
+      if (fUseChannelMap) mappedchannel = wireReadout->SSPOfflineChannelFromOnlineChannel(channel);
       
       // Get information from the header, //added by Jingbo
       

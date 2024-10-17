@@ -193,7 +193,7 @@ bool dune::FelixRawDecoder::_process(
       << "   fragmentID = " << frag.fragmentID()
       << "   fragmentType = " << (unsigned)frag.type()
       << "   Timestamp =  " << frag.timestamp();
-  art::ServiceHandle<dune::PdspChannelMapService> channelMap;
+  art::ServiceHandle<dune::PdspChannelMapService> wireReadout;
   //Load overlay class.
   dune::FelixFragment felix(frag);
   //Get detector elemen number
@@ -221,7 +221,7 @@ bool dune::FelixRawDecoder::_process(
       v_adc.push_back(waveform.at(nframe));  
     }
     int offlineChannel = -1;
-    offlineChannel = channelMap->GetOfflineNumberFromDetectorElements(crate, slot, fiber, ch,dune::PdspChannelMapService::kFELIX); // FIXME
+    offlineChannel = wireReadout->GetOfflineNumberFromDetectorElements(crate, slot, fiber, ch,dune::PdspChannelMapService::kFELIX); // FIXME
     // Push to raw_digits.
     raw::RawDigit raw_digit(offlineChannel, n_frames, v_adc);
     raw_digits.push_back(raw_digit);

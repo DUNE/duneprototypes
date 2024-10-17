@@ -19,6 +19,7 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "lardataobj/RecoBase/Hit.h"
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
+#include "larcore/Geometry/WireReadout.h"
 #include "larcore/Geometry/Geometry.h"
 #include "larcoreobj/SimpleTypesAndConstants/geo_types.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
@@ -106,8 +107,6 @@ namespace PDSPHitmonitor_module{
     std::vector<TProfile*> fRMSAPAViewV_prof;
     std::vector<TProfile*> fRMSAPAViewZ_prof;
 
-    geo::GeometryCore const * fGeom = &*(art::ServiceHandle<geo::Geometry>());
-
     std::vector<unsigned int> fApaLabelNum;
     
   };
@@ -133,9 +132,11 @@ namespace PDSPHitmonitor_module{
     art::ServiceHandle<art::TFileService> tfs;
 
     // Accquiring geometry data
-    fNofAPA=fGeom->NTPC()*fGeom->Ncryostats()/2;
-    fChansPerAPA = fGeom->Nchannels()/fNofAPA;
-    mf::LogVerbatim("HitMonitor") << " NTPCs = " << fGeom->NTPC() << " , Ncryostats = " << fGeom->Ncryostats() << " , NofAPA = " << fNofAPA << " , ChansPerAPA = " << fChansPerAPA << std::endl;
+    art::ServiceHandle<geo::Geometry> geom;
+    auto const& wireReadout = art::ServiceHandle<geo::WireReadout>()->Get();
+    fNofAPA=geom->NTPC()*geom->Ncryostats()/2;
+    fChansPerAPA = wireReadout.Nchannels()/fNofAPA;
+    mf::LogVerbatim("HitMonitor") << " NTPCs = " << geom->NTPC() << " , Ncryostats = " << geom->Ncryostats() << " , NofAPA = " << fNofAPA << " , ChansPerAPA = " << fChansPerAPA << std::endl;
 
     // loop through channels in the first APA to find the channel boundaries for each view
     // will adjust for desired APA after
@@ -148,15 +149,15 @@ namespace PDSPHitmonitor_module{
     fZ1ChanMin = 0;
     fZ1ChanMax = fChansPerAPA - 1;
     for(unsigned int c = fUChanMin + 1; c < fZ1ChanMax; c++){
-      if(fGeom->View(c) == geo::kV && fGeom->View(c-1) == geo::kU){
+      if(wireReadout.View(c) == geo::kV && wireReadout.View(c-1) == geo::kU){
         fVChanMin = c;
         fUChanMax = c - 1;
       }
-      if(fGeom->View(c) == geo::kZ && fGeom->View(c-1) == geo::kV){
+      if(wireReadout.View(c) == geo::kZ && wireReadout.View(c-1) == geo::kV){
         fZ0ChanMin = c;
         fVChanMax = c-1;
       }
-      if(fGeom->View(c) == geo::kZ && fGeom->ChannelToWire(c)[0].TPC == fGeom->ChannelToWire(c-1)[0].TPC + 1){
+      if(wireReadout.View(c) == geo::kZ && wireReadout.ChannelToWire(c)[0].TPC == wireReadout.ChannelToWire(c-1)[0].TPC + 1){
         fZ1ChanMin = c;
         fZ0ChanMax = c-1;
       }

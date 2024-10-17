@@ -8,6 +8,7 @@
 // LArSoft includes
 #include "DetectorPropertiesProtoDUNEsp.h"
 #include "larcorealg/CoreUtils/ProviderUtil.h" // lar::IgnorableProviderConfigKeys()
+#include "larcorealg/Geometry/WireReadoutGeom.h"
 #include "larcorealg/Geometry/GeometryCore.h"
 #include "larcorealg/Geometry/CryostatGeo.h"
 #include "larcorealg/Geometry/TPCGeo.h"
@@ -15,10 +16,8 @@
 #include "larcoreobj/SimpleTypesAndConstants/PhysicalConstants.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
-
-
 // Art includes
-#include "fhiclcpp/make_ParameterSet.h"
+#include "cetlib/pow.h"
 
 // C/C++ libraries
 #include <sstream> // std::ostringstream
@@ -41,16 +40,10 @@
 
 
 
+using cet::square;
 
 
 
-
-namespace {
-
-  template <typename T>
-  inline T sqr(T v) { return v*v; }
-
-} // local namespace
 namespace spdp{
   //--------------------------------------------------------------------
   DetectorPropertiesProtoDUNEsp::DetectorPropertiesProtoDUNEsp() :
@@ -62,10 +55,11 @@ namespace spdp{
   //--------------------------------------------------------------------
   DetectorPropertiesProtoDUNEsp::DetectorPropertiesProtoDUNEsp(fhicl::ParameterSet const& pset,
                                                                const geo::GeometryCore* geo,
+                                                               const geo::WireReadoutGeom* wireReadout,
                                                                const detinfo::LArProperties* lp,
                                                                std::set<std::string> const& ignore_params /* = {} */
                                                                ):
-    fLP(lp), fGeo(geo)
+    fLP(lp), fGeo(geo), fWireReadoutGeom(wireReadout)
   {
     {
       mf::LogInfo debug("setupProvider<DetectorPropertiesStandard>");
@@ -85,6 +79,7 @@ namespace spdp{
                                                                ):
     DetectorPropertiesProtoDUNEsp(pset,
                                   providers.get<geo::GeometryCore>(),
+                                  providers.get<geo::WireReadoutGeom>(),
                                   providers.get<detinfo::LArProperties>(),
                                   ignore_params
                                   )
@@ -362,7 +357,7 @@ namespace spdp{
 
     // Calculate stopping number.
 
-    double B = 0.5 * std::log(2.*me*bg*bg*tcut / (1.e-12 * sqr(fLP->ExcitationEnergy())))
+    double B = 0.5 * std::log(2.*me*bg*bg*tcut / (1.e-12 * square(fLP->ExcitationEnergy())))
       - 0.5 * beta*beta * (1. + tcut / tmax) - 0.5 * delta;
 
     // Don't let the stopping number become negative.
@@ -547,15 +542,16 @@ namespace spdp{
       auto const cstat = cryostat.ID().Cryostat;
       x_ticks_offsets[cstat].resize(cryostat.NTPC());
       drift_direction[cstat].resize(cryostat.NTPC());
-      for(auto const& tpcgeom : fGeo->Iterate<geo::TPCGeo>(cryostat.ID())) {
-        auto const tpc = tpcgeom.ID().TPC;
-        const double dir((tpcgeom.DriftDirection() == geo::kNegX) ? +1.0 :-1.0);
+      for(auto const& tpcg : fGeo->Iterate<geo::TPCGeo>(cryostat.ID())) {
+        auto const& tpcid = tpcg.ID();
+        auto const tpc = tpcid.TPC;
+        const double dir(-to_int(tpcg.DriftSign()));
         drift_direction[cstat][tpc] = dir;
-        int nplane = tpcgeom.Nplanes();
+        int nplane = fWireReadoutGeom->Nplanes(tpcid);
         x_ticks_offsets[cstat][tpc].resize(nplane, 0.);
 
-          auto const xyz = tpcgeom.Plane(0).GetCenter();
-        for(auto const& pgeom : fGeo->Iterate<geo::PlaneGeo>()) {
+        auto const xyz = fWireReadoutGeom->Plane({tpcid, 0}).GetCenter();
+        for(auto const& pgeom : fWireReadoutGeom->Iterate<geo::PlaneGeo>()) {
           auto const plane = pgeom.ID().Plane;
           x_ticks_offsets[cstat][tpc][plane] = -xyz.X()/(dir * x_ticks_coefficient) + triggerOffset;
 
@@ -593,7 +589,7 @@ namespace spdp{
   {
 
     std::ostringstream errors;
-    auto const views = fGeo->Views();
+    auto const views = fWireReadoutGeom->Views();
 
     if ((views.count(geo::kU) != 0) != fHasTimeOffsetU) {
       if (fHasTimeOffsetU)

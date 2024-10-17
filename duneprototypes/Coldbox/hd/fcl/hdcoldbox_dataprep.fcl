@@ -26,6 +26,7 @@ services:
   IFDH:              {}
 
   ChannelStatusService: @local::data.ChannelStatusService_hdcb1     # Cold running
+AuxDetGeometry: @local::protodunev7_auxdet_geo
   Geometry: @local::protodunev7_geo
 
 }

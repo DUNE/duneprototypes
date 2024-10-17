@@ -36,6 +36,7 @@ services:
 
 #services.FileCatalogMetadata.applicationVersion: "v08_54_00"
 
+services.AuxDetGeometry: @local::protodunedphase_auxdet_geo
 services.Geometry: @local::protodunedphase_geo
 services.DetectorPropertiesService:    @local::protodunedphase_detproperties
 services.RawDigitPrepService:          @local::adcprep_with_tools_data

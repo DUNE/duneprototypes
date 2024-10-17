@@ -119,7 +119,7 @@ void HDColdboxDataInterface::getFragmentsForEvent(hid_t the_group, RawDigits& ra
   using dunedaq::fddetdataformats::WIBFrame;
   using dunedaq::fddetdataformats::WIBHeader;
   
-  art::ServiceHandle<dune::PdspChannelMapService> channelMap;
+  art::ServiceHandle<dune::PdspChannelMapService> wireReadout;
 
   std::deque<std::string> det_types
     = getMidLevelGroupNames(the_group);
@@ -220,7 +220,7 @@ void HDColdboxDataInterface::getFragmentsForEvent(hid_t the_group, RawDigits& ra
 		}
 
 	      //In the channel map call, the crate number is ill-defined for the HD coldbox, as there is only one crate, and the dataprep and event display have room for six.  Pick Default Crate number 3 to send in to the call
-	      unsigned int offline_chan = channelMap->GetOfflineNumberFromDetectorElements(fDefaultCrate, slot, fiberloc, chloc, dune::PdspChannelMapService::kFELIX);
+	      unsigned int offline_chan = wireReadout->GetOfflineNumberFromDetectorElements(fDefaultCrate, slot, fiberloc, chloc, dune::PdspChannelMapService::kFELIX);
 	      if (fDebugLevel > 0)
 		{
 		  std::cout << "HDColdboxDataInterface : " << "iChan : " << iChan << std::endl;

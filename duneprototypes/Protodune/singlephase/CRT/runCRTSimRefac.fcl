@@ -18,7 +18,6 @@ services:
 }
 #services.message.destinations.LogStandardOut.threshold: "INFO" 
 #services.Geometry.GDML: "protodune_v7_refactored_nowires.gmdl"
-#services.Geometry.ROOT: "protodune_v7_refactored_nowires.gmdl"
 dune_message_services_prod_debug.destinations.LogWarningFile.categories:
 {
   timeToHits: { limit: 1000 }

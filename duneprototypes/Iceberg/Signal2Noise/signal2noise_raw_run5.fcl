@@ -17,8 +17,9 @@ services:
   message:      @local::dune_message_services_prod
 
   FileCatalogMetadata: @local::art_file_catalog_data
-  ExptGeoHelperInterface:       @local::dune_geometry_helper
+  WireReadout:       @local::dune_wire_readout
   GeometryConfigurationWriter: {}
+AuxDetGeometry: @local::iceberg_auxdet_geo
   Geometry:            @local::iceberg_geo
 }
 
