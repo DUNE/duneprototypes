@@ -79,6 +79,7 @@ public:
 
   // Selected optional functions.
   void beginJob() override;
+  void beginRun(art::Run & run) override;
 
   uint64_t joinHighLow(double,double);
 
@@ -281,6 +282,7 @@ private:
   bool   fForceMatchS11;
   
   double fTimingCalibration;
+  std::vector<std::pair<std::pair<size_t, size_t>, double>> fPDHDTimingCalibrations;
   double fCalibrationTolerance;
   double fOffsetTAI;
   double fS11DiffUpper; 
@@ -442,6 +444,8 @@ proto::BeamEvent::BeamEvent(fhicl::ParameterSet const & p)
 
 
     fTimingCalibration(p.get<double>("TimingCalibration")),
+    fPDHDTimingCalibrations(p.get<std::vector<std::pair<std::pair<size_t, size_t>, double>>>(
+        "PDHDTimingCalibrations", {})),
     fCalibrationTolerance(p.get<double>("CalibrationTolerance")),
     fOffsetTAI(p.get<double>("OffsetTAI")),
 
@@ -475,9 +479,6 @@ proto::BeamEvent::BeamEvent(fhicl::ParameterSet const & p)
   //Deminsion of Fibers
   std::vector< std::pair<std::string, double> > tempFiberDims = p.get< std::vector<std::pair<std::string,double> > >("Dimension");
   fFiberDimension = std::map<std::string, double>(tempFiberDims.begin(), tempFiberDims.end());
-
-  
-
 }
 // END Constructor
 ////////////////////////
@@ -2072,6 +2073,26 @@ void proto::BeamEvent::parseXBPF(uint64_t time){
 // END BeamEvent::parseXBFP
 ////////////////////////
 
+
+void proto::BeamEvent::beginRun(art::Run & run) {
+  //The timing calibration changed several times during PDHD Beam Run.
+  //Get the according one here
+  if (fRunType == kPDHD) {
+    //Iterate over the vector of
+    //  { {range_low, range_high}, calibration }
+    for (const auto & [range, cal] : fPDHDTimingCalibrations) {
+      const auto & run_number = run.id().run();
+      if (range.first <= run_number && run_number < range.second) {
+        fTimingCalibration = cal;
+        std::cout << "Found timing calibration: " << cal <<
+                     " for run number " << run_number <<
+                     " within range (" << range.first << ", " <<
+                     range.second << ")" << std::endl;
+        break;
+      }
+    }
+  }
+}
 
 void proto::BeamEvent::beginJob()
 {
