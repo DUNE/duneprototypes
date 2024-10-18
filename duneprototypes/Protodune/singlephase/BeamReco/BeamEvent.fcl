@@ -193,6 +193,26 @@ proto_beamevent:
 #units of ns
   UpstreamToDownstream:  500.
 
+  MagnetCurrentName: "dip/acc/NORTH/NP04/POW/MBPL022699:current"
+  SkipSpillInfo: false
+  RunType: 0
 }
+
+pdhd_beamevent: @local::proto_beamevent
+pdhd_beamevent.BundleName: "DUNE_CERN_JUN2024_ANALYSIS"
+#pdhd_beamevent.TimingCalibration: -.5412e-3
+pdhd_beamevent.TimingCalibration: -.3791e-3
+pdhd_beamevent.MagnetCurrentName: "dip/acc/NORTH/NP04/POW/MBPL022699:i_Meas"
+pdhd_beamevent.SkipSpillInfo: true
+pdhd_beamevent.RunType: 1
+pdhd_beamevent.TriggerTimestampLabel: "timingrawdecoder:daq"
+pdhd_beamevent.LLTLabel: "ctbrawdecoder:daqLLT"
+pdhd_beamevent.PDHDTimingCalibrations: [
+  [[0, 27432], -.5412e-3], ##Works all the way down to 27305 which I think is the earliest beam run
+  [[27432, 28837], -.3791e-3], ##Until 08/22
+  [[28837, 28871], -1.0235e-3], ## 08/22 -- 08/23
+  [[28871, 28881], -.2105e-3], ## 08/23 -- Really it's just 28880
+  [[28881, 2147483647], .3847e-3] ## Looks good up to 29194 -- should be good for the last run 29195
+]
 
 END_PROLOG

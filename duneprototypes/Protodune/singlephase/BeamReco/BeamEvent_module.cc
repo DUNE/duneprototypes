@@ -27,6 +27,8 @@
 #include "duneprototypes/Protodune/singlephase/CTB/data/pdspctb.h"
 #include "lardataobj/RawData/RDTimeStamp.h"
 #include "dunecore/DuneObj/ProtoDUNETimeStamp.h"
+#include "detdataformats/trigger/TriggerCandidateData.hpp"
+#include "detdataformats/hsi/HSIFrame.hpp"
 #include <bitset>
 #include <iomanip>
 #include <utility>
@@ -40,6 +42,7 @@
 
 namespace proto {
   class BeamEvent;
+  using TCType = dunedaq::trgdataformats::TriggerCandidateData::Type;
 }
 
 enum tofChan{
@@ -54,6 +57,10 @@ typedef std::numeric_limits< double > dbl;
 class proto::BeamEvent : public art::EDProducer {
 public:
   explicit BeamEvent(fhicl::ParameterSet const & p);
+
+
+  static constexpr unsigned int const LLT_LPCHKV_MASK = 1 << 3; //LLT_3
+  static constexpr unsigned int const LLT_HPCHKV_MASK = 1 << 2; //LLT_2
 
   // The compiler-generated destructor is fine for non-base
   // classes without bare pointers or other resource use.
@@ -72,6 +79,7 @@ public:
 
   // Selected optional functions.
   void beginJob() override;
+  void beginRun(art::Run & run) override;
 
   uint64_t joinHighLow(double,double);
 
@@ -84,6 +92,7 @@ public:
 
   void TimeIn(art::Event &, uint64_t);
   void GetSpillInfo(art::Event &);
+  void SetDummySpillInfo();
   void MatchBeamToTPC();
   void MatchS11ToGen();
   void SetBeamEvent(); 
@@ -98,6 +107,7 @@ public:
  
   void  InitXBPFInfo(beam::ProtoDUNEBeamSpill *);
   void  parseGeneralXBPF(std::string, uint64_t, size_t);
+  void  FillFBM(std::vector<double> & data, beam::FBM & fbm, int i);
   void  parseXBPF(uint64_t);
 
   void  parseXTOF(uint64_t);
@@ -167,6 +177,10 @@ private:
   int    fOutC0 = 0, fOutC1 = 0;
 
   std::vector<double> genTrigFracs, genTrigCoarses, genTrigSecs;
+  std::vector<double> br1AFracs, br1ACoarses, br1ASecs;
+  std::vector<double> br1BFracs, br1BCoarses, br1BSecs;
+  std::vector<double> br2AFracs, br2ACoarses, br2ASecs;
+  std::vector<double> br2BFracs, br2BCoarses, br2BSecs;
   bool fMatched;
 
   int RDTSTrigger = 0;
@@ -193,6 +207,8 @@ private:
   std::string fBundleName;
   std::string fXCETBundleName;
   std::string fOutputLabel;
+  std::string fTimingLabel, fTriggerLabel, fLLTLabel;
+  int fTimeToleranceDTSTicks;
   std::string fURLStr;
   double fBFEpsilon, fXCETEpsilon;
   double fXCETFetchShift;
@@ -215,6 +231,8 @@ private:
   double fBProf1Shift;
   double fBProf2Shift;
   double fBProf3Shift;
+
+  std::string fMagnetCurrentName;
 
   std::map<std::string, std::string > fDeviceTypes;
   std::map< std::string, double > fFiberDimension;
@@ -257,13 +275,14 @@ private:
   double fNP04FrontZ;  
   double fBeamX, fBeamY, fBeamZ;
 
-  bool   fForceNewFetch;
+  bool   fForceNewFetch, fSkipSpillInfo;
   bool   fXCETDebug;
   bool   fMatchTime;
   bool   fForceRead;
   bool   fForceMatchS11;
   
   double fTimingCalibration;
+  std::vector<std::pair<std::pair<size_t, size_t>, double>> fPDHDTimingCalibrations;
   double fCalibrationTolerance;
   double fOffsetTAI;
   double fS11DiffUpper; 
@@ -277,6 +296,20 @@ private:
 
   double fDownstreamToGenTrig;
   double fUpstreamToDownstream;
+
+  //Defines whether this is for ProtoDUNE-SP/HD etc.
+  //0 -- PDSP
+  //1 -- PDHD
+  //2 -- PDVD
+  int fRunType;
+  double fRDTSFactor = 1;
+
+  enum RunType {
+    kPDSP = 0,
+    kPDHD = 1,
+    kPDVD = 2
+  };
+
 
   bool   fPrintDebug;
   bool   fSaveOutTree;
@@ -300,8 +333,6 @@ private:
   std::unique_ptr<ifbeam_ns::BeamFolder> bfp_xcet;
   art::ServiceHandle<ifbeam_ns::IFBeam> ifb;
 
-  art::Handle< std::vector<raw::RDTimeStamp> > RDTimeStampHandle;
-
 //  double L1=1.980, L2=1.69472, L3=2.11666;
   double magnetLen = 1., magnetField = 1000.;
   std::vector<double> current;
@@ -312,6 +343,22 @@ private:
   double mag_P3 = -4.68880000e-6;
   double mag_P4 = 324.573967;
 
+
+  const std::vector<TCType> beam_types = {
+    TCType::kCTBBeam, TCType::kCTBBeamChkvHL,
+    /*TCType::kCTBBeamChkvH, TCType::kCTBBeamChkvL,
+    TCType::kCTBBeamChkvHx, TCType::kCTBBeamChkvLx,*/
+    TCType::kCTBBeamChkvHLx, TCType::kCTBBeamChkvHxL,
+    TCType::kCTBBeamChkvHxLx
+  };
+
+  /*const std::vector<TCType> cosmic_types = {
+    TCType::kCTBOffSpillCosmic,
+    TCType::kCTBOffSpillCosmicJura,
+    TCType::kCTBCosmic,
+    TCType::kDTSCosmic
+  };*/
+
 };
 
 // Constructor
@@ -320,6 +367,10 @@ proto::BeamEvent::BeamEvent(fhicl::ParameterSet const & p)
       fBundleName(p.get<std::string>("BundleName")),
     fXCETBundleName(p.get<std::string>("XCETBundleName")),
     fOutputLabel(p.get<std::string>("OutputLabel")),
+    fTimingLabel(p.get<std::string>("TimingLabel", "timingrawdecoder:daq")),
+    fTriggerLabel(p.get<std::string>("TriggerLabel", "triggerrawdecoder:daq")),
+    fLLTLabel(p.get<std::string>("LLTLabel", "ctbrawdecoder:daqLLT")),
+    fTimeToleranceDTSTicks(p.get<int>("fTimeToleranceDTSTicks", 5)),
     fURLStr(p.get<std::string>("URLStr")),
     fBFEpsilon(p.get<double>("BFEpsilon")),
     fXCETEpsilon(p.get<double>("XCETEpsilon")),
@@ -346,6 +397,7 @@ proto::BeamEvent::BeamEvent(fhicl::ParameterSet const & p)
     fBProf1Shift(p.get<double>("BProf1Shift")), 
     fBProf2Shift(p.get<double>("BProf2Shift")), 
     fBProf3Shift(p.get<double>("BProf3Shift")), 
+    fMagnetCurrentName(p.get<std::string>("MagnetCurrentName")),
     fXBPFPrefix(p.get<std::string>("XBPFPrefix")),
     fXTOFPrefix(p.get<std::string>("XTOFPrefix")),
     fXCETPrefix(p.get<std::string>("XCETPrefix")),
@@ -384,6 +436,7 @@ proto::BeamEvent::BeamEvent(fhicl::ParameterSet const & p)
     fBeamZ(p.get<double>("BeamZ")),
 
     fForceNewFetch(p.get<bool>("ForceNewFetch")),
+    fSkipSpillInfo(p.get<bool>("SkipSpillInfo", false)),
     fXCETDebug(p.get<bool>("XCETDebug")),
     fMatchTime(p.get<bool>("MatchTime")),
     fForceRead(p.get<bool>("ForceRead")),
@@ -391,6 +444,8 @@ proto::BeamEvent::BeamEvent(fhicl::ParameterSet const & p)
 
 
     fTimingCalibration(p.get<double>("TimingCalibration")),
+    fPDHDTimingCalibrations(p.get<std::vector<std::pair<std::pair<size_t, size_t>, double>>>(
+        "PDHDTimingCalibrations", {})),
     fCalibrationTolerance(p.get<double>("CalibrationTolerance")),
     fOffsetTAI(p.get<double>("OffsetTAI")),
 
@@ -406,12 +461,11 @@ proto::BeamEvent::BeamEvent(fhicl::ParameterSet const & p)
     fDownstreamToGenTrig(p.get<double>("DownstreamToGenTrig")),
     fUpstreamToDownstream(p.get<double>("UpstreamToDownstream")),
 
+    fRunType(p.get<int>("RunType", 0)),
     fPrintDebug(p.get<bool>("PrintDebug")),
     fSaveOutTree(p.get<bool>("SaveOutTree")),
     fDebugMomentum(p.get<bool>("DebugMomentum")),
-    fDebugTOFs(p.get<bool>("DebugTOFs"))
-
-     {
+    fDebugTOFs(p.get<bool>("DebugTOFs")) {
   // Declare products this module will provide
   produces<std::vector<beam::ProtoDUNEBeamEvent>>();  
 
@@ -425,9 +479,6 @@ proto::BeamEvent::BeamEvent(fhicl::ParameterSet const & p)
   //Deminsion of Fibers
   std::vector< std::pair<std::string, double> > tempFiberDims = p.get< std::vector<std::pair<std::string,double> > >("Dimension");
   fFiberDimension = std::map<std::string, double>(tempFiberDims.begin(), tempFiberDims.end());
-
-  
-
 }
 // END Constructor
 ////////////////////////
@@ -461,15 +512,21 @@ std::vector<double> proto::BeamEvent::FetchAndReport(long long time, std::string
 //Returns the timestamp of the high level trigger.
 void proto::BeamEvent::GetRawDecoderInfo(art::Event & e){
 
+
   if( fPrintDebug ){ 
     MF_LOG_INFO("BeamEvent") << "\n";
     MF_LOG_INFO("BeamEvent") << "Getting Raw Decoder Info" << "\n";
   }
 
-  art::InputTag itag1("timingrawdecoder","daq");
-  RDTimeStampHandle = e.getHandle< std::vector<raw::RDTimeStamp> >(itag1);
 
-  for (auto const & RDTS : *RDTimeStampHandle){
+
+
+  auto RDTimeStampHandle = e.getValidHandle<std::vector<raw::RDTimeStamp>>(
+      fTimingLabel);
+  auto const & RDTS = (*RDTimeStampHandle)[0];
+  //TODO -- See if this can just be a direct access by index
+  //        cause I don't know why it's like this
+  //for (auto const & RDTS : *RDTimeStampHandle){
 
     uint64_t high = RDTS.GetTimeStamp_High();
     uint64_t low  = RDTS.GetTimeStamp_Low();
@@ -477,7 +534,8 @@ void proto::BeamEvent::GetRawDecoderInfo(art::Event & e){
     uint64_t joined = (high | low);
 
     RDTSTime = joined;
-    RDTSTrigger = RDTS.GetFlags();
+    if (fRunType == RunType::kPDSP) 
+      RDTSTrigger = RDTS.GetFlags();
 
     if( fPrintDebug ){
       MF_LOG_INFO("BeamEvent") << "High: " << RDTS.GetTimeStamp_High() << "\n";
@@ -493,13 +551,167 @@ void proto::BeamEvent::GetRawDecoderInfo(art::Event & e){
     long long RDTSTickNano = RDTSTime - RDTSTickSec;
   
     //Units are 20 nanoseconds ticks
+    //TODO -- CHECK THAT THIS IS STILL THE SAME
     RDTSTimeSec  = 20.e-9 * RDTSTickSec;
     RDTSTimeNano = 20.    * RDTSTickNano;
     RDTSSec  = 20.e-9 * RDTSTickSec;
     RDTSNano = 20.    * RDTSTickNano;
 
-  }
+  //}
 
+  if (fRunType == RunType::kPDHD) {
+
+    using TriggerCandidate = dunedaq::trgdataformats::TriggerCandidateData;
+    auto trigger_candidate_handle
+        = e.getValidHandle<std::vector<TriggerCandidate>>(fTriggerLabel);
+
+    //TODO -- Get the trigger candidates and loop over them,
+    //        look for beam 
+    size_t ntc = trigger_candidate_handle->size();
+    if (fPrintDebug) std::cout << "Have " << ntc << " TCs" << std::endl;
+    bool found_beam = false;
+    bool found_cosmic = false;
+    //bool found_ckov = false;
+    for (const auto & tc : (*trigger_candidate_handle)) {
+      if (fPrintDebug) std::cout << "\tType: " <<
+                   dunedaq::trgdataformats::get_trigger_candidate_type_names().at(
+                     tc.type) <<
+                   "\n\tStart: " << tc.time_start <<
+                   "\n\tCandidate: " << tc.time_candidate <<
+                   "\n\tEnd: " << tc.time_end <<
+                   "\n\tMatch to Trigger: " <<
+                   (tc.time_candidate == RDTS.GetTimeStamp()) <<
+                   std::endl;
+      if (tc.time_candidate != RDTS.GetTimeStamp()) continue;
+      //See if any TC is any beam type
+      auto find_type = std::find(beam_types.begin(), beam_types.end(), tc.type);
+      found_beam |= (find_type != beam_types.end());
+
+      //Check for Cherenkov-specific TC
+      /*if ((find_type != beam_types.end()) && (tc.type != TCType::kCTBBeam)) {
+        if (found_ckov) {
+          throw cet::exception("BeamEvent_module.cc") <<
+          "UNEXPECTED ERROR: FOUND MULTIPLE CTB TCs MATCHING THE EVENT TIMESTAMP";
+        }
+
+        found_ckov = true;
+
+        if (tc.type == TCType::kCTBBeamChkvHL) {
+          if (fPrintDebug) std::cout << "High Low" << std::endl;
+          status0.trigger = 1;
+          status1.trigger = 1;
+        }
+        else if (tc.type == TCType::kCTBBeamChkvH) {
+          if (fPrintDebug) std::cout << "High" << std::endl;
+          status0.trigger = 1;
+        }
+        else if (tc.type == TCType::kCTBBeamChkvL) {
+          if (fPrintDebug) std::cout << "Low" << std::endl;
+          status1.trigger = 1;
+        }
+        else if (tc.type == TCType::kCTBBeamChkvHx) {
+          if (fPrintDebug) std::cout << "No High" << std::endl;
+          status0.trigger = 0;
+        }
+        else if (tc.type == TCType::kCTBBeamChkvLx) {
+          if (fPrintDebug) std::cout << "No Low" << std::endl;
+          status1.trigger = 0;
+        }
+        else if (tc.type == TCType::kCTBBeamChkvHLx) {
+          if (fPrintDebug) std::cout << "High. No Low" << std::endl;
+          status1.trigger = 0;
+          status0.trigger = 1;
+        }
+        else if (tc.type == TCType::kCTBBeamChkvHxL) {
+          if (fPrintDebug) std::cout << "Low. No High" << std::endl;
+          status1.trigger = 1;
+          status0.trigger = 0;
+        }
+        else if (tc.type == TCType::kCTBBeamChkvHxLx) {
+          if (fPrintDebug) std::cout << "No Low. No High" << std::endl;
+          status1.trigger = 0;
+          status0.trigger = 0;
+        }
+        beamevt->SetCKov0(status0);
+        beamevt->SetCKov1(status1);
+      }*/
+
+      //Check for cosmics
+      /*auto find_cosmic = std::find(cosmic_types.begin(), cosmic_types.end(),
+                                   tc.type);
+      found_cosmic |= (find_cosmic != cosmic_types.end());*/
+    }
+
+    if (found_beam && fPrintDebug) std::cout << "Found beam" << std::endl;
+
+
+    //This should never happen -- fail loudly if it does
+    if (found_cosmic && found_beam) {
+      throw cet::exception("BeamEvent_module.cc") <<
+          "MAJOR ERROR!!! FOUND EVENT WITH BOTH A BEAM TRIGGER AND" <<
+          " A COSMIC TRIGGER. CONTACT CTB/DAQ EXPERTS";
+    }
+
+    //Because I'm dumb and hardcoded this need to translate for PDHD
+    RDTSTrigger = (found_beam ? 12 : 8);
+
+    auto &llt_hsi_frames = *e.getValidHandle<
+        std::vector<dunedaq::detdataformats::HSIFrame>>(fLLTLabel);
+
+    /*if (llt_hsi_frames.size()==0) { // TODO -- DECIDE WHAT TO DO
+        std::cout << "WARNING: NO LLT WORDS FOUND!" << std::endl;
+        return fPassIfNoLLTs;
+    }*/
+
+    if (fPrintDebug) {
+        std::cout << "Found " << llt_hsi_frames.size() <<
+                     " LLT HSI frames." << std::endl;
+    }
+
+    //bool found_lpchkv_hit = false;
+    //bool found_hpchkv_hit = false;
+    beam::CKov status0, status1;
+    status0.timeStamp = -1.;
+    status1.timeStamp = -1.;
+    status0.trigger = 0;
+    status1.trigger = 0;
+
+
+    for(auto const& llt_frame : llt_hsi_frames){
+
+      if(fPrintDebug){
+          std::cout << "\t\tLLT -- Timestamp=" << llt_frame.get_timestamp()
+                    << "  TriggerBits=" << llt_frame.trigger << std::endl;
+      }
+
+      long long int llt_timestamp = llt_frame.get_timestamp();
+      long long int the_timestamp = (long long int)RDTS.GetTimeStamp();
+      if (std::abs(llt_timestamp - the_timestamp) >
+          fTimeToleranceDTSTicks)
+        continue;
+
+      if(fPrintDebug){
+          std::cout << "\t\tMatching LLT (tdiff=" <<
+                       std::abs(llt_timestamp-the_timestamp) << ")."
+                    << " LP hit? " << (llt_frame.trigger & LLT_LPCHKV_MASK)
+                    << " HP hit? " << (llt_frame.trigger & LLT_HPCHKV_MASK)
+                    << std::endl;
+      }
+
+      if (llt_frame.trigger & LLT_LPCHKV_MASK) {
+        status1.trigger = 1;
+        status1.timeStamp = llt_timestamp;
+        //found_lpchkv_hit = true;
+      }
+      if (llt_frame.trigger & LLT_HPCHKV_MASK) {
+        status0.trigger = 1;
+        status0.timeStamp = llt_timestamp;
+        //found_hpchkv_hit = true;
+      }
+    }
+    beamevt->SetCKov0(status0);
+    beamevt->SetCKov1(status1);
+  }
 }
 
 void proto::BeamEvent::GetSpillInfo(art::Event & e){
@@ -591,7 +803,6 @@ void proto::BeamEvent::MatchS11ToGen(){
   beamspill->SetUnmatched();
 }
 
-
 void proto::BeamEvent::MatchBeamToTPC(){
 
   if( fPrintDebug )
@@ -601,25 +812,12 @@ void proto::BeamEvent::MatchBeamToTPC(){
     double GenTrigSec  = beamspill->GetT0(iT).first;
     double GenTrigNano = beamspill->GetT0(iT).second;
 
-    //Separates seconds portion of the ticks 
-    //From the nanoseconds
-    long long RDTSTickSec = (RDTSTime * 2) / (int)(TMath::Power(10,8));
-    RDTSTickSec = RDTSTickSec * (int)(TMath::Power(10,8)) / 2;
-    long long RDTSTickNano = RDTSTime - RDTSTickSec;
+    double gen = GenTrigSec + 1.e-9*GenTrigNano;
+    double diff = RDTSTime*fRDTSFactor - gen - SpillOffset;
 
-    //Units are 20 nanoseconds ticks
-    double RDTSTimeSec  = 20.e-9 * RDTSTickSec;
-    double RDTSTimeNano = 20.    * RDTSTickNano;
-
-    double diffSec = RDTSTimeSec - GenTrigSec - SpillOffset;
-    double diffNano = 1.e-09*(RDTSTimeNano - GenTrigNano);
-
-    if( fPrintDebug ){
-      MF_LOG_INFO("BeamEvent") << "RDTSTimeSec - GenTrigSec " << RDTSTimeSec - GenTrigSec << "\n";
-      MF_LOG_INFO("BeamEvent") << "diff: " << diffSec << " " << diffNano << "\n";
+    if (fPrintDebug) {
+      MF_LOG_INFO("BeamEvent") << iT << " diff: " << diff << "\n";
     }
-
-    double diff = diffSec + diffNano; 
   
     if( ( fTimingCalibration - fCalibrationTolerance < diff ) && (fTimingCalibration + fCalibrationTolerance > diff) ){
 
@@ -672,8 +870,11 @@ void proto::BeamEvent::SetBeamEvent(){
   beamevt->CalibrateTOFs();
   beamevt->DecodeTOF();
   beamevt->SetMagnetCurrent( beamspill->GetMagnetCurrent() );
-  beamevt->SetCKov0( beamspill->GetCKov0( activeTrigger ) );
-  beamevt->SetCKov1( beamspill->GetCKov1( activeTrigger ) );
+
+  if (fRunType == kPDSP) {
+    beamevt->SetCKov0( beamspill->GetCKov0( activeTrigger ) );
+    beamevt->SetCKov1( beamspill->GetCKov1( activeTrigger ) );
+  }
 
 
   if( fPrintDebug ){
@@ -694,9 +895,21 @@ void proto::BeamEvent::SetBeamEvent(){
 
 
 void proto::BeamEvent::reset_gentrigs(){
-  genTrigFracs.clear();
-  genTrigCoarses.clear();
-  genTrigSecs.clear();
+  br1AFracs.clear();
+  br1ACoarses.clear();
+  br1ASecs.clear();
+
+  br1BFracs.clear();
+  br1BCoarses.clear();
+  br1BSecs.clear();
+
+  br2AFracs.clear();
+  br2ACoarses.clear();
+  br2ASecs.clear();
+
+  br2BFracs.clear();
+  br2BCoarses.clear();
+  br2BSecs.clear();
 }
 
 void proto::BeamEvent::reset(){
@@ -725,6 +938,12 @@ void proto::BeamEvent::reset(){
 }
 
 
+void proto::BeamEvent::SetDummySpillInfo() {
+  SpillStart = -999.; 
+  SpillStartValid = true;
+  SpillOffset = 0.;
+}
+
 ////////////////////////
 // Producer Method (reads in the event and derives values)
 void proto::BeamEvent::produce(art::Event & e){
@@ -751,8 +970,12 @@ void proto::BeamEvent::produce(art::Event & e){
   //Get Spill Information
   //This stores Spill Start, Spill End, 
   //And Prev Spill Start
-  GetSpillInfo(e);
-
+  if (fSkipSpillInfo) {
+    SetDummySpillInfo();
+  }
+  else {
+    GetSpillInfo(e);
+  }
   
   //Check if we have a valid beam trigger
   //If not, just place an empty beamevt
@@ -764,11 +987,12 @@ void proto::BeamEvent::produce(art::Event & e){
   if( ( (RDTSTrigger == 12) ) || fForceRead ){
 
     //Start getting beam event info
-    uint64_t fetch_time = uint64_t( RDTSTime * 2e-8 );
-    uint64_t fetch_time_down = uint64_t( RDTSTime * 2e-8 );
+    uint64_t fetch_time = uint64_t( RDTSTime * fRDTSFactor );
+    uint64_t fetch_time_down = uint64_t( RDTSTime * fRDTSFactor );
 
     if( fPrintDebug )
-      MF_LOG_INFO("BeamEvent") << "RDTSTime: " <<  uint64_t( RDTSTime * 2e-8 ) << "\n";
+      MF_LOG_INFO("BeamEvent") << "RDTSTime: " <<  uint64_t( RDTSTime * fRDTSFactor ) <<
+                                  " " << double(RDTSTime * fRDTSFactor) << "\n";
 
     //Check if we are still using the same spill information.
     //
@@ -782,7 +1006,7 @@ void proto::BeamEvent::produce(art::Event & e){
     //Greater than 5, it's in a new spill, so fetch again
     //
     //Can be overridden with a flag from the fcl
-    if( ( ( PrevStart != SpillStart) || ( !SpillStartValid && ( abs(RDTSTimeSec - PrevRDTSTimeSec) > 5 ) ) )
+    if( ( ( PrevStart != SpillStart) || ( /*!SpillStartValid && */( abs(RDTSTimeSec - PrevRDTSTimeSec) > 5 ) ) )
     || fForceNewFetch){
       reset_gentrigs();
 
@@ -919,9 +1143,12 @@ void proto::BeamEvent::produce(art::Event & e){
       parseXCETDB(fetch_time);
 
       try{
-        current = FetchAndReport(fetch_time_down, "dip/acc/NORTH/NP04/POW/MBPL022699:current", bfp);
+        current = FetchAndReport(fetch_time_down, fMagnetCurrentName/*"dip/acc/NORTH/NP04/POW/MBPL022699:current"*/, bfp);
         gotCurrent = true;
         beamspill->SetMagnetCurrent(current[0]);
+
+        if (fPrintDebug)
+          MF_LOG_WARNING("BeamEvent") << "current: " << current[0] << "\n";
       }
       catch( std::exception const&){
         MF_LOG_WARNING("BeamEvent") << "Could not get magnet current\n";
@@ -959,7 +1186,8 @@ void proto::BeamEvent::produce(art::Event & e){
       //
 
       if(SpillStartValid && !fForceMatchS11){
-        TimeIn(e, fetch_time_down);
+        if (!fSkipSpillInfo)
+          TimeIn(e, fetch_time_down);
 
         if( fPrintDebug )
           MF_LOG_INFO("BeamEvent") << "SpillOffset " << SpillOffset << "\n";
@@ -971,7 +1199,7 @@ void proto::BeamEvent::produce(art::Event & e){
         //Additionally, check if the MBPL timestamp is valid,
         //There are some instances in the database of it being abnormally low
         //If so, then just do the S11 matching
-        if( acqStampValid ){
+        if( acqStampValid || fSkipSpillInfo ){
           MatchBeamToTPC();
         }
         else{
@@ -1041,7 +1269,7 @@ void proto::BeamEvent::produce(art::Event & e){
 
   //Or. If this was not a beam trigger, and the RDTSTime
   //Comes from a new spill while the SpillStart was invalid, pass it. 
-  else if( ( ( PrevStart != SpillStart ) || ( !SpillStartValid && ( abs(RDTSTimeSec - PrevRDTSTimeSec) > 5 ) ) ) 
+  else if( ( ( PrevStart != SpillStart ) || ( /*!SpillStartValid && */( abs(RDTSTimeSec - PrevRDTSTimeSec) > 5 ) ) ) 
     && RDTSTrigger != 12 ){
     prev_beamspill = *beamspill;   
   }
@@ -1280,6 +1508,10 @@ void proto::BeamEvent::parseXTOF(uint64_t time){
       if (fXTOF1ACoarse == 0.0 && fXTOF1AFrac == 0.0 && fXTOF1ASec == 0.0) break;
       unorderedTOF1ATime.push_back(std::make_pair(fXTOF1ASec, (fXTOF1ACoarse*8. + fXTOF1AFrac/512.)) );
 
+      br1ASecs.push_back(fXTOF1ASec);
+      br1AFracs.push_back(fXTOF1AFrac);
+      br1ACoarses.push_back(fXTOF1ACoarse);
+
       if(fDebugTOFs)fXTOF1ATree->Fill();
     }
       
@@ -1296,6 +1528,9 @@ void proto::BeamEvent::parseXTOF(uint64_t time){
 
       if (fXTOF1BCoarse == 0.0 && fXTOF1BFrac == 0.0 && fXTOF1BSec == 0.0) break;
       unorderedTOF1BTime.push_back(std::make_pair(fXTOF1BSec, (fXTOF1BCoarse*8. + fXTOF1BFrac/512.)) );
+      br1BSecs.push_back(fXTOF1BSec);
+      br1BFracs.push_back(fXTOF1BFrac);
+      br1BCoarses.push_back(fXTOF1BCoarse);
       if(fDebugTOFs)fXTOF1BTree->Fill();
     }
 
@@ -1318,6 +1553,9 @@ void proto::BeamEvent::parseXTOF(uint64_t time){
         diff2A.push_back( 1.e9*(unorderedTOF2ATime.back().first - unorderedGenTrigTime[j].first) + (unorderedTOF2ATime.back().second - unorderedGenTrigTime[j].second) );
       }
       
+      br2ASecs.push_back(fXTOF2ASec);
+      br2AFracs.push_back(fXTOF2AFrac);
+      br2ACoarses.push_back(fXTOF2ACoarse);
       if(fDebugTOFs)fXTOF2ATree->Fill();
 
     }  
@@ -1341,6 +1579,10 @@ void proto::BeamEvent::parseXTOF(uint64_t time){
       for(size_t j = 0; j < timestampCountGeneralTrigger[0]; ++j){
         diff2B.push_back( 1.e9*(unorderedTOF2BTime.back().first - unorderedGenTrigTime[j].first) + (unorderedTOF2BTime.back().second - unorderedGenTrigTime[j].second) );
       }
+
+      br2BSecs.push_back(fXTOF2BSec);
+      br2BFracs.push_back(fXTOF2BFrac);
+      br2BCoarses.push_back(fXTOF2BCoarse);
 
       if(fDebugTOFs)fXTOF2BTree->Fill();
     }
@@ -1376,7 +1618,10 @@ void proto::BeamEvent::parseXTOF(uint64_t time){
         double TOF2A_ns  = unorderedTOF2ATime[ip2A].second;         
         double delta_2A = 1.e9*(the_gen_sec - TOF2A_sec) + the_gen_ns - TOF2A_ns;
 
-        if( delta_2A < 0. ) break;
+        if( delta_2A < 0. ) {
+          MF_LOG_INFO("BeamEvent") << iT << " " << ip2A << " Breaking 2A Gen " << delta_2A << "\n";
+          break;
+        }
         else if( delta_2A > fDownstreamToGenTrig ) continue;
 
         //if here, 0. < delta < 50ns
@@ -1389,7 +1634,10 @@ void proto::BeamEvent::parseXTOF(uint64_t time){
           double TOF1A_ns  = unorderedTOF1ATime[ip1A].second;         
           double delta = 1.e9*( TOF2A_sec - TOF1A_sec ) + TOF2A_ns - TOF1A_ns;
 
-          if( delta < 0. ) break;
+          if( delta < 0. ) {
+            MF_LOG_INFO("BeamEvent") << "Breaking 2A 1A " << delta << "\n";
+            break;
+          }
           else if( delta > 0. && delta < fUpstreamToDownstream){
             if( fPrintDebug )
               MF_LOG_INFO("BeamEvent") << "Found match 1A to 2A " << delta << "\n";
@@ -1679,6 +1927,31 @@ void proto::BeamEvent::parseXCETDB(uint64_t time){
 }
 
 
+void proto::BeamEvent::FillFBM(std::vector<double> & data, beam::FBM & fbm, int i) {
+  if (fRunType == kPDSP) {
+    for(size_t j = 0; j < 10; ++j){
+
+      double theData = data[20*i + (2*j + 1)];
+
+      //std::cout << "theData: " << theData << std::endl;
+
+      if(j < 4)
+        fbm.timeData[j] = theData;           
+      else
+        fbm.fiberData[j - 4] = theData;
+       
+    }
+  }
+  else {
+    for (size_t j = 0; j < 4; ++j) {
+      fbm.timeData[j] = data[10*i + j];
+    }
+    for (size_t j = 0; j < 6; ++j) {
+      fbm.fiberData[j] = data[10*i + 4 + j];
+    }
+  }
+}
+
 ////////////////////////
 // 
 void proto::BeamEvent::parseGeneralXBPF(std::string name, uint64_t time, size_t ID){
@@ -1736,19 +2009,8 @@ void proto::BeamEvent::parseGeneralXBPF(std::string name, uint64_t time, size_t 
   }
  
   //std::cout.precision(20);
-  for(size_t i = 0; i < counts[1]; ++i){      
-    for(int j = 0; j < 10; ++j){
-
-      double theData = data[20*i + (2*j + 1)];
-
-      //std::cout << "theData: " << theData << std::endl;
-
-      if(j < 4)
-	fbm.timeData[j] = theData;           
-      else
-	fbm.fiberData[j - 4] = theData;
-       
-    } 
+  for(size_t i = 0; i < counts[1]; ++i){
+    FillFBM(data, fbm, i);
 
     // Check the time data for corruption
     if(fbm.timeData[1] < .0000001)
@@ -1812,6 +2074,26 @@ void proto::BeamEvent::parseXBPF(uint64_t time){
 ////////////////////////
 
 
+void proto::BeamEvent::beginRun(art::Run & run) {
+  //The timing calibration changed several times during PDHD Beam Run.
+  //Get the according one here
+  if (fRunType == kPDHD) {
+    //Iterate over the vector of
+    //  { {range_low, range_high}, calibration }
+    for (const auto & [range, cal] : fPDHDTimingCalibrations) {
+      const auto & run_number = run.id().run();
+      if (range.first <= run_number && run_number < range.second) {
+        fTimingCalibration = cal;
+        std::cout << "Found timing calibration: " << cal <<
+                     " for run number " << run_number <<
+                     " within range (" << range.first << ", " <<
+                     range.second << ")" << std::endl;
+        break;
+      }
+    }
+  }
+}
+
 void proto::BeamEvent::beginJob()
 {
   art::ServiceHandle<art::TFileService> tfs;
@@ -1849,6 +2131,23 @@ void proto::BeamEvent::beginJob()
     fOutTree->Branch("genTrigFracs", &genTrigFracs);
     fOutTree->Branch("genTrigCoarses", &genTrigCoarses);
     fOutTree->Branch("genTrigSecs", &genTrigSecs);
+
+    fOutTree->Branch("br1AFracs", &br1AFracs);
+    fOutTree->Branch("br1ACoarses", &br1ACoarses);
+    fOutTree->Branch("br1ASecs", &br1ASecs);
+
+    fOutTree->Branch("br1BFracs", &br1BFracs);
+    fOutTree->Branch("br1BCoarses", &br1BCoarses);
+    fOutTree->Branch("br1BSecs", &br1BSecs);
+
+    fOutTree->Branch("br2AFracs", &br2AFracs);
+    fOutTree->Branch("br2ACoarses", &br2ACoarses);
+    fOutTree->Branch("br2ASecs", &br2ASecs);
+
+    fOutTree->Branch("br2BFracs", &br2BFracs);
+    fOutTree->Branch("br2BCoarses", &br2BCoarses);
+    fOutTree->Branch("br2BSecs", &br2BSecs);
+
     fOutTree->Branch("matched", &fMatched);
 
     fOutTree->Branch("TOF", &fOutTOF );
@@ -1915,6 +2214,10 @@ void proto::BeamEvent::beginJob()
 
   //Rotate the basis vectors of the FBMs
   BeamMonitorBasisVectors();
+
+  //PDSP time system was in units of 20ns ticks
+  fRDTSFactor = (fRunType == kPDSP ? 2e-8 : 1.6e-8);
+  std::cout << "Factor: " << fRDTSFactor << std::endl;
 }
 
 uint64_t proto::BeamEvent::joinHighLow(double high, double low){
