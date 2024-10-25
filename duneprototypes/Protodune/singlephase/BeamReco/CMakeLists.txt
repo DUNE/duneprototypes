@@ -1,5 +1,6 @@
 
-art_make(  MODULE_LIBRARIES
+include_directories("${dunedetdataformats_DIR}/../../../include")
+cet_build_plugin( BeamEvent art::module LIBRARIES 
                         dunecore::ArtSupport
                         ifbeam::ifbeam
                         ifdh_art::IFBeam_service
@@ -34,6 +35,29 @@ art_make(  MODULE_LIBRARIES
                         ROOT::Core ROOT::Hist ROOT::Tree
 	  #ProtoDUNEDataUtils
 )
+
+find_library(IFBEAM ifbeam)
+find_library(IFDH ifdh)
+#find_library(IFDH ifdh)
+cet_make_exec(
+  test_ifbeam
+  SOURCE test_ifbeam.c++
+  LIBRARIES 
+    IFBEAM
+    IFDH
+    #wda
+    #curl
+)
+
+target_include_directories(
+  test_ifbeam
+  PUBLIC 
+    $ENV{IFDH_ART_INC}
+    $ENV{IFDHC_INC}
+    "$ENV{LIBWDA_FQ_DIR}/include"
+    "$ENV{IFBEAM_FQ_DIR}/include"
+)    
+
 
 install_headers()
 install_fhicl()

@@ -15,10 +15,10 @@ physics:
 {
   producers:
   {
-    tprawdecoder: @local::PDHDTriggerReader3Defaults
+    triggerrawdecoder: @local::PDHDTriggerReader3Defaults
   }
 
-  produce: [ tprawdecoder ] 
+  produce: [ triggerrawdecoder ] 
   output: [ out1 ]
   trigger_paths : [ produce ]
   end_paths: [ output ]
