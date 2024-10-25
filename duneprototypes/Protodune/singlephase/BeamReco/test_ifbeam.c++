@@ -7,7 +7,7 @@
 
 int main(int argc, char ** argv) {
 
-  double timestamp = 107428980173512887;
+  long double timestamp = 107428980173512887;
   for (int iArg = 1; iArg < argc; iArg++) {
     if (!strcasecmp(argv[iArg],"-t")) {
       timestamp = std::atof(argv[++iArg]);
