@@ -283,6 +283,7 @@ private:
   
   double fTimingCalibration;
   std::vector<std::pair<std::pair<size_t, size_t>, double>> fPDHDTimingCalibrations;
+  bool fSkipLLT;
   double fCalibrationTolerance;
   double fOffsetTAI;
   double fS11DiffUpper; 
@@ -446,6 +447,7 @@ proto::BeamEvent::BeamEvent(fhicl::ParameterSet const & p)
     fTimingCalibration(p.get<double>("TimingCalibration")),
     fPDHDTimingCalibrations(p.get<std::vector<std::pair<std::pair<size_t, size_t>, double>>>(
         "PDHDTimingCalibrations", {})),
+    fSkipLLT(p.get<bool>("SkipLLT", false)),
     fCalibrationTolerance(p.get<double>("CalibrationTolerance")),
     fOffsetTAI(p.get<double>("OffsetTAI")),
 
@@ -655,58 +657,59 @@ void proto::BeamEvent::GetRawDecoderInfo(art::Event & e){
     //Because I'm dumb and hardcoded this need to translate for PDHD
     RDTSTrigger = (found_beam ? 12 : 8);
 
-    auto &llt_hsi_frames = *e.getValidHandle<
-        std::vector<dunedaq::detdataformats::HSIFrame>>(fLLTLabel);
-
-    /*if (llt_hsi_frames.size()==0) { // TODO -- DECIDE WHAT TO DO
-        std::cout << "WARNING: NO LLT WORDS FOUND!" << std::endl;
-        return fPassIfNoLLTs;
-    }*/
-
-    if (fPrintDebug) {
-        std::cout << "Found " << llt_hsi_frames.size() <<
-                     " LLT HSI frames." << std::endl;
-    }
-
-    //bool found_lpchkv_hit = false;
-    //bool found_hpchkv_hit = false;
     beam::CKov status0, status1;
     status0.timeStamp = -1.;
     status1.timeStamp = -1.;
     status0.trigger = 0;
     status1.trigger = 0;
+    if (!fSkipLLT) {
+      auto &llt_hsi_frames = *e.getValidHandle<
+          std::vector<dunedaq::detdataformats::HSIFrame>>(fLLTLabel);
 
+      /*if (llt_hsi_frames.size()==0) { // TODO -- DECIDE WHAT TO DO
+          std::cout << "WARNING: NO LLT WORDS FOUND!" << std::endl;
+          return fPassIfNoLLTs;
+      }*/
 
-    for(auto const& llt_frame : llt_hsi_frames){
-
-      if(fPrintDebug){
-          std::cout << "\t\tLLT -- Timestamp=" << llt_frame.get_timestamp()
-                    << "  TriggerBits=" << llt_frame.trigger << std::endl;
+      if (fPrintDebug) {
+          std::cout << "Found " << llt_hsi_frames.size() <<
+                       " LLT HSI frames." << std::endl;
       }
 
-      long long int llt_timestamp = llt_frame.get_timestamp();
-      long long int the_timestamp = (long long int)RDTS.GetTimeStamp();
-      if (std::abs(llt_timestamp - the_timestamp) >
-          fTimeToleranceDTSTicks)
-        continue;
+      //bool found_lpchkv_hit = false;
+      //bool found_hpchkv_hit = false;
 
-      if(fPrintDebug){
-          std::cout << "\t\tMatching LLT (tdiff=" <<
-                       std::abs(llt_timestamp-the_timestamp) << ")."
-                    << " LP hit? " << (llt_frame.trigger & LLT_LPCHKV_MASK)
-                    << " HP hit? " << (llt_frame.trigger & LLT_HPCHKV_MASK)
-                    << std::endl;
-      }
+      for(auto const& llt_frame : llt_hsi_frames){
 
-      if (llt_frame.trigger & LLT_LPCHKV_MASK) {
-        status1.trigger = 1;
-        status1.timeStamp = llt_timestamp;
-        //found_lpchkv_hit = true;
-      }
-      if (llt_frame.trigger & LLT_HPCHKV_MASK) {
-        status0.trigger = 1;
-        status0.timeStamp = llt_timestamp;
-        //found_hpchkv_hit = true;
+        if(fPrintDebug){
+            std::cout << "\t\tLLT -- Timestamp=" << llt_frame.get_timestamp()
+                      << "  TriggerBits=" << llt_frame.trigger << std::endl;
+        }
+
+        long long int llt_timestamp = llt_frame.get_timestamp();
+        long long int the_timestamp = (long long int)RDTS.GetTimeStamp();
+        if (std::abs(llt_timestamp - the_timestamp) >
+            fTimeToleranceDTSTicks)
+          continue;
+
+        if(fPrintDebug){
+            std::cout << "\t\tMatching LLT (tdiff=" <<
+                         std::abs(llt_timestamp-the_timestamp) << ")."
+                      << " LP hit? " << (llt_frame.trigger & LLT_LPCHKV_MASK)
+                      << " HP hit? " << (llt_frame.trigger & LLT_HPCHKV_MASK)
+                      << std::endl;
+        }
+
+        if (llt_frame.trigger & LLT_LPCHKV_MASK) {
+          status1.trigger = 1;
+          status1.timeStamp = llt_timestamp;
+          //found_lpchkv_hit = true;
+        }
+        if (llt_frame.trigger & LLT_HPCHKV_MASK) {
+          status0.trigger = 1;
+          status0.timeStamp = llt_timestamp;
+          //found_hpchkv_hit = true;
+        }
       }
     }
     beamevt->SetCKov0(status0);
