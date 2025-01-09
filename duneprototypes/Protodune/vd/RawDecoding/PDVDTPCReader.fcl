@@ -1,0 +1,17 @@
+# defaults for the PDVDTPCReader module
+
+#include "PDVDDataInterfaceWIBEth.fcl"
+
+BEGIN_PROLOG
+
+PDVDTPCReaderDefaults:
+{
+  module_type: "PDVDTPCReader"
+  InputLabel:  "daq"
+  OutputInstance: "daq"
+  CrateList:     [ 10, 11 ]  # BDE crate numbers.  TBD: TDE crate numbers
+  DecoderToolParams: @local::PDVDDataInterfaceWIBEthDefaults 
+  OutputStatusTree: true
+}
+
+END_PROLOG
