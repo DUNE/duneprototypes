@@ -1,0 +1,16 @@
+# defaults for the PDVDDataInterfaceWIBEth tool
+
+BEGIN_PROLOG
+
+PDVDDataInterfaceWIBEthDefaults:
+{
+   tool_type: "PDVDDataInterfaceWIBEth"
+   FileInfoLabel: "daq"
+   MaxChan:  10000000
+   DefaultCrate: 1
+   DebugLevel: 0
+   SubDetectorStringBottom: "VD_Bottom_TPC"
+   SubDetectorStringTop:    "VD_Top_TPC"
+}
+
+END_PROLOG
