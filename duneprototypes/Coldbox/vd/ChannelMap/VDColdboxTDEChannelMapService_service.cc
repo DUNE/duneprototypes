@@ -399,7 +399,7 @@ void dune::VDColdboxTDEChannelMapService::print( std::vector<ChannelId> &vec )
 	       <<std::setw(3)<<cch
 	       <<std::setw(3)<<crp
 	       <<std::setw(2)<<view
-	       <<std::setw(4)<<vch
+	       <<std::setw(6)<<vch
 	       <<std::setw(2)<<state
 	       <<std::setw(2)<<exists<<std::endl;
     }
