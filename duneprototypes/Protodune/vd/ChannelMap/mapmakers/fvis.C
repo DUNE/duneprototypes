@@ -129,6 +129,7 @@ void fvis(int crateplot=11, int fplot=1)
 		  y[0] = w.y1;
 		  y[1] = w.y2;
 		  double z[2];
+		  // this is for convenience in comparing with Roger's cartoon in DUNE-doc-32587-v2
 		  z[0] = 350 - w.z1;
 		  z[1] = 350 - w.z2;
 		  auto dt = new TGraph2D(2,x,y,z);
