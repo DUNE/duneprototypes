@@ -5,7 +5,7 @@
 #include <fstream>
 #include <sstream>
 
-typedef struct VDChanInfo {
+typedef struct HDChanInfo {
   unsigned int offlchan;        // in gdml and channel sorting convention
   unsigned int crate;           // crate number
   std::string CRPName;          // Descriptive APA name
@@ -57,43 +57,105 @@ int main(int argc, char **argv)
   }
   inFile.close();
 
-  // write out CRP 5, with the same map as V4 CB BDE
+  // write out CRP 4, with the same map as V4 CB BDE but shifted by 3072 channels
   
-  for (const auto& ci_old : cvec)
-    {
-      ChanInfo_t ci = ci_old;
-      ci.CRPName = "BottomCRP5";
-      ci.crate = 11;
-      printinfo(ci);
-    }
-
-  // write out CRP 4, rotated 180 degrees
-
   for (const auto& ci_old : cvec)
     {
       ChanInfo_t ci = ci_old;
       ci.CRPName = "BottomCRP4";
       ci.crate = 10;
-      int nc = 0;  // new offline channel
-      const int oc = ci.offlchan; // old offline channel
-      if (oc < 952)
+      ci.offlchan = ci.offlchan + 3072;
+      // adjust it
+      const int oc = ci.offlchan;
+      int nc = 0;
+      if (oc < 3548)  // plane 0
 	{
-	  nc = 951 - oc;
+	  nc = oc + 476;
 	}
-      else if (oc < 1904)
+      else if (oc < 4024) // plane 0
 	{
-	  nc = 2855 - oc; 
+	  nc = oc - 476;
 	}
-      else if (oc < 3072)
+      else if ( oc < 4500 ) // plane 1
 	{
-	  nc = 4975 - oc;
+	  nc = oc + 476;
+	}
+      else if ( oc < 4976) // plane 1
+	{
+	  nc = oc - 476;
+	}
+      else if (oc < 5267) // plane 2
+	{
+	  nc = 10827 - oc;
+	}
+      else if (oc < 5560) // plane 2
+	{
+	  nc = 11411 - oc;
+	}
+      else if (oc < 5852) // plane 2
+	{
+	  nc = 10827 - oc;
+	}
+      else if (oc < 6144) // plane 2
+	{
+	  nc = 11411 - oc;
 	}
       else
 	{
 	  std::cout << "ununderstood channel: " << oc << std::endl;
 	  return 1;
 	}
-      ci.offlchan = nc + 3072;
+      ci.offlchan = nc;      
+      printinfo(ci);
+    }
+
+  // write out CRP 5, rotated 180 degrees
+
+  for (const auto& ci_old : cvec)
+    {
+      ChanInfo_t ci = ci_old;
+      ci.CRPName = "BottomCRP5";
+      ci.crate = 11;
+      int nc = 0;  // new offline channel
+      const int oc = ci.offlchan; // old offline channel
+      if (oc < 476)      // plane 0
+	{
+	  nc = 475 - oc;
+	}
+      else if (oc < 952) // plane 0
+	{
+	  nc = 1427 - oc;
+	}
+      else if (oc < 1428) // plane 1
+	{
+	  nc = 2379 - oc; 
+	}
+      else if (oc < 1904) // plane 1
+	{
+	  nc = 3331 - oc;
+	}
+      else if (oc < 2196) // plane 2
+	{
+	  nc = oc + 292;
+	}
+      else if (oc < 2488) // plane 2
+	{
+	  nc = oc - 292;
+	}
+      else if (oc < 2780) // plane 2
+	{
+	  nc = oc + 292;
+	}
+      else if (oc < 3072) // plane 2
+	{
+	  nc = oc - 292;
+	}
+      else
+	{
+	  std::cout << "ununderstood channel: " << oc << std::endl;
+	  return 1;
+	}
+      ci.offlchan = nc;
       printinfo(ci);
     }
   return 0;
