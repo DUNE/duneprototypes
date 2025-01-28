@@ -1,0 +1,12 @@
+# defaults for the PDVDTriggerReader3 module
+
+BEGIN_PROLOG
+
+PDVDTriggerReader3Defaults:
+{
+  module_type: "PDVDTriggerReader3"
+  InputLabel:  "daq"
+  OutputInstance: "daq"
+}
+
+END_PROLOG
