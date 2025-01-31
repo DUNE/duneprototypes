@@ -11,7 +11,7 @@ services:
     fileName: "pdvdtpcdecodermoduleTFile.root"
   } 
   HDF5RawFile3Service:  {}
-  PDVDChannelMapService: 
+  TPCChannelMapService: 
    {
      FileName: "PD2VDBottomTPCChannelMap_v1.txt"
    }

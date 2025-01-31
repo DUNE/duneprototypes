@@ -15,7 +15,7 @@
 #include "dunecore/DuneObj/DUNEHDF5FileInfo2.h"
 #include "dunecore/DuneObj/PDSPTPCDataInterfaceParent.h"
 #include "dunecore/HDF5Utils/HDF5RawFile3Service.h"
-#include "duneprototypes/Protodune/vd/ChannelMap/PDVDChannelMapService.h"
+#include "duneprototypes/Protodune/vd/ChannelMap/TPCChannelMapService.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 class PDVDDataInterfaceWIBEth : public PDSPTPCDataInterfaceParent {
@@ -115,7 +115,7 @@ public:
                             RDStatuses& rdstatuses)
   {
     using dunedaq::fddetdataformats::WIBEthFrame;
-    art::ServiceHandle<dune::PDVDChannelMapService> channelMap;
+    art::ServiceHandle<dune::TPCChannelMapService> channelMap;
     art::ServiceHandle<dune::HDF5RawFile3Service> rawFileService;
     auto rf = rawFileService->GetPtr();
     auto sourceids = rf->get_source_ids(rid);
@@ -215,7 +215,7 @@ public:
         }
 
         std::vector<raw::RawDigit::ADCvector_t> adc_vectors(64); // 64 channels per WIBEth frame
-        unsigned int slot = 0, link = 0, crate = 0, stream = 0, locstream = 0;
+        unsigned int detid = 0, crate = 0, slot = 0, stream = 0;
 
         //We expect to have extra wib ticks, so figure out how many
         //in total we cut out.
@@ -361,24 +361,16 @@ public:
           }
 
           if (i == 0) {
+	    detid = 10;  // hardwire this because early data from np02 doesn't get this right
             crate = frame->daq_header.crate_id;
             slot = frame->daq_header.slot_id;
             stream = frame->daq_header.stream_id;
-
-            // local copy of the stream number -- change 0:3 & 64:67 to a single 0:3 number locstream
-            // and set the link number
-            // to be zero for stream from 0:3 and 1 for streams 64:67
-            // n.b. locstream goes from 0 to 3 twice
-
-            locstream = stream & 0x3;
-            link = (stream >> 6) & 1;
+            //stream goes from  0:3 and 64:67
           }
         }
         if (fDebugLevel > 0) {
-          std::cout << "PDVDDataInterfaceToolWIBEth: crate, slot, link: " << crate << ", " << slot
-                    << ", " << link << std::endl;
-          std::cout << "PDVDDataInterfaceToolWIBEth: stream, locstream: " << stream << ", "
-                    << locstream << std::endl;
+          std::cout << "PDVDDataInterfaceToolWIBEth: detid, crate, slot, stream: " << detid << " " << crate << ", " << slot
+                    << ", " << stream << std::endl;
         }
 
         //Copy the vector to see if it was reordered
@@ -456,15 +448,12 @@ public:
         for (size_t iChan = 0; iChan < 64; ++iChan) {
           const raw::RawDigit::ADCvector_t& v_adc = adc_vectors[iChan];
 
-          uint32_t slotloc = slot;
-          slotloc &= 0x7;
-
-          size_t wibframechan = iChan + 64 * locstream;
+	  unsigned int locchan = iChan;
 
           auto vdchaninfo =
-            channelMap->GetChanInfoFromWIBElements(crate, slotloc, link, wibframechan);
+            channelMap->GetChanInfoFromElectronicsIDs(detid, crate, slot, stream, locchan);
           if (fDebugLevel > 2) {
-            std::cout << "PDVDDataInterfaceToolWIBEth: wibframechan, valid: " << wibframechan << " "
+            std::cout << "PDVDDataInterfaceToolWIBEth: wibframechan, valid: " << locchan << " "
                       << vdchaninfo.valid << std::endl;
           }
           if (!vdchaninfo.valid) continue;
