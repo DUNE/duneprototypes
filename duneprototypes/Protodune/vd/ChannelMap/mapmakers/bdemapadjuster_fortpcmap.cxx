@@ -22,7 +22,25 @@ typedef struct HDChanInfo {
   bool valid;          // true if valid, false if not
 } ChanInfo_t;
 
-void printinfo(ChanInfo_t info);
+
+typedef struct TPCChanInfo {
+  unsigned int offlchan;      // in gdml and channel sorting convention
+  unsigned int detid;         // from detdatformats/DetID.hpp.   Map key
+  unsigned int crate;         // crate number   Map key
+  unsigned int slot;          // slot in crate (WIB for BDE and HD, card for TDE)   Map key
+  unsigned int stream;        // Hermes stream for BDE and HD, 0 for TDE   Map key
+  unsigned int streamchan;    // channel in the stream.  Usually 0:63   Map key
+  unsigned int plane;         // 0: U,  1: V,  2: X      For info only
+  unsigned int chan_in_plane; // which channel this is in the plane   For info only
+  unsigned int femb;          // which FEMB      For info only
+  unsigned int asic;          // ASIC            For info only
+  unsigned int asicchan;      // ASIC channel    For info only
+  bool valid;                 // true if valid, false if not  -- if map lookup fails, this is false
+} TPCChanInfo_t;
+
+void printinfo_orig(ChanInfo_t info);
+
+void printinfo(TPCChanInfo_t info);
 
 int main(int argc, char **argv)
 {
@@ -61,9 +79,22 @@ int main(int argc, char **argv)
   
   for (const auto& ci_old : cvec)
     {
-      ChanInfo_t ci = ci_old;
-      ci.CRPName = "BottomCRP4";
-      ci.crate = 10;
+      TPCChanInfo_t ci;
+      // ci.CRPName = "BottomCRP4";
+
+      ci.offlchan = ci_old.offlchan;
+      ci.detid = 10;   //  kVD_BottomTPC from detdataformats/DetID.hpp
+      ci.crate = 10;   //  CRP 4
+      ci.slot = ci_old.wib - 1;
+      ci.stream = 64*ci_old.link + ci_old.wibframechan/64;
+      ci.streamchan = ci_old.wibframechan % 64;
+      ci.plane = ci_old.plane;
+      ci.chan_in_plane = ci_old.chan_in_plane;
+      ci.femb = ci_old.femb;
+      ci.asic = ci_old.asic;
+      ci.asicchan = ci_old.asicchan;
+      ci.valid = true;
+      
       ci.offlchan = ci.offlchan + 3072;
       // adjust it
       const int oc = ci.offlchan;
@@ -113,9 +144,23 @@ int main(int argc, char **argv)
 
   for (const auto& ci_old : cvec)
     {
-      ChanInfo_t ci = ci_old;
-      ci.CRPName = "BottomCRP5";
-      ci.crate = 11;
+
+      TPCChanInfo_t ci;
+      // ci.CRPName = "BottomCRP5";
+
+      ci.offlchan = ci_old.offlchan;
+      ci.detid = 10;   //  kVD_BottomTPC from detdataformats/DetID.hpp
+      ci.crate = 11;   //  CRP 5
+      ci.slot = ci_old.wib - 1;
+      ci.stream = 64*ci_old.link + ci_old.wibframechan/64;
+      ci.streamchan = ci_old.wibframechan % 64;
+      ci.plane = ci_old.plane;
+      ci.chan_in_plane = ci_old.chan_in_plane;
+      ci.femb = ci_old.femb;
+      ci.asic = ci_old.asic;
+      ci.asicchan = ci_old.asicchan;
+      ci.valid = true;
+
       int nc = 0;  // new offline channel
       const int oc = ci.offlchan; // old offline channel
       if (oc < 476)      // plane 0
@@ -161,7 +206,9 @@ int main(int argc, char **argv)
   return 0;
 }
 
-void printinfo(ChanInfo_t info)
+// coldbox chaninfo struct printer
+
+void printinfo_orig(ChanInfo_t info)
 {
   std::cout << info.offlchan 
 	    << " " << info.crate 
@@ -176,4 +223,21 @@ void printinfo(ChanInfo_t info)
 	    << " " << info.asic 
 	    << " " << info.asicchan
 	    << " " << info.wibframechan << std::endl; 
+}
+
+// new unifed chaninfo struct printer
+
+void printinfo(TPCChanInfo_t info)
+{
+  std::cout << info.offlchan 
+	    << " " << info.detid
+	    << " " << info.crate 
+	    << " " << info.slot
+	    << " " << info.stream
+	    << " " << info.streamchan
+	    << " " << info.plane 
+	    << " " << info.chan_in_plane 
+	    << " " << info.femb 
+	    << " " << info.asic 
+	    << " " << info.asicchan << std::endl; 
 }

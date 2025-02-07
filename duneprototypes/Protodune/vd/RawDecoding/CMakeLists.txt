@@ -31,7 +31,7 @@ cet_build_plugin(PDVDDataInterfaceWIBEth   art::tool LIBRARIES
                         dunepdlegacy::Overlays
                         artdaq_core::artdaq-core_Data
                         artdaq_core::artdaq-core_Utilities
-                        duneprototypes_Protodune_vd_ChannelMap_PDVDChannelMapService_service
+                        duneprototypes_Protodune_vd_ChannelMap_TPCChannelMapService_service
 			art::Framework_Core
                         art::Framework_Principal
                         art::Framework_Services_Registry
