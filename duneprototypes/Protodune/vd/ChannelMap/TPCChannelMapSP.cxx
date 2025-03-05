@@ -49,7 +49,7 @@ void dune::TPCChannelMapSP::ReadMapFromFile(std::string& fullname)
 
     check_offline_channel(chanInfo.offlchan);
 
-    DetToChanInfo[chanInfo.detid][chanInfo.crate][chanInfo.slot][chanInfo.stream][chanInfo.streamchan] = chanInfo;
+    DetToChanInfo[make_hash(chanInfo.detid,chanInfo.crate,chanInfo.slot,chanInfo.stream,chanInfo.streamchan)] = chanInfo;
     OfflToChanInfo[chanInfo.offlchan] = chanInfo;
   }
   inFile.close();
@@ -62,32 +62,20 @@ dune::TPCChannelMapSP::TPCChanInfo_t dune::TPCChannelMapSP::GetChanInfoFromElect
                                                                                           unsigned int stream,
                                                                                           unsigned int streamchan) const
 {
-
-  TPCChanInfo_t badInfo = {};
-  badInfo.valid = false;
-
-  auto fm1 = DetToChanInfo.find(detid);
-  if (fm1 == DetToChanInfo.end()) return badInfo;
-  auto& m1 = fm1->second;
-  
-  auto fm2 = m1.find(crate);
-  if (fm2 == m1.end()) {
-    fm1 = DetToChanInfo.find(fSubstituteCrate);
-    if (fm2 == m1.end()) return badInfo;
-  }
-  auto& m2 = fm2->second;
-
-  auto fm3 = m2.find(slot);
-  if (fm3 == m2.end()) return badInfo;
-  auto& m3 = fm3->second;
-
-  auto fm4 = m3.find(stream);
-  if (fm4 == m3.end()) return badInfo;
-  auto& m4 = fm4->second;
-
-  auto fm5 = m4.find(streamchan);
-  if (fm5 == m4.end()) return badInfo;
-  return fm5->second;
+  size_t h = make_hash(detid,crate,slot,stream,streamchan);
+  auto ret = DetToChanInfo.find(h); 
+  if (ret == DetToChanInfo.end())
+    {
+      h = make_hash(detid,fSubstituteCrate,slot,stream,streamchan);
+      ret = DetToChanInfo.find(h);
+      if (ret == DetToChanInfo.end())
+	{
+          TPCChanInfo_t badInfo = {};
+          badInfo.valid = false;
+          return badInfo;
+	}
+    }
+  return ret->second;
 }
 
 dune::TPCChannelMapSP::TPCChanInfo_t dune::TPCChannelMapSP::GetChanInfoFromOfflChan(
@@ -100,4 +88,19 @@ dune::TPCChannelMapSP::TPCChanInfo_t dune::TPCChannelMapSP::GetChanInfoFromOfflC
     return badInfo;
   }
   return ci->second;
+}
+
+size_t dune::TPCChannelMapSP::make_hash( unsigned int detid,   //6 bits
+                  unsigned int crate,   //10 bits
+                  unsigned int slot,    //4 bits
+                  unsigned int stream,  //8 bits
+                  unsigned int streamch //12 bits
+					 ) const
+{
+  size_t hashval = (((size_t)detid & 0x3f)<<34);
+  hashval ^=((crate & 0x3ff)<<24);
+  hashval ^=((slot & 0xf)<<20);
+  hashval ^=((stream & 0xff)<<12);
+  hashval ^=(streamch & 0xfff);
+  return hashval;
 }
