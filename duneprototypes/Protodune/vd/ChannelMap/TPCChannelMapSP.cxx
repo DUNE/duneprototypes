@@ -51,8 +51,8 @@ void dune::TPCChannelMapSP::ReadMapFromFile(std::string& fullname)
     check_offline_channel(chanInfo.offlchan);
 
     auto hashval = make_hash(chanInfo.detid,chanInfo.crate,chanInfo.slot,chanInfo.stream,chanInfo.streamchan);
-    if( DetToChanInfo.find(hashval) != DetToChanInfo.end() ){
-      std::cout << "TPCChannelMapSP: duplicate channel found.  detid, crate, slot, stream, streamchan: " <<
+    if ( DetToChanInfo.find(hashval) != DetToChanInfo.end() ){
+      std::cout << "TPCChannelMapSP: duplicate electronics channel found.  detid, crate, slot, stream, streamchan: " <<
 	chanInfo.detid << " " <<
 	chanInfo.crate << " " <<
 	chanInfo.slot << " " <<
@@ -61,6 +61,12 @@ void dune::TPCChannelMapSP::ReadMapFromFile(std::string& fullname)
       throw std::range_error("Duplicate Electronics ID");
     }
     DetToChanInfo[hashval] = chanInfo;
+
+    if ( OfflToChanInfo.find(chanInfo.offlchan) != OfflToChanInfo.end() ) {
+      std::cout << "TPCChannelMapSP: duplicate offline channel found: " <<
+	chanInfo.offlchan << std::endl;
+      throw std::range_error("Duplicate Offline TPC Channel ID");      
+    }
     OfflToChanInfo[chanInfo.offlchan] = chanInfo;
   }
   inFile.close();

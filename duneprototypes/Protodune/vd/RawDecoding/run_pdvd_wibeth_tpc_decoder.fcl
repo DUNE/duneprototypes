@@ -13,7 +13,7 @@ services:
   HDF5RawFile3Service:  {}
   TPCChannelMapService: 
    {
-     FileName: "PD2VDBottomTPCChannelMap_v1.txt"
+     FileName: "PD2VDTPCChannelMap_v1.txt"
    }
 }
 
