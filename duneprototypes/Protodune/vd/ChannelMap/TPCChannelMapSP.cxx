@@ -12,6 +12,7 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <stdexcept>
 
 dune::TPCChannelMapSP::TPCChannelMapSP() {
   fSubstituteCrate = 1;
@@ -49,7 +50,17 @@ void dune::TPCChannelMapSP::ReadMapFromFile(std::string& fullname)
 
     check_offline_channel(chanInfo.offlchan);
 
-    DetToChanInfo[make_hash(chanInfo.detid,chanInfo.crate,chanInfo.slot,chanInfo.stream,chanInfo.streamchan)] = chanInfo;
+    auto hashval = make_hash(chanInfo.detid,chanInfo.crate,chanInfo.slot,chanInfo.stream,chanInfo.streamchan);
+    if( DetToChanInfo.find(hashval) != DetToChanInfo.end() ){
+      std::cout << "TPCChannelMapSP: duplicate channel found.  detid, crate, slot, stream, streamchan: " <<
+	chanInfo.detid << " " <<
+	chanInfo.crate << " " <<
+	chanInfo.slot << " " <<
+	chanInfo.stream << " " <<
+	chanInfo.streamchan << std::endl;
+      throw std::range_error("Duplicate Electronics ID");
+    }
+    DetToChanInfo[hashval] = chanInfo;
     OfflToChanInfo[chanInfo.offlchan] = chanInfo;
   }
   inFile.close();
