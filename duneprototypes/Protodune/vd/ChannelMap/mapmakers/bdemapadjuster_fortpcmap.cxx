@@ -115,7 +115,7 @@ int main(int argc, char **argv)
 	{
 	  nc = oc - 476;
 	}
-      else if (oc < 5267) // plane 2
+      else if (oc < 5268) // plane 2
 	{
 	  nc = 10827 - oc;
 	}
