@@ -71,13 +71,7 @@ private:
 
   // map of detid, crate, slot, stream, streamchan to channel info struct
 
-  std::unordered_map<
-    unsigned int,                                                                             // detid
-    std::unordered_map<unsigned int,                                                          // crate
-                       std::unordered_map<unsigned int,                                       // slot
-                                          std::unordered_map<unsigned int,                    // stream
-                                                             std::unordered_map<unsigned int, // streamchan
-                                                                                TPCChanInfo_t>>>>>  DetToChanInfo;
+  std::unordered_map<size_t, TPCChanInfo_t>  DetToChanInfo;   // just one key, a hash of the five keys (see make_hash)
 
   // map of chan info indexed by offline channel number
 
@@ -89,6 +83,13 @@ private:
   {
     // do nothing as channels may not be densely spaced in offline channel number.
   };
+
+  size_t make_hash( unsigned int detid,   //6 bits
+                  unsigned int crate,   //10 bits
+                  unsigned int slot,    //4 bits
+                  unsigned int stream,  //8 bits
+                  unsigned int streamch //12 bits
+                  ) const;
 };
 
 #endif
