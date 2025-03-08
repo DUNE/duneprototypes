@@ -1,5 +1,7 @@
 #include "HDF5RawInput2.fcl"
 #include "PDHDTPCReader.fcl"
+#include "PDHDTriggerReader.fcl"
+#include "PDHDDataInterfaceWIBEth.fcl"
 
 services:
 {
@@ -11,7 +13,7 @@ services:
   HDF5RawFile2Service:  {}
   PD2HDChannelMapService: 
    {
-     FileName: "PD2HDChannelMap_v4.txt"
+     FileName: "PD2HDChannelMap_WIBEth_electronics_v1.txt"
    }
 }
 
@@ -20,9 +22,10 @@ physics:
   producers:
   {
     tpcrawdecoder: @local::PDHDTPCReaderDefaults
+    trigrawdecoder: @local::PDHDTriggerReaderDefaults
   }
 
-  produce: [ tpcrawdecoder ] 
+  produce: [ trigrawdecoder, tpcrawdecoder ] 
   output: [ out1 ]
   trigger_paths : [ produce ]
   end_paths: [ output ]
@@ -42,3 +45,4 @@ source: @local::hdf5rawinput2
 
 process_name: runpdhdtpcdecodermodule
 
+physics.producers.tpcrawdecoder.DecoderToolParams: @local::PDHDDataInterfaceWIBEthDefaults
