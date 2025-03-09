@@ -17,7 +17,10 @@ dune::DAPHNEChannelMapService::DAPHNEChannelMapService(fhicl::ParameterSet const
   else
     std::cout << "DAPHNE Channel Map: Building DAPHNE channel map from file " << channelMapFile << std::endl;
 
-  fChannelMap.ReadMapFromFile(fullname);
+  if(fullname.find(".json") != std::string::npos)
+     fChannelMap.ReadMapFromJson(fullname);
+  else 
+     fChannelMap.ReadMapFromFile(fullname);
 }
 
 dune::DAPHNEChannelMapService::DAPHNEChannelMapService(fhicl::ParameterSet const& pset, art::ActivityRegistry&) : DAPHNEChannelMapService(pset) {}

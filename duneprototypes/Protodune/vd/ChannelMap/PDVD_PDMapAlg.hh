@@ -1,3 +1,25 @@
+////////////////////////////////////////////////////////////////////////
+//// File:        PDVD_PDMapAlg.hh
+//// Authors: Kaixin Zhu (based on the SBND mapping algorithm)
+////
+//// Updates: 2025-02, v08_45_00. Kaixin Zhu kzhu04@colostate.edu
+////          Added properties to PDS MAP and functions to access these.
+////
+//// This class stores the ProtoDUNE VD PDS Map and channel's properties;
+//// also implements functions to access these.
+////
+//// As of version v09_24_01 each entry of the PDS Map
+//// has the following characteristics:
+////
+//// channel: 0 to 39
+//// pd_type: Membrane, Cathode, PMT TPB, PMT PEN, PMT PEN + Q, Membrane + Q, PMT CLEAR
+//// sens_Ar: true or false
+//// sens_Xe: true or false
+//// eff: 0 to 1
+//// HardwareChannel: Slot, Link, DaphneChannel, OfflineChannel
+//////////////////////////////////////////////////////////////////////////
+//
+
 #ifndef PDVD_PDMAPALG_HH
 #define PDVD_PDMAPALG_HH
 
@@ -12,11 +34,11 @@
 
 //#include "art_root_io/TFileService.h"
 
-#include "json.hpp"
+#include <nlohmann/json.hpp>
 
 namespace opdet {
 
-  class PDVD_PDMapAlg : PDMapAlg{
+  class PDVD_PDMapAlg : public PDMapAlg{
 
   public:
     //Default constructor
@@ -41,8 +63,16 @@ namespace opdet {
 
     std::string pdType(size_t ch) const override;
     double Efficiency(size_t ch) const;
-    std::string hardwareChannel(size_t ch) const;
-      
+
+    struct HardwareChannelEntry
+      {
+        int slot;
+        int link;
+        int daphne_channel;
+        int offline_channel;
+      };
+    std::vector<HardwareChannelEntry> hardwareChannel(size_t ch) const;
+
     std::vector<int> getChannelsOfType(std::string pdname) const;
     auto getChannelEntry(size_t ch) const;
       
@@ -50,7 +80,6 @@ namespace opdet {
 
   private:
     nlohmann::json PDmap;
-
   }; // class PDVD_PDMapAlg
 
   template<typename T>
