@@ -44,6 +44,7 @@ public:
   DAPHNEChannelMap() {};  // constructor
   DAPHNEChannelMap(bool ignore_links=false) : fIgnoreLinks(ignore_links) {};  // constructor
   void ReadMapFromFile(std::string &fullname);
+  void ReadMapFromJson(std::string &fullname);
   unsigned int GetOfflineChannel(unsigned int slot, unsigned int link,
                                  unsigned int frame_chan);
 
