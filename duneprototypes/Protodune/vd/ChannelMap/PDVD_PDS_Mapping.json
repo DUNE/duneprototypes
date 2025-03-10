@@ -1,4 +1,6 @@
-nnel": 0,
+[
+    {
+      "channel": 0,
       "pd_type": "Membrane",
       "sens_Ar": true,
       "sens_Xe": true,
