@@ -20,9 +20,14 @@ physics:
   producers:
   {
     tpcrawdecoder: @local::PDHDTPCReaderDefaults
+    trigrawdecoder: {
+      InputLabel: "daq"
+      OutputInstance: "daq"
+      module_type: "PDHDTriggerReader"
+    }
   }
 
-  produce: [ tpcrawdecoder ] 
+  produce: [ "tpcrawdecoder", "trigrawdecoder" ] 
   output: [ out1 ]
   trigger_paths : [ produce ]
   end_paths: [ output ]
