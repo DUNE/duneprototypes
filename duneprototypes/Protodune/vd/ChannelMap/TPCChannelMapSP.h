@@ -26,6 +26,7 @@ public:
   typedef struct TPCChanInfo {
     unsigned int offlchan;      // in gdml and channel sorting convention
     unsigned int detid;         // from detdatformats/DetID.hpp.   Map key
+    unsigned int detelement;    // CRP number for Vertical Drift or APA number for Horizontal Drift
     unsigned int crate;         // crate number   Map key
     unsigned int slot;          // slot in crate (WIB for BDE and HD, card for TDE)   Map key
     unsigned int stream;        // Hermes stream for BDE and HD, 0 for TDE   Map key
@@ -71,13 +72,7 @@ private:
 
   // map of detid, crate, slot, stream, streamchan to channel info struct
 
-  std::unordered_map<
-    unsigned int,                                                                             // detid
-    std::unordered_map<unsigned int,                                                          // crate
-                       std::unordered_map<unsigned int,                                       // slot
-                                          std::unordered_map<unsigned int,                    // stream
-                                                             std::unordered_map<unsigned int, // streamchan
-                                                                                TPCChanInfo_t>>>>>  DetToChanInfo;
+  std::unordered_map<size_t, TPCChanInfo_t>  DetToChanInfo;   // just one key, a hash of the five keys (see make_hash)
 
   // map of chan info indexed by offline channel number
 
@@ -89,6 +84,13 @@ private:
   {
     // do nothing as channels may not be densely spaced in offline channel number.
   };
+
+  size_t make_hash( unsigned int detid,   //6 bits
+                  unsigned int crate,   //10 bits
+                  unsigned int slot,    //4 bits
+                  unsigned int stream,  //8 bits
+                  unsigned int streamch //12 bits
+                  ) const;
 };
 
 #endif
