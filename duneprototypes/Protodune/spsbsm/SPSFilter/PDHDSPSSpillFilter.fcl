@@ -1,0 +1,16 @@
+BEGIN_PROLOG
+
+pdhdfilter_spillon: {
+  module_type: "PDHDSPSSpillFilter"
+  spill_on: true
+  PoT_threshold: 1e12
+  InputTag: "triggerrawdecoder:daq"
+  SpillTag: "spillflag:sps"
+  sps_beamdata: "./srcs/pdhdbsmdata/sps_data/spillrun029425.csv"
+  useSpillFlag: true
+}
+
+pdhdfilter_spilloff: @local::pdhdfilter_spillon
+pdhdfilter_spilloff.spill_on: false
+
+END_PROLOG
