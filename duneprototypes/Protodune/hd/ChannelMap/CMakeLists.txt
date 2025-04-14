@@ -1,3 +1,5 @@
+include_directories(${NLOHMANN_JSON_DIR})
+
 install_fhicl()
 install_headers()
 install_source()

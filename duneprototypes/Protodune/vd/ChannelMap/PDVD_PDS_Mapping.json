@@ -5,7 +5,8 @@
       "sens_Ar": true,
       "sens_Xe": true,
       "eff": 0.03,
-      "HardwareChannel": [ {"Slot": 7, "Link" : 0, "DaphneChannel" : 46, "OfflineChannel": } , {"Slot": 7, "Link" : 0, "DaphneChannel" : 44, "OfflineChannel": } ]
+      "HardwareChannel": [ {"Slot": 7, "Link" : 0, "DaphneChannel" : 46, "OfflineChannel": 2030 } ,
+                           {"Slot": 7, "Link" : 0, "DaphneChannel" : 44, "OfflineChannel": 2031} ]
     },
     {
       "channel": 1,
@@ -13,7 +14,8 @@
       "sens_Ar": true,
       "sens_Xe": true,
       "eff": 0.03,
-      "HardwareChannel": [ {"Slot": 7, "Link" : 0, "DaphneChannel" : 47, "OfflineChannel": } , {"Slot": 7, "Link" : 0, "DaphneChannel" : 45, "OfflineChannel": } ]
+      "HardwareChannel": [ {"Slot": 7, "Link" : 0, "DaphneChannel" : 47, "OfflineChannel": 2010} ,
+                           {"Slot": 7, "Link" : 0, "DaphneChannel" : 45, "OfflineChannel": 2011} ]
     },
     {
       "channel": 2,
@@ -21,7 +23,8 @@
       "sens_Ar": true,
       "sens_Xe": true,
       "eff": 0.03,
-      "HardwareChannel": [ {"Slot": 7, "Link" : 0, "DaphneChannel" : 43, "OfflineChannel": } , {"Slot": 7, "Link" : 0, "DaphneChannel" : 41, "OfflineChannel": } ]
+      "HardwareChannel": [ {"Slot": 7, "Link" : 0, "DaphneChannel" : 43, "OfflineChannel": 2040} ,
+                           {"Slot": 7, "Link" : 0, "DaphneChannel" : 41, "OfflineChannel": 2041} ]
     },
     {
       "channel": 3,
@@ -29,7 +32,8 @@
       "sens_Ar": true,
       "sens_Xe": true,
       "eff": 0.03,
-      "HardwareChannel": [ {"Slot": 7, "Link" : 0, "DaphneChannel" : 40, "OfflineChannel": } , {"Slot": 7, "Link" : 0, "DaphneChannel" : 42, "OfflineChannel": } ]
+      "HardwareChannel": [ {"Slot": 7, "Link" : 0, "DaphneChannel" : 40, "OfflineChannel": 2020} ,
+                           {"Slot": 7, "Link" : 0, "DaphneChannel" : 42, "OfflineChannel": 2021} ]
     },
     {
       "channel": 4,
@@ -37,7 +41,8 @@
       "sens_Ar": true,
       "sens_Xe": true,
       "eff": 0.03,
-      "HardwareChannel": [ {"Slot": 6, "Link" : 0, "DaphneChannel" : 27, "OfflineChannel": } , {"Slot": 6, "Link" : 0, "DaphneChannel" : 27, "OfflineChannel": } ]
+      "HardwareChannel": [ {"Slot": 6, "Link" : 0, "DaphneChannel" : 27, "OfflineChannel": 1060} ,
+                           {"Slot": 6, "Link" : 0, "DaphneChannel" : 27, "OfflineChannel": 1061} ]
     },
     {
         "channel": 5,
@@ -45,7 +50,8 @@
         "sens_Ar": true,
         "sens_Xe": true,
         "eff": 0.03,
-        "HardwareChannel": [ {"Slot": 6, "Link" : 0, "DaphneChannel" : 20, "OfflineChannel": } , {"Slot": 6, "Link" : 0, "DaphneChannel" : 20, "OfflineChannel": } ]
+        "HardwareChannel": [ {"Slot": 6, "Link" : 0, "DaphneChannel" : 20, "OfflineChannel": 1020} ,
+                             {"Slot": 6, "Link" : 0, "DaphneChannel" : 20, "OfflineChannel": 1021} ]
       },
     {
       "channel": 6,
@@ -53,7 +59,8 @@
       "sens_Ar": true,
       "sens_Xe": true,
       "eff": 0.03,
-      "HardwareChannel": [ {"Slot": 6, "Link" : 0, "DaphneChannel" : 7, "OfflineChannel": } , {"Slot": 6, "Link" : 0, "DaphneChannel" : 7, "OfflineChannel": } ]
+      "HardwareChannel": [ {"Slot": 6, "Link" : 0, "DaphneChannel" : 7, "OfflineChannel": 1050} ,
+                           {"Slot": 6, "Link" : 0, "DaphneChannel" : 7, "OfflineChannel": 1051} ]
     },
     {
       "channel": 7,
@@ -61,7 +68,8 @@
       "sens_Ar": true,
       "sens_Xe": true,
       "eff": 0.03,
-      "HardwareChannel": [ {"Slot": 6, "Link" : 0, "DaphneChannel" : 0, "OfflineChannel": } , {"Slot": 6, "Link" : 0, "DaphneChannel" : 0, "OfflineChannel": } ]
+      "HardwareChannel": [ {"Slot": 6, "Link" : 0, "DaphneChannel" : 0, "OfflineChannel": 1010} ,
+                           {"Slot": 6, "Link" : 0, "DaphneChannel" : 0, "OfflineChannel": 1011} ]
     },
     {
       "channel": 8,
@@ -69,7 +77,8 @@
       "sens_Ar": true,
       "sens_Xe": true,
       "eff": 0.03,
-      "HardwareChannel": [ {"Slot": 6, "Link" : 0, "DaphneChannel" : 47, "OfflineChannel": } , {"Slot": 6, "Link" : 0, "DaphneChannel" : 47, "OfflineChannel": } ]
+      "HardwareChannel": [ {"Slot": 6, "Link" : 0, "DaphneChannel" : 47, "OfflineChannel": 1070} ,
+                           {"Slot": 6, "Link" : 0, "DaphneChannel" : 47, "OfflineChannel": 1071} ]
     },
     {
       "channel": 9,
@@ -77,7 +86,8 @@
       "sens_Ar": true,
       "sens_Xe": true,
       "eff": 0.03,
-      "HardwareChannel": [ {"Slot": 6, "Link" : 0, "DaphneChannel" : 42, "OfflineChannel": } , {"Slot": 6, "Link" : 0, "DaphneChannel" : 42, "OfflineChannel": } ]
+      "HardwareChannel": [ {"Slot": 6, "Link" : 0, "DaphneChannel" : 42, "OfflineChannel": 1030} ,
+                           {"Slot": 6, "Link" : 0, "DaphneChannel" : 42, "OfflineChannel": 1031} ]
     },
     {
       "channel": 10,
@@ -85,7 +95,8 @@
       "sens_Ar": true,
       "sens_Xe": true,
       "eff": 0.03,
-      "HardwareChannel": [ {"Slot": 6, "Link" : 0, "DaphneChannel" : 45, "OfflineChannel": } , {"Slot": 6, "Link" : 0, "DaphneChannel" : 45, "OfflineChannel": } ]
+      "HardwareChannel": [ {"Slot": 6, "Link" : 0, "DaphneChannel" : 45, "OfflineChannel": 1080} ,
+                           {"Slot": 6, "Link" : 0, "DaphneChannel" : 45, "OfflineChannel": 1081} ]
     },
     {
       "channel": 11,
@@ -93,7 +104,8 @@
       "sens_Ar": true,
       "sens_Xe": true,
       "eff": 0.03,
-      "HardwareChannel": [ {"Slot": 6, "Link" : 0, "DaphneChannel" : 45, "OfflineChannel": } , {"Slot": 6, "Link" : 0, "DaphneChannel" : 45, "OfflineChannel": } ]
+      "HardwareChannel": [ {"Slot": 6, "Link" : 0, "DaphneChannel" : 45, "OfflineChannel": 1040} ,
+                           {"Slot": 6, "Link" : 0, "DaphneChannel" : 45, "OfflineChannel": 1041} ]
     },
     {
       "channel": 12,
@@ -101,7 +113,7 @@
       "sens_Ar": true,
       "sens_Xe": true,
       "eff": 0.12,
-      "HardwareChannel": ""
+      "HardwareChannel": [{"Slot": 0, "Link" : 0, "DaphneChannel" : 0, "OfflineChannel": 3010}]
     },
     {
       "channel": 13,
@@ -109,7 +121,7 @@
       "sens_Ar": true,
       "sens_Xe": true,
       "eff": 0.036,
-      "HardwareChannel": ""
+      "HardwareChannel": [{"Slot": 6, "Link" : 0, "DaphneChannel" : 45, "OfflineChannel": 3020}]
     },
     {
       "channel": 14,
@@ -117,7 +129,7 @@
       "sens_Ar": true,
       "sens_Xe": true,
       "eff": 0.12,
-      "HardwareChannel": ""
+      "HardwareChannel": [{"Slot": 0, "Link" : 0, "DaphneChannel" : 0, "OfflineChannel": 3030}]
     },
     {
       "channel": 15,
@@ -125,7 +137,7 @@
       "sens_Ar": true,
       "sens_Xe": true,
       "eff": 0.12,
-      "HardwareChannel": ""
+      "HardwareChannel": [{"Slot": 0, "Link" : 0, "DaphneChannel" : 0, "OfflineChannel": 3040}]
     },
     {
       "channel": 16,
@@ -133,7 +145,8 @@
       "sens_Ar": false,
       "sens_Xe": true,
       "eff": 0.03,
-      "HardwareChannel": [ {"Slot": 7, "Link" : 0, "DaphneChannel" : 30, "OfflineChannel": } , {"Slot": 7, "Link" : 0, "DaphneChannel" : 37, "OfflineChannel": } ]
+      "HardwareChannel": [ {"Slot": 7, "Link" : 0, "DaphneChannel" : 30, "OfflineChannel": 2070} ,
+                           {"Slot": 7, "Link" : 0, "DaphneChannel" : 37, "OfflineChannel": 2071} ]
     },
     {
       "channel": 17,
@@ -141,7 +154,8 @@
       "sens_Ar": true,
       "sens_Xe": true,
       "eff": 0.03,
-      "HardwareChannel": [ {"Slot": 7, "Link" : 0, "DaphneChannel" : 0, "OfflineChannel": } , {"Slot": 7, "Link" : 0, "DaphneChannel" : 7, "OfflineChannel": } ]
+      "HardwareChannel": [ {"Slot": 7, "Link" : 0, "DaphneChannel" : 0, "OfflineChannel": 2050} ,
+                           {"Slot": 7, "Link" : 0, "DaphneChannel" : 7, "OfflineChannel": 2051} ]
     },
     {
       "channel": 18,
@@ -149,7 +163,7 @@
       "sens_Ar": true,
       "sens_Xe": true,
       "eff": 0.12,
-      "HardwareChannel": ""
+      "HardwareChannel": [{"Slot": 0, "Link" : 0, "DaphneChannel" : 0, "OfflineChannel": 3050}]
     },
     {
       "channel": 19,
@@ -157,7 +171,7 @@
       "sens_Ar": true,
       "sens_Xe": true,
       "eff": 0.036,
-      "HardwareChannel": ""
+      "HardwareChannel": [{"Slot": 0, "Link" : 0, "DaphneChannel" : 0, "OfflineChannel": 3060}]
     },
     {
       "channel": 20,
@@ -165,7 +179,7 @@
       "sens_Ar": true,
       "sens_Xe": true,
       "eff": 0.12,
-      "HardwareChannel": ""
+      "HardwareChannel": [{"Slot": 0, "Link" : 0, "DaphneChannel" : 0, "OfflineChannel": 3070}]
     },
     {
       "channel": 21,
@@ -173,7 +187,7 @@
       "sens_Ar": true,
       "sens_Xe": true,
       "eff": 0.12,
-      "HardwareChannel": ""
+      "HardwareChannel": [{"Slot": 0, "Link" : 0, "DaphneChannel" : 0, "OfflineChannel": 3080}]
     },
     {
       "channel": 22,
@@ -181,7 +195,8 @@
       "sens_Ar": true,
       "sens_Xe": true,
       "eff": 0.03,
-      "HardwareChannel": [ {"Slot": 7, "Link" : 0, "DaphneChannel" : 10, "OfflineChannel": } , {"Slot": 7, "Link" : 0, "DaphneChannel" : 17, "OfflineChannel": } ]
+      "HardwareChannel": [ {"Slot": 7, "Link" : 0, "DaphneChannel" : 10, "OfflineChannel": 2080} ,
+                           {"Slot": 7, "Link" : 0, "DaphneChannel" : 17, "OfflineChannel": 2081} ]
     },
     {
       "channel": 23,
@@ -189,7 +204,8 @@
       "sens_Ar": true,
       "sens_Xe": true,
       "eff": 0.03,
-      "HardwareChannel": [ {"Slot": 7, "Link" : 0, "DaphneChannel" : 20, "OfflineChannel": } , {"Slot": 7, "Link" : 0, "DaphneChannel" : 27, "OfflineChannel": } ]
+      "HardwareChannel": [ {"Slot": 7, "Link" : 0, "DaphneChannel" : 20, "OfflineChannel": 2060} ,
+                           {"Slot": 7, "Link" : 0, "DaphneChannel" : 27, "OfflineChannel": 2061} ]
     },
     {
       "channel": 24,
@@ -197,7 +213,7 @@
       "sens_Ar": true,
       "sens_Xe": true,
       "eff": 0.036,
-      "HardwareChannel": ""
+      "HardwareChannel": [{"Slot": 0, "Link" : 0, "DaphneChannel" : 0, "OfflineChannel": 3090}]
     },
     {
       "channel": 25,
@@ -205,7 +221,7 @@
       "sens_Ar": true,
       "sens_Xe": true,
       "eff": 0.036,
-      "HardwareChannel": ""
+      "HardwareChannel": [{"Slot": 0, "Link" : 0, "DaphneChannel" : 0, "OfflineChannel": 3100}]
     },
     {
       "channel": 26,
@@ -213,7 +229,7 @@
       "sens_Ar": true,
       "sens_Xe": true,
       "eff": 0.036,
-      "HardwareChannel": ""
+      "HardwareChannel": [{"Slot": 0, "Link" : 0, "DaphneChannel" : 0, "OfflineChannel": 3110}]
     },
     {
       "channel": 27,
@@ -221,7 +237,7 @@
       "sens_Ar": true,
       "sens_Xe": true,
       "eff": 0.036,
-      "HardwareChannel": ""
+      "HardwareChannel": [{"Slot": 0, "Link" : 0, "DaphneChannel" : 0, "OfflineChannel": 3120}]
     },
     {
       "channel": 28,
@@ -229,7 +245,7 @@
       "sens_Ar": true,
       "sens_Xe": true,
       "eff": 0.036,
-      "HardwareChannel": ""
+      "HardwareChannel": [{"Slot": 0, "Link" : 0, "DaphneChannel" : 0, "OfflineChannel": 3130}]
     },
     {
       "channel": 29,
@@ -237,7 +253,7 @@
       "sens_Ar": false,
       "sens_Xe": true,
       "eff": 0.036,
-      "HardwareChannel": ""
+      "HardwareChannel": [{"Slot": 0, "Link" : 0, "DaphneChannel" : 0, "OfflineChannel": 3140}]
     },
     {
       "channel": 30,
@@ -245,7 +261,7 @@
       "sens_Ar": true,
       "sens_Xe": true,
       "eff": 0.036,
-      "HardwareChannel": ""
+      "HardwareChannel": [{"Slot": 0, "Link" : 0, "DaphneChannel" : 0, "OfflineChannel": 3150}]
     },
     {
       "channel": 31,
@@ -253,7 +269,7 @@
       "sens_Ar": true,
       "sens_Xe": true,
       "eff": 0.036,
-      "HardwareChannel": ""
+      "HardwareChannel": [{"Slot": 0, "Link" : 0, "DaphneChannel" : 0, "OfflineChannel": 3160}]
     },
     {
       "channel": 32,
@@ -261,7 +277,7 @@
       "sens_Ar": false,
       "sens_Xe": false,
       "eff": "",
-      "HardwareChannel": ""
+      "HardwareChannel": [{"Slot": 0, "Link" : 0, "DaphneChannel" : 0, "OfflineChannel": 3170}]
     },
     {
       "channel": 33,
@@ -269,7 +285,7 @@
       "sens_Ar": true,
       "sens_Xe": true,
       "eff": 0.036,
-      "HardwareChannel": ""
+      "HardwareChannel": [{"Slot": 0, "Link" : 0, "DaphneChannel" : 0, "OfflineChannel": 3180}]
     },
     {
       "channel": 34,
@@ -277,7 +293,7 @@
       "sens_Ar": true,
       "sens_Xe": true,
       "eff": 0.036,
-      "HardwareChannel": ""
+      "HardwareChannel": [{"Slot": 0, "Link" : 0, "DaphneChannel" : 0, "OfflineChannel": 3190}]
     },
     {
       "channel": 35,
@@ -285,7 +301,7 @@
       "sens_Ar": true,
       "sens_Xe": true,
       "eff": 0.036,
-      "HardwareChannel": ""
+      "HardwareChannel": [{"Slot": 0, "Link" : 0, "DaphneChannel" : 0, "OfflineChannel": 3200}]
     },
     {
       "channel": 36,
@@ -293,7 +309,7 @@
       "sens_Ar": true,
       "sens_Xe": true,
       "eff": 0.036,
-      "HardwareChannel": ""
+      "HardwareChannel": [{"Slot": 0, "Link" : 0, "DaphneChannel" : 0, "OfflineChannel": 3210}]
     },
     {
       "channel": 37,
@@ -301,7 +317,7 @@
       "sens_Ar": true,
       "sens_Xe": true,
       "eff": 0.036,
-      "HardwareChannel": ""
+      "HardwareChannel": [{"Slot": 0, "Link" : 0, "DaphneChannel" : 0, "OfflineChannel": 3220}]
     },
     {
       "channel": 38,
@@ -309,7 +325,7 @@
       "sens_Ar": true,
       "sens_Xe": true,
       "eff": 0.036,
-      "HardwareChannel": ""
+      "HardwareChannel": [{"Slot": 0, "Link" : 0, "DaphneChannel" : 0, "OfflineChannel": 3230}]
     },
     {
       "channel": 39,
@@ -317,7 +333,7 @@
       "sens_Ar": false,
       "sens_Xe": true,
       "eff": 0.036,
-      "HardwareChannel": ""
+      "HardwareChannel": [{"Slot": 0, "Link" : 0, "DaphneChannel" : 0, "OfflineChannel": 3240}]
     },
 ]
 
