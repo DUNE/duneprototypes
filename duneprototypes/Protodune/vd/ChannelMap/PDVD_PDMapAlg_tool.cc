@@ -13,7 +13,7 @@
       {
         std::string fname;
         cet::search_path sp("FW_SEARCH_PATH");
-        std::string filename = pset.get<std::string>("MappingFile", "PDVD_PDS_Mapping.json");
+        std::string filename = pset.get<std::string>("MappingFile", "PDVD_PDS_Mapping_v04152025.json");
         sp.find_file(filename, fname);
         std::ifstream i(fname, std::ifstream::in);
         i >> PDmap;

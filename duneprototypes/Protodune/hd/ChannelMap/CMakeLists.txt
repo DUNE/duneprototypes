@@ -1,4 +1,4 @@
-include_directories(${NLOHMANN_JSON_DIR})
+include_directories($ENV{NLOHMANN_JSON_INC})
 
 install_fhicl()
 install_headers()

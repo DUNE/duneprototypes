@@ -1,3 +1,5 @@
+include_directories($ENV{NLOHMANN_JSON_INC})
+
 install_fhicl()
 install_headers()
 install_source()
@@ -17,4 +19,4 @@ art_make( ALLOW_UNDERSCORES
 )
 
 # install PDVD_PDS_Mapping.json with mapping of the photon detectors
-install_fw(LIST PDVD_PDS_Mapping.json)
+install_fw(LIST PDVD_PDS_Mapping_v04152025.json)
