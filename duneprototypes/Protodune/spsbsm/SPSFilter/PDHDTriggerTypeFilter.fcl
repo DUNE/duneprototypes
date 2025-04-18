@@ -1,0 +1,10 @@
+BEGIN_PROLOG
+
+pdhdtriggertypefilter: {
+  module_type: "PDHDTriggerTypeFilter"
+  InputTag: "triggerrawdecoder:daq"
+  Debug: false
+  verbose: true
+}
+
+END_PROLOG
