@@ -2,13 +2,14 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
-
+#include <nlohmann/json.hpp>
 
 void dune::DAPHNEChannelMap::ReadMapFromFile(std::string &fullname) {
   std::ifstream inFile(fullname, std::ios::in);
   std::string line;
 
-  while (std::getline(inFile,line)) {
+  while (std::getline(inFile,line))
+  {
     std::stringstream linestream(line);
 
     unsigned int slot, link, daphne_channel, offline_channel;
@@ -28,6 +29,36 @@ void dune::DAPHNEChannelMap::ReadMapFromFile(std::string &fullname) {
   inFile.close();
 }
 
+void dune::DAPHNEChannelMap::ReadMapFromJson(std::string &fullname)
+{
+
+    std::ifstream inFile(fullname, std::ios::in);
+    nlohmann::json PDmap;
+    inFile >> PDmap;
+    
+    for (const auto& ch : PDmap)
+    {
+        for (const auto& hw : ch["HardwareChannel"])
+        {
+            unsigned int slot = hw["Slot"];
+            unsigned int link = hw["Link"];
+            unsigned int daphne_channel = hw["DaphneChannel"];
+            unsigned int offline_channel = hw["OfflineChannel"];
+            
+            // fill maps.
+            if (fIgnoreLinks) link = 0;
+            check_offline_channel(offline_channel);
+            fMapToOfflineChannel[DaphneChanInfo({slot,link,daphne_channel})] = offline_channel;
+        }
+    }
+    
+    inFile.close();
+}
+
+
+
+
+
 unsigned int dune::DAPHNEChannelMap::GetOfflineChannel(
     unsigned int slot, unsigned int link, unsigned int daphne_channel) {
 
@@ -41,3 +72,4 @@ unsigned int dune::DAPHNEChannelMap::GetOfflineChannel(
   }
   return fMapToOfflineChannel[DaphneChanInfo({slot,link,daphne_channel})];
 }
+
