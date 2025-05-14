@@ -65,7 +65,7 @@ namespace opdet {
     bool isSensitiveToXe(size_t opDet) const;
     std::string pdType(size_t opDet) const override;
     double Efficiency(size_t opDet) const;
-
+    
     bool isPDTypeHardwareChannel(int hdch, std::string pdname) const;
     bool isSensitiveToArHardwareChannel(int hdch) const;
     bool isSensitiveToXeHardwareChannel(int hdch) const;
@@ -84,7 +84,7 @@ namespace opdet {
 
     std::vector<int> getChannelsOfType(std::string pdname) const;
     auto getOpDetChannelEntry(size_t opDet) const;
-    auto getOpDetChannelPerHardwareChannel(size_t hwch) const;
+    int getOpDetChannelPerHardwareChannel(int hwch) const;
     std::map<int,int> MapHardwareChannelToOpDetChannel;
       
     size_t size() const;

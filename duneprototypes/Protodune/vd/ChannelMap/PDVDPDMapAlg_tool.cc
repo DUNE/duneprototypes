@@ -17,21 +17,30 @@
         std::ifstream i(fname, std::ifstream::in);
         i >> PDmap;
         i.close();
-        for (size_t opDet = 0; opDet < PDmap.size(); opDet++) {
-            MapHardwareChannelToOpDetChannel[PDmap.at(opDet)["OfflineChannel"]]=opDet;
-        }
-      }
+        for (size_t opDet = 0; opDet < PDmap.size(); ++opDet)
+        {
+          if (PDmap.at(opDet).contains("HardwareChannel"))
+          {
+            for (const auto& entry : PDmap.at(opDet)["HardwareChannel"])
+            {
+              int offline = entry["OfflineChannel"];
+               MapHardwareChannelToOpDetChannel[offline] = opDet;
+            }
+          }
+         }
+       }
 
     PDVDPDMapAlg::~PDVDPDMapAlg()
       { }
       
       bool PDVDPDMapAlg::isValidOpDetChannel(size_t opDet) const
       {
-        return( opDet < PDmap.size() && PDmap.at(ch)["channel"] == opDet);
+        return( opDet < PDmap.size() && PDmap.at(opDet)["channel"] == opDet);
       }
+    
       bool PDVDPDMapAlg::isValidHardwareChannel(int hwch) const
       {
-        return ! (MapHardwareChannelToOpDetChannel.find(hwch)== MapHardwareChannelToOpDetChannel.end()));
+        return ! (MapHardwareChannelToOpDetChannel.find(hwch)== MapHardwareChannelToOpDetChannel.end());
       }
 
       bool PDVDPDMapAlg::isPDType(size_t opDet, std::string pdname) const
@@ -50,39 +59,41 @@
         return PDmap.at(opDet)["sens_Xe"].get<bool>();
       }
 
-      bool PDVDPDMapAlg::isPDTypeHarwareChannel(int hwch, std::string pdname) const
+      bool PDVDPDMapAlg::isPDTypeHardwareChannel(int hwch, std::string pdname) const
       {
-        return (PDmap.at(MapHardwareChannelToOpDetChannel[hwch])["pd_type"] == std::string(pdname));
+        return (PDmap.at(MapHardwareChannelToOpDetChannel.at(hwch))["pd_type"] == std::string(pdname));
       }
+    
       bool PDVDPDMapAlg::isSensitiveToArHardwareChannel(int hwch) const
       {
-        return PDmap.at(MapHardwareChannelToOpDetChannel[hwch])["sens_Ar"].get<bool>();
+        return PDmap.at(MapHardwareChannelToOpDetChannel.at(hwch))["sens_Ar"].get<bool>();
       }
 
       bool PDVDPDMapAlg::isSensitiveToXeHardwareChannel(int hwch) const
       {
-        return PDmap.at(MapHardwareChannelToOpDetChannel[hwch])["sens_Xe"].get<bool>();
+        return PDmap.at(MapHardwareChannelToOpDetChannel.at(hwch))["sens_Xe"].get<bool>();
       }
 
       std::string PDVDPDMapAlg::pdType(size_t opDet) const
       {
         return PDmap.at(opDet)["pd_type"];
       }
-      std::string PDVDPDMapAlg::pdType(int hwch) const
+    
+      std::string PDVDPDMapAlg::pdTypeHardwareChannel(int hwch) const
       {
-        return PDmap.at(MapHardwareChannelToOpDetChannel[hwch])["pd_type"];
+        return PDmap.at(MapHardwareChannelToOpDetChannel.at(hwch))["pd_type"];
       }
 
       double PDVDPDMapAlg::Efficiency(size_t opDet) const
       {
       return PDmap.at(opDet)["eff"];
       }
-      double PDVDPDMapAlg::EfficiencyHardwareChannel(size_t hwch) const
+    
+      double PDVDPDMapAlg::EfficiencyHardwareChannel(int hwch) const
       {
-      return PDmap.at(MapHardwareChannelToOpDetChannel[hwch])["eff"];
+      return PDmap.at(MapHardwareChannelToOpDetChannel.at(hwch))["eff"];
       }
       
-MapHardwareChannelToOpDetChannel[hwch]
       std::vector<PDVDPDMapAlg::HardwareChannelEntry> PDVDPDMapAlg::hardwareChannel(size_t ch) const
       {
         std::vector<HardwareChannelEntry> channels;
@@ -104,9 +115,10 @@ MapHardwareChannelToOpDetChannel[hwch]
 
             return channels;
       }
-      int getOpDetChannelPerHardwareChannel(size_t opDet) const
+    
+      int PDVDPDMapAlg::getOpDetChannelPerHardwareChannel(int hwch) const
       {
-        return MapHardwareChannelToOpDetChannel[opDet];
+        return MapHardwareChannelToOpDetChannel.at(hwch);
       }
 
 
@@ -145,3 +157,4 @@ MapHardwareChannelToOpDetChannel[hwch]
 
     DEFINE_ART_CLASS_TOOL(PDVDPDMapAlg)
     }
+

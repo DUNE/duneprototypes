@@ -14,8 +14,6 @@ namespace opdet {
   public:
     //Default destructor
     virtual ~PDMapAlg() noexcept = default;
-    
-    virtual bool isValid(size_t ch) const = 0;
 
     //only required element: define string per opdet channel number
     virtual std::string pdType(size_t ch) const = 0;

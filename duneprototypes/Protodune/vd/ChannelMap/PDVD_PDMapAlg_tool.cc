@@ -21,12 +21,7 @@
 
     PDVD_PDMapAlg::~PDVD_PDMapAlg()
       { }
-      
-      bool PDVD_PDMapAlg::isValid(size_t ch) const
-      {
-        return ch < PDmap.size() && PDmap.at(ch)["channel"] == ch;
-      }     
-
+  
       bool PDVD_PDMapAlg::isPDType(size_t ch, std::string pdname) const
       {
         if(PDmap.at(ch)["pd_type"] == std::string(pdname)) return true;
