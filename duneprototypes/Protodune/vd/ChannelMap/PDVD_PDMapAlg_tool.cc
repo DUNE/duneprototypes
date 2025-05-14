@@ -2,7 +2,6 @@
 #include "art/Utilities/ToolMacros.h"
 #include "art/Utilities/make_tool.h"
 
-
     //------------------------------------------------------------------------------
     //--- opdet::PDVD_PDMapAlg implementation
     //------------------------------------------------------------------------------
@@ -22,6 +21,11 @@
 
     PDVD_PDMapAlg::~PDVD_PDMapAlg()
       { }
+      
+      bool PDVD_PDMapAlg::isValid(size_t ch) const
+      {
+        return ch < PDmap.size() && PDmap.at(ch)["channel"] == ch;
+      }     
 
       bool PDVD_PDMapAlg::isPDType(size_t ch, std::string pdname) const
       {

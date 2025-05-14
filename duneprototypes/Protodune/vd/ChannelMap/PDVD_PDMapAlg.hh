@@ -56,7 +56,7 @@ namespace opdet {
     //  PDVD_PDMapAlg(Config const&) {}
 
     // void setup() {}
-
+    bool isValid(size_t ch) const;
     bool isPDType(size_t ch, std::string pdname) const override;
     bool isSensitiveToAr(size_t ch) const;
     bool isSensitiveToXe(size_t ch) const;
