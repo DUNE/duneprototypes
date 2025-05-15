@@ -69,7 +69,7 @@ namespace opdet {
     bool isPDTypeHardwareChannel(int hdch, std::string pdname) const;
     bool isSensitiveToArHardwareChannel(int hdch) const;
     bool isSensitiveToXeHardwareChannel(int hdch) const;
-    std::string pdTypeHardwareChannel(int hdch) const;
+    std::string pdTypeHardwareChannel(int hwch) const;
     double EfficiencyHardwareChannel(int hdch) const;
 
 
