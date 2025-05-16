@@ -1,0 +1,90 @@
+[
+  {
+    "channel": 0,
+    "pd_type": "Membrane",
+    "sens_Ar": true,
+    "sens_Xe": true,
+    "eff": 0.03,
+    "HardwareChannel": [
+      { "Slot": 7, "Link": 0, "DaphneChannel": 46, "OfflineChannel": 0 },
+      { "Slot": 7, "Link": 0, "DaphneChannel": 44, "OfflineChannel": 1 }
+    ]
+  },
+  {
+    "channel": 1,
+    "pd_type": "Membrane",
+    "sens_Ar": true,
+    "sens_Xe": true,
+    "eff": 0.03,
+    "HardwareChannel": [
+      { "Slot": 7, "Link": 0, "DaphneChannel": 47, "OfflineChannel": 2 },
+      { "Slot": 7, "Link": 0, "DaphneChannel": 45, "OfflineChannel": 3 }
+    ]
+  },
+  {
+    "channel": 2,
+    "pd_type": "Membrane",
+    "sens_Ar": true,
+    "sens_Xe": true,
+    "eff": 0.03,
+    "HardwareChannel": [
+      { "Slot": 7, "Link": 0, "DaphneChannel": 43, "OfflineChannel": 4 },
+      { "Slot": 7, "Link": 0, "DaphneChannel": 41, "OfflineChannel": 5 }
+    ]
+  },
+  {
+    "channel": 3,
+    "pd_type": "Membrane",
+    "sens_Ar": true,
+    "sens_Xe": true,
+    "eff": 0.03,
+    "HardwareChannel": [
+      { "Slot": 7, "Link": 0, "DaphneChannel": 40, "OfflineChannel": 6 },
+      { "Slot": 7, "Link": 0, "DaphneChannel": 42, "OfflineChannel": 7 }
+    ]
+  },
+  {
+    "channel": 16,
+    "pd_type": "Membrane + Q",
+    "sens_Ar": false,
+    "sens_Xe": true,
+    "eff": 0.03,
+    "HardwareChannel": [
+      { "Slot": 7, "Link": 0, "DaphneChannel": 30, "OfflineChannel": 8 },
+      { "Slot": 7, "Link": 0, "DaphneChannel": 37, "OfflineChannel": 9 }
+    ]
+  },
+  {
+    "channel": 17,
+    "pd_type": "Membrane",
+    "sens_Ar": true,
+    "sens_Xe": true,
+    "eff": 0.03,
+    "HardwareChannel": [
+      { "Slot": 7, "Link": 0, "DaphneChannel": 0, "OfflineChannel": 10 },
+      { "Slot": 7, "Link": 0, "DaphneChannel": 7, "OfflineChannel": 11 }
+    ]
+  },
+  {
+    "channel": 22,
+    "pd_type": "Membrane",
+    "sens_Ar": true,
+    "sens_Xe": true,
+    "eff": 0.03,
+    "HardwareChannel": [
+      { "Slot": 7, "Link": 0, "DaphneChannel": 10, "OfflineChannel": 12 },
+      { "Slot": 7, "Link": 0, "DaphneChannel": 17, "OfflineChannel": 13 }
+    ]
+  },
+  {
+    "channel": 23,
+    "pd_type": "Membrane",
+    "sens_Ar": true,
+    "sens_Xe": true,
+    "eff": 0.03,
+    "HardwareChannel": [
+      { "Slot": 7, "Link": 0, "DaphneChannel": 20, "OfflineChannel": 14 },
+      { "Slot": 7, "Link": 0, "DaphneChannel": 27, "OfflineChannel": 15 }
+    ]
+  }
+]
