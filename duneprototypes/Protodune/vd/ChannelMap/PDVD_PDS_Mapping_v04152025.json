@@ -334,6 +334,6 @@
       "sens_Xe": true,
       "eff": 0.036,
       "HardwareChannel": [{"Slot": 0, "Link" : 0, "DaphneChannel" : 0, "OfflineChannel": 3240}]
-    },
+    }
 ]
 

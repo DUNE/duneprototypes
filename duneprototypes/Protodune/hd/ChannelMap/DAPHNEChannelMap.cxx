@@ -47,7 +47,6 @@ void dune::DAPHNEChannelMap::ReadMapFromJson(std::string &fullname)
             
             // fill maps.
             if (fIgnoreLinks) link = 0;
-            check_offline_channel(offline_channel);
             fMapToOfflineChannel[DaphneChanInfo({slot,link,daphne_channel})] = offline_channel;
         }
     }
