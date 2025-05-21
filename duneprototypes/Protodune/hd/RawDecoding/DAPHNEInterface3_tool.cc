@@ -1,3 +1,6 @@
+/* New Daphne Interface, adapted from DAPHNEInterface2 to deal with
+ a vector of subdet_label required for PDVD */
+
 #include "DAPHNEInterfaceBase.h"
 #include "dunecore/DuneObj/DUNEHDF5FileInfo2.h"
 #include "dunecore/HDF5Utils/HDF5RawFile3Service.h"
@@ -17,7 +20,7 @@ using dunedaq::daqdataformats::FragmentHeader;
 using DAPHNEStreamFrame = dunedaq::fddetdataformats::Daphnestreamframe2;
 using DAPHNEFrame = dunedaq::fddetdataformats::Daphneframe2;
 
-class DAPHNEInterface2 : public DAPHNEInterfaceBase {
+class DAPHNEInterface3 : public DAPHNEInterfaceBase {
 
  private:
   static const size_t FragmentHeaderSize = sizeof(FragmentHeader);
@@ -191,12 +194,12 @@ class DAPHNEInterface2 : public DAPHNEInterfaceBase {
 
  public:
 
-  DAPHNEInterface2(fhicl::ParameterSet const& p) {};
+  DAPHNEInterface3(fhicl::ParameterSet const& p) {};
 
-  void Process(
+  void Process2(
       art::Event &evt,
       std::string inputlabel,
-      std::string subdet_label,
+      std::vector<std::string> subdet_label,
       std::unordered_map<unsigned int, WaveformVector> & wf_map,
       utils::DAPHNETree * daphne_tree) override {
 
@@ -234,13 +237,15 @@ class DAPHNEInterface2 : public DAPHNEInterfaceBase {
       }
     }
   };
-    void Process2(
+  
+  void Process(
       art::Event &evt,
       std::string inputlabel,
-      std::vector<std::string> subdet_label,
-      std::unordered_map<unsigned int, WaveformVector> & wf_map,
+      std::string subdet_label,
+      std::unordered_map<unsigned int, std::vector<raw::OpDetWaveform>> & wf_map,
       utils::DAPHNETree * daphne_tree) override {};
+
 };
 }
 
-DEFINE_ART_CLASS_TOOL(daphne::DAPHNEInterface2)
+DEFINE_ART_CLASS_TOOL(daphne::DAPHNEInterface3)

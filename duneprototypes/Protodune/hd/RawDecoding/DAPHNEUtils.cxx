@@ -79,4 +79,17 @@ bool CheckSubdet(size_t geo_id, std::string subdet_label) {
 
 }
 
+
+bool CheckSubdet(size_t geo_id, std::vector<std::string> &subdet_label) {
+  dunedaq::detdataformats::DetID::Subdetector det_idenum
+      = static_cast<dunedaq::detdataformats::DetID::Subdetector>(
+          0xffff & geo_id);
+
+  //Check that it's photon detectors
+  auto subdetector_string
+      = dunedaq::detdataformats::DetID::subdetector_to_string(det_idenum);
+  return !(std::find(subdet_label.begin(), subdet_label.end(), subdetector_string) == subdet_label.end());
+
+}
+
 }

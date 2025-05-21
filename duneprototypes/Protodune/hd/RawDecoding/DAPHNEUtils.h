@@ -40,6 +40,7 @@ namespace utils {
     std::unordered_map<unsigned int, WaveformVector> & wf_map,
     bool is_stream = false);
     bool CheckSubdet(size_t geo_id, std::string subdet_label);
+    bool CheckSubdet(size_t geo_id, std::vector<std::string> &subdet_label);
 }
 }
 
