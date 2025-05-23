@@ -1,0 +1,12 @@
+# defaults for the PDHDCRTTriggerReader3 module
+
+BEGIN_PROLOG
+
+PDHDCRTTriggerReader3Defaults:
+{
+  module_type: "PDHDCRTTriggerReader3"
+  InputLabel:  "daq"
+  OutputInstance: "daq"
+}
+
+END_PROLOG
