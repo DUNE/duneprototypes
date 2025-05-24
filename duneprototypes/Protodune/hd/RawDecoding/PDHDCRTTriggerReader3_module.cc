@@ -21,6 +21,8 @@
 #include "detdataformats/trigger/TriggerPrimitive.hpp"
 #include "detdataformats/trigger/TriggerActivityData.hpp"
 #include "detdataformats/trigger/TriggerCandidateData.hpp"
+#include "duneprototypes/Protodune/singlephase/CRT/data/CRTTrigger.h"
+
 
 #include <memory>
 #include <iostream>
@@ -69,7 +71,9 @@ PDHDTriggerReader3::PDHDTriggerReader3(fhicl::ParameterSet const& p)
   produces<std::vector<dunedaq::trgdataformats::TriggerCandidateData>>(fOutputInstance);
   produces<std::vector<dunedaq::trgdataformats::TriggerActivityData>>(fOutputInstance+"inTCs");
   produces<art::Assns<dunedaq::trgdataformats::TriggerCandidateData,dunedaq::trgdataformats::TriggerActivityData>>(fOutputInstance);
-
+//CRT Producer
+  produces<std::vector<CRT::Trigger>>(fOutputInstance);
+  
   consumes<raw::DUNEHDF5FileInfo2>(fInputLabel);  // the tool actually does the consuming of this product
 }
 
@@ -81,6 +85,7 @@ void PDHDTriggerReader3::produce(art::Event& e)
   std::vector<dunedaq::trgdataformats::TriggerPrimitive> tp_col, tps_in_tas_col;
   std::vector<dunedaq::trgdataformats::TriggerActivityData> ta_col, tas_in_tcs_col;
   std::vector<dunedaq::trgdataformats::TriggerCandidateData> tc_col;
+  std::vector<CRT::Trigger> tcrt_col;
 
   art::Assns<dunedaq::trgdataformats::TriggerActivityData,dunedaq::trgdataformats::TriggerPrimitive> tp_in_tas_assn;
   art::Assns<dunedaq::trgdataformats::TriggerCandidateData,dunedaq::trgdataformats::TriggerActivityData> ta_in_tcs_assn;
@@ -246,9 +251,48 @@ void PDHDTriggerReader3::produce(art::Event& e)
     }
 
 
+//CRT things
+  for (auto const& source_id : crt_sourceids)
+    {
+  // Sanity check for fragment type could go here if needed
+
+     if (source_id.subsystem != dunedaq::daqdataformats::SourceID::Subsystem::kTrigger) continue;
+     auto frag_ptr = rf->get_frag_ptr(rid, source_id);
+     auto frag_size = frag_ptr->get_size();
+     size_t fhs = sizeof(dunedaq::daqdataformats::FragmentHeader);
+
+     if (frag_size <= fhs) continue; // Too small to even have a header
+
+     size_t crt_struct_size = sizeof(CRT::Trigger); // Replace with actual structure
+     size_t num_crt_entries = (frag_size - fhs) / crt_struct_size;
+     size_t current_size = tcrt_col.size();
+
+     void* frag_payload_ptr = frag_ptr->get_data();
+
+  // Resize collection and copy payload data into it
+     tcrt_col.resize(current_size + num_crt_entries);
+     memcpy(&(tcrt_col[current_size]), frag_payload_ptr, num_crt_entries * crt_struct_size);
+
+     for (size_t i = current_size; i < tcrt_col.size(); ++i)
+       {
+       if (fDebugLevel > 0)
+          {
+            std::cout << source_id << " ; " << i
+                  << " ; " << tcrt_col.at(i).Timestamp   // Assuming fields exist
+                  << " ; " << tcrt_col.at(i).Channel
+                  << " ; " << tcrt_col.at(i).version
+                  << std::endl;
+          }
+       }
+    }
+
+
+
+
   //the tps that were pulled in from the readout
   e.put(std::make_unique<std::vector<dunedaq::trgdataformats::TriggerPrimitive>>(std::move(tp_col)),fOutputInstance);
-
+  //CRT triggers that were pulled in from the readout
+  e.put(std::make_unique<std::vector<CRT::Trigger>>(std::move(tcrt_col)),fOutputInstance);
   //the tas that were pulled in from the trigger system, the tps inside those tas, and assn of them
   e.put(std::make_unique<std::vector<dunedaq::trgdataformats::TriggerActivityData>>(std::move(ta_col)),fOutputInstance);
   e.put(std::make_unique<std::vector<dunedaq::trgdataformats::TriggerPrimitive>>(std::move(tps_in_tas_col)),fOutputInstance+"inTAs");
