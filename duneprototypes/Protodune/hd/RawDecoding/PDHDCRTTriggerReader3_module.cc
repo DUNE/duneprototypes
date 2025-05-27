@@ -270,24 +270,10 @@ void PDHDTriggerReader3::produce(art::Event& e)
      void* frag_payload_ptr = frag_ptr->get_data();
 
   // Resize collection and copy payload data into it
-    // tcrt_col.resize(current_size + num_crt_entries);
-    // memcpy(&(tcrt_col[current_size]), frag_payload_ptr, num_crt_entries * crt_struct_size);
-uint8_t* data = reinterpret_cast<uint8_t*>(frag_payload_ptr);
+     tcrt_col.resize(current_size + num_crt_entries);
+     memcpy(&(tcrt_col[current_size]), frag_payload_ptr, num_crt_entries * crt_struct_size);
 
-for (size_t i = 0; i < num_crt_entries; ++i) {
-    uint64_t ts;
-    uint32_t ch, version;
 
-    std::memcpy(&ts,      data + 0,  sizeof(uint64_t));
-    std::memcpy(&ch,      data + 8,  sizeof(uint32_t));
-    std::memcpy(&version, data + 12, sizeof(uint32_t));
-
-    CRT::Trigger trig(ts, ch, version);
-
-    tcrt_col.push_back(trig);
-
-    data += sizeof(CRT::Trigger);
-}
 
      for (size_t i = current_size; i < tcrt_col.size(); ++i)
        {
