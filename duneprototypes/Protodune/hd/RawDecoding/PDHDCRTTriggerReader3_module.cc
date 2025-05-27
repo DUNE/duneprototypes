@@ -252,43 +252,44 @@ void PDHDTriggerReader3::produce(art::Event& e)
 
 
 //CRT things
-  for (auto const& source_id : crt_sourceids)
-    {
-  // Sanity check for fragment type could go here if needed
+  for (auto const& source_id : crt_sourceids) {
+    if (source_id.subsystem != dunedaq::daqdataformats::SourceID::Subsystem::kTrigger) continue;
 
-     if (source_id.subsystem != dunedaq::daqdataformats::SourceID::Subsystem::kTrigger) continue;
-     auto frag_ptr = rf->get_frag_ptr(rid, source_id);
-     auto frag_size = frag_ptr->get_size();
-     size_t fhs = sizeof(dunedaq::daqdataformats::FragmentHeader);
+    auto frag_ptr = rf->get_frag_ptr(rid, source_id);
+    auto frag_size = frag_ptr->get_size();
+    size_t fhs = sizeof(dunedaq::daqdataformats::FragmentHeader);
 
-     if (frag_size <= fhs) continue; // Too small to even have a header
+    if (frag_size <= fhs) continue; // Too small to even have a header
 
-     size_t crt_struct_size = sizeof(CRT::Trigger); // Replace with actual structure
-     size_t num_crt_entries = (frag_size - fhs) / crt_struct_size;
-     size_t current_size = tcrt_col.size();
+    size_t crt_struct_size = sizeof(uint64_t) + sizeof(uint32_t); // Adjust based on actual structure
+    size_t num_crt_entries = (frag_size - fhs) / crt_struct_size;
 
-     void* frag_payload_ptr = frag_ptr->get_data();
+    void* frag_payload_ptr = frag_ptr->get_data();
 
-  // Resize collection and copy payload data into it
-     tcrt_col.resize(current_size + num_crt_entries);
-     memcpy(&(tcrt_col[current_size]), frag_payload_ptr, num_crt_entries * crt_struct_size);
+    size_t current_size = tcrt_col.size(); // Initialize current_size
 
+    for (size_t i = 0; i < num_crt_entries; ++i) {
+        uint64_t timestamp;
+        uint32_t channel;
 
+        // Extract fields from the fragment payload
+        std::memcpy(&timestamp, static_cast<char*>(frag_payload_ptr) + i * crt_struct_size, sizeof(uint64_t));
+        std::memcpy(&channel, static_cast<char*>(frag_payload_ptr) + i * crt_struct_size + sizeof(uint64_t), sizeof(uint32_t));
 
-     for (size_t i = current_size; i < tcrt_col.size(); ++i)
-       {
-       if (fDebugLevel > 0)
-          {
-            std::cout << source_id << " ; " << i
-                  << " ; " << tcrt_col.at(i).Timestamp   // Assuming fields exist
-                  << " ; " << tcrt_col.at(i).Channel
-                  << " ; " << tcrt_col.at(i).version
-                  << std::endl;
-          }
-       }
+        // Construct a CRT::Trigger object using the constructor
+        CRT::Trigger trigger(channel, timestamp, {}); // Assuming the constructor accepts these arguments
+        tcrt_col.push_back(trigger);
     }
 
-
+    for (size_t i = current_size; i < tcrt_col.size(); ++i) {
+        if (fDebugLevel > 0) {
+            std::cout << source_id << " ; " << i
+                      << " ; " << tcrt_col.at(i).Timestamp()   // Use the public accessor
+                      << " ; " << tcrt_col.at(i).Channel()     // Use the public accessor
+                      << std::endl;
+        }
+    }
+  }
 
 
   //the tps that were pulled in from the readout
