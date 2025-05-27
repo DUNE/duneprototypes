@@ -24,6 +24,12 @@ class DAPHNEInterfaceBase {
       std::string subdet_label,
       std::unordered_map<unsigned int, std::vector<raw::OpDetWaveform>> & wf_map,
       utils::DAPHNETree * daphne_tree) = 0;
+  virtual void Process2(
+      art::Event &evt,
+      std::string inputlabel,
+      std::vector<std::string> subdet_label,
+      std::unordered_map<unsigned int, std::vector<raw::OpDetWaveform>> & wf_map,
+      utils::DAPHNETree * daphne_tree) = 0;
 
   virtual ~DAPHNEInterfaceBase() = default;
  protected:

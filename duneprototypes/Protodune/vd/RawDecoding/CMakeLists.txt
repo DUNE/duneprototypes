@@ -23,6 +23,26 @@ cet_build_plugin(PDVDTPCReader art::module LIBRARIES
 )
 
 
+cet_build_plugin(DAPHNEReaderPDVD art::module LIBRARIES
+                 #PDHDReadoutUtils
+                 lardataobj::RawData
+		 dunecore::HDF5Utils_HDF5RawFile2Service_service
+		 dunecore::dunedaqhdf5utils2
+                 duneprototypes_Protodune_hd_ChannelMap_DAPHNEChannelMapService_service
+                 HDF5::HDF5
+                 art::Framework_Core
+                 art::Framework_Principal
+                 art::Framework_Services_Registry
+                 art_root_io::tfile_support
+                 ROOT::Core
+                 art_root_io::TFileService_service
+                 art::Persistency_Provenance
+                 messagefacility::MF_MessageLogger
+                 ROOT::Core ROOT::Hist ROOT::Tree
+                 DAPHNEUtils
+                 BASENAME_ONLY
+)
+
 cet_build_plugin(PDVDDataInterfaceWIBEth   art::tool LIBRARIES
                         canvas::canvas
                         cetlib::cetlib
