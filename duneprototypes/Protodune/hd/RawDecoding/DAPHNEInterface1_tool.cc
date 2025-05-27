@@ -234,6 +234,12 @@ class DAPHNEInterface1 : public DAPHNEInterfaceBase {
       }
     }
   };
+    void Process2(
+      art::Event &evt,
+      std::string inputlabel,
+      std::vector<std::string> subdet_label,
+      std::unordered_map<unsigned int, WaveformVector> & wf_map,
+      utils::DAPHNETree * daphne_tree) override {};
 
 };
 }
