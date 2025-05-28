@@ -103,7 +103,7 @@ void PDHDTriggerReader3::produce(art::Event& e)
 
   dunedaq::hdf5libs::HDF5RawDataFile::record_id_t rid = std::make_pair(evtno, seqno);
   
-  if (fDebugLevel > 0)
+  if (fDebugLevel > 1)
     {
       std::cout << "PDHDDataInterface HDF5 FileName: " << file_name << std::endl;
       std::cout << "PDHDDataInterface Run:Event:Seq: " << runno << ":" << evtno << ":" << seqno << std::endl;
@@ -119,9 +119,9 @@ void PDHDTriggerReader3::produce(art::Event& e)
   auto tc_sourceids = rf->get_source_ids_for_fragment_type(rid, dunedaq::daqdataformats::FragmentType::kTriggerCandidate);
 //CRT Trigger Fragment
   auto crt_sourceids = rf->get_source_ids_for_fragment_type(rid, dunedaq::daqdataformats::FragmentType::kCRT);
-
+  //std::cout << "***************************************************" << crt_sourceids.size() <<  " CRT source IDs found for runno: ***************************************************************************8" << runno << std::endl;
   // Loop over SourceIDs, Calculates the number of TriggerPrimitive objects in the individual Fragment Payload 
-  if (fDebugLevel > 0)
+  if (fDebugLevel > 1)
     {  
       std::cout << "runno:" << runno << " ; " << rf->get_source_ids(rid).size() << " ;  " << tp_sourceids.size() << " ; " << ta_sourceids.size() << " ; " << tc_sourceids.size() << " ; " << crt_sourceids.size() << std::endl;
     }
@@ -151,7 +151,7 @@ void PDHDTriggerReader3::produce(art::Event& e)
 
       for (size_t i = current_no_of_tps; i < tp_col.size(); ++i)
       {
-	    if (fDebugLevel > 0)
+	    if (fDebugLevel > 1)
 	    {
 	      std::cout << source_id << "   ;    " << i << "    ;    "  << tp_col.at(i).channel << "    ;    " << tp_col.at(i).time_start << "  ;  " << tp_col.at(i).version << std::endl;
 	    }
@@ -252,6 +252,7 @@ void PDHDTriggerReader3::produce(art::Event& e)
 
 
 //CRT things
+/*
   for (auto const& source_id : crt_sourceids) {
     if (source_id.subsystem != dunedaq::daqdataformats::SourceID::Subsystem::kTrigger) continue;
 
@@ -272,6 +273,9 @@ void PDHDTriggerReader3::produce(art::Event& e)
         uint64_t timestamp;
         uint32_t channel;
 
+
+
+
         // Extract fields from the fragment payload
         std::memcpy(&timestamp, static_cast<char*>(frag_payload_ptr) + i * crt_struct_size, sizeof(uint64_t));
         std::memcpy(&channel, static_cast<char*>(frag_payload_ptr) + i * crt_struct_size + sizeof(uint64_t), sizeof(uint32_t));
@@ -280,15 +284,77 @@ void PDHDTriggerReader3::produce(art::Event& e)
         CRT::Trigger trigger(channel, timestamp, {}); // Assuming the constructor accepts these arguments
         tcrt_col.push_back(trigger);
     }
-
+    std::cout << "PDHDTriggerReader3: Found " << num_crt_entries << " CRT triggers in fragment with source ID: " << source_id << std::endl;
     for (size_t i = current_size; i < tcrt_col.size(); ++i) {
         if (fDebugLevel > 0) {
-            std::cout << source_id << " ; " << i
-                      << " ; " << tcrt_col.at(i).Timestamp()   // Use the public accessor
-                      << " ; " << tcrt_col.at(i).Channel()     // Use the public accessor
+            std::cout << source_id << " is CRT ; " << i
+                      << " ; at timestamp  " << tcrt_col.at(i).Timestamp()   // Use the public accessor
+                      << " ; for channel " << tcrt_col.at(i).Channel()     // Use the public accessor
                       << std::endl;
+
         }
     }
+  }
+*/
+for (auto const& source_id : crt_sourceids) {
+  // Check if the subsystem matches kTrigger
+  if (source_id.subsystem == dunedaq::daqdataformats::SourceID::Subsystem::kTrigger) {
+      std::cout << "crt_sourceid subsystem (kTrigger): " << static_cast<int>(source_id.subsystem) << std::endl;
+  } else {
+      std::cout << "crt_sourceid subsystem (not kTrigger): " << static_cast<int>(source_id.subsystem) << std::endl;
+  }
+}
+  // New implementation for processing CRT fragments
+  for (auto const& source_id : crt_sourceids) {
+      std::cout << "crt_sourceid subsystem: " << static_cast<int>(source_id.subsystem) <<      std::endl;
+
+
+
+      //if (source_id.subsystem != dunedaq::daqdataformats::SourceID::Subsystem::kTrigger) continue;
+      //std::cout << "crt_sourceid subsystem: " << static_cast<int>(source_id.subsystem) << std::endl;
+      auto frag_ptr = rf->get_frag_ptr(rid, source_id);
+      auto frag_size = frag_ptr->get_size();
+      size_t fhs = sizeof(dunedaq::daqdataformats::FragmentHeader);
+      //std::cout << "PDHDTriggerReader3: Processing CRT fragment with source ID: " << source_id << std::endl;
+      if (frag_size <= fhs) continue;
+      std::cout << "PDHDTriggerReader3: Fragment size: " << frag_size << " bytes" << std::endl;
+      // Loop over the data, one CRT::Trigger at a time
+      long remaining_data_size = (long)(frag_size - fhs);
+      char* data_ptr = (char*)(frag_ptr->get_data());
+
+      std::cout << "Size of CRT::Trigger: " << sizeof(CRT::Trigger) << std::endl;
+      size_t trigger_count = 0;
+      const size_t max_triggers = 1000; // Limit for debugging
+
+      while (remaining_data_size > 0) {
+          if (remaining_data_size < 0) {
+              std::cerr << "Error: remaining_data_size is negative. Skipping fragment." << std::endl;
+              break;
+          }
+
+          if (static_cast<size_t>(remaining_data_size) < sizeof(CRT::Trigger)) {
+              std::cerr << "Error: Fragment too small to contain a CRT::Trigger object" << std::endl;
+              break;
+          }
+
+          const CRT::Trigger& crt_trigger = *reinterpret_cast<const CRT::Trigger*>(data_ptr);
+
+          std::cout << "CRT Trigger - Channel: " << crt_trigger.Channel()
+                    << ", Timestamp: " << crt_trigger.Timestamp() << std::endl;
+
+          tcrt_col.emplace_back(crt_trigger);
+          ++trigger_count;
+
+          if (tcrt_col.size() >= max_triggers) {
+              std::cerr << "Reached maximum number of CRT triggers. Stopping processing." << std::endl;
+              break;
+          }
+
+          remaining_data_size -= sizeof(CRT::Trigger);
+          data_ptr += sizeof(CRT::Trigger);
+      }
+
+      std::cout << "Total CRT triggers added: " << trigger_count << std::endl;
   }
 
 
