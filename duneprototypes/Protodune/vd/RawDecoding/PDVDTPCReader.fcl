@@ -9,7 +9,7 @@ PDVDTPCReaderDefaults:
   module_type: "PDVDTPCReader"
   InputLabel:  "daq"
   OutputInstance: "daq"
-  CrateList:     [ 10, 11 ]  # BDE crate numbers.  TBD: TDE crate numbers
+  CrateList:     [ -1 ]  # BDE crate numbers are 10 and 11.  TBD: TDE crate numbers.  -1 just gets them all
   DecoderToolParams: @local::PDVDDataInterfaceWIBEthDefaults 
   OutputStatusTree: true
 }
