@@ -56,10 +56,14 @@ namespace opdet {
     //  PDVDPDMapAlg(Config const&) {}
 
     // void setup() {}
-
+    std::string getOpDetProperty(int OpDet, std::string property) const;
+    
     bool isPDType(size_t ch, std::string pdname) const override;
-    bool isSensitiveToAr(size_t ch) const;
-    bool isSensitiveToXe(size_t ch) const;
+    double ArgonEfficiency(size_t ch) const;
+    double XenonEfficiency(size_t ch) const;
+    std::string OpDetTypeHardwareChannel(size_t hwch) const;
+    std::string OpDetType(size_t opdet) const;
+
 
     std::string pdType(size_t ch) const override;
     double Efficiency(size_t ch) const;
@@ -78,6 +82,8 @@ namespace opdet {
       
     size_t size() const;
     public:
+    unsigned int NHardwareChannels;
+    unsigned int getNHardwareChannels();
     bool isValidHardwareChannel(int hwch) const;
     unsigned int NOpChannels();
     unsigned int NOpHardwareChannels(unsigned int opDet);
@@ -85,9 +91,10 @@ namespace opdet {
     std::vector<unsigned int> HardwareChannelPerOpDet(unsigned int OpDet);
 
   private:
+    std::string fLogCategory = "PDVDPDMapAlg";
     nlohmann::json PDmap;
     std::map<unsigned int,unsigned int> MapHardwareChannelToOpDetChannel;
-    std::map<unsigned int,std::vector<unsigned int>> MapOpDetChannelToHarwareChannel;
+    std::map<unsigned int,std::vector<unsigned int>> MapOpDetChannelToHardwareChannel;
 
   }; // class PDVDPDMapAlg
 
