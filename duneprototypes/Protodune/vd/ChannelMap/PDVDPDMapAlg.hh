@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////
-//// File:        PDVD_PDMapAlg.hh
+//// File:        PDVDPDMapAlg.hh
 //// Authors: Kaixin Zhu (based on the SBND mapping algorithm)
 ////
 //// Updates: 2025-02, v08_45_00. Kaixin Zhu kzhu04@colostate.edu
@@ -20,8 +20,8 @@
 //////////////////////////////////////////////////////////////////////////
 //
 
-#ifndef PDVD_PDMAPALG_HH
-#define PDVD_PDMAPALG_HH
+#ifndef PDVDPDMapAlg_HH
+#define PDVDPDMapAlg_HH
 
 #include "PDMapAlg.h"
 //#include "art/Utilities/ToolMacros.h"
@@ -38,14 +38,14 @@
 
 namespace opdet {
 
-  class PDVD_PDMapAlg : public PDMapAlg{
+  class PDVDPDMapAlg : public PDMapAlg{
 
   public:
     //Default constructor
-    explicit PDVD_PDMapAlg(const fhicl::ParameterSet& pset);
-    PDVD_PDMapAlg() : PDVD_PDMapAlg(fhicl::ParameterSet()) {}
+    explicit PDVDPDMapAlg(const fhicl::ParameterSet& pset);
+    PDVDPDMapAlg() : PDVDPDMapAlg(fhicl::ParameterSet()) {}
     //Default destructor
-    ~PDVD_PDMapAlg();
+    ~PDVDPDMapAlg();
 
     nlohmann::json getCollectionWithProperty(std::string property);
     template<typename T> nlohmann::json getCollectionWithProperty(std::string property, T property_value);
@@ -53,13 +53,17 @@ namespace opdet {
 
     // struct Config {};
 
-    //  PDVD_PDMapAlg(Config const&) {}
+    //  PDVDPDMapAlg(Config const&) {}
 
     // void setup() {}
-
+    std::string getOpDetProperty(int OpDet, std::string property) const;
+    
     bool isPDType(size_t ch, std::string pdname) const override;
-    bool isSensitiveToAr(size_t ch) const;
-    bool isSensitiveToXe(size_t ch) const;
+    double ArgonEfficiency(size_t ch) const;
+    double XenonEfficiency(size_t ch) const;
+    std::string OpDetTypeHardwareChannel(size_t hwch) const;
+    std::string OpDetType(size_t opdet) const;
+
 
     std::string pdType(size_t ch) const override;
     double Efficiency(size_t ch) const;
@@ -77,13 +81,25 @@ namespace opdet {
     auto getChannelEntry(size_t ch) const;
       
     size_t size() const;
+    public:
+    unsigned int NHardwareChannels;
+    unsigned int getNHardwareChannels();
+    bool isValidHardwareChannel(int hwch) const;
+    unsigned int NOpChannels();
+    unsigned int NOpHardwareChannels(unsigned int opDet);
+    unsigned int OpDetFromOpChannel(unsigned int OpChannel);
+    std::vector<unsigned int> HardwareChannelPerOpDet(unsigned int OpDet);
 
   private:
+    std::string fLogCategory = "PDVDPDMapAlg";
     nlohmann::json PDmap;
-  }; // class PDVD_PDMapAlg
+    std::map<unsigned int,unsigned int> MapHardwareChannelToOpDetChannel;
+    std::map<unsigned int,std::vector<unsigned int>> MapOpDetChannelToHardwareChannel;
+
+  }; // class PDVDPDMapAlg
 
   template<typename T>
-  nlohmann::json PDVD_PDMapAlg::getCollectionWithProperty(std::string property, T property_value)
+  nlohmann::json PDVDPDMapAlg::getCollectionWithProperty(std::string property, T property_value)
   {
     nlohmann::json subSetPDmap;
     std::copy_if (PDmap.begin(), PDmap.end(), std::back_inserter(subSetPDmap),
@@ -93,7 +109,7 @@ namespace opdet {
   }
 
   template<typename Func>
-  nlohmann::json PDVD_PDMapAlg::getCollectionFromCondition(Func condition)
+  nlohmann::json PDVDPDMapAlg::getCollectionFromCondition(Func condition)
   {
     nlohmann::json subSetPDmap;
     std::copy_if (PDmap.begin(), PDmap.end(), std::back_inserter(subSetPDmap),
@@ -103,5 +119,5 @@ namespace opdet {
 
 } // namespace
 
-#endif // PDVD_PDMAPALG_HH
+#endif // PDVDPDMapAlg_HH
 
