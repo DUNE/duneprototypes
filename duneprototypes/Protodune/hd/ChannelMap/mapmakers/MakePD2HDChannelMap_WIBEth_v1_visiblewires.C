@@ -8,9 +8,10 @@
     > Author: Tom Junk
 ************************************************************************/
 
-// This makes the "electronics debugging" channel map (not rotated by 3 channels)
-// for physics use.  Based on MakePD2HDChannelMap_v4.C, it is the first guess at WIBEth
-// channel mapping
+// For physics use.  MakePD2HDChannelMap_WIBEth_v1.C, it is the first guess at WIBEth
+// channel mapping, with the +-3-wire offset
+// see https://indico.fnal.gov/event/55149/contributions/245059/attachments/156640/204540/trjchanmapjune2022.pdf
+// and https://wiki.dunescience.org/wiki/ProtoDUNE-HD_Geometry for more documentation.
 
 // update June 30, 2025 -- flip the sign of the +/- 3 wire correction, to fix the cathode-crossing
 // inefficiency and a sign mistake.
