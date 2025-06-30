@@ -8,7 +8,7 @@
     > Author: Tom Junk
 ************************************************************************/
 
-// For physics use.  MakePD2HDChannelMap_WIBEth_v1.C, it is the first guess at WIBEth
+// For physics use.  Based on MakePD2HDChannelMap_WIBEth_v1.C, it is the first guess at WIBEth
 // channel mapping, with the +-3-wire offset
 // see https://indico.fnal.gov/event/55149/contributions/245059/attachments/156640/204540/trjchanmapjune2022.pdf
 // and https://wiki.dunescience.org/wiki/ProtoDUNE-HD_Geometry for more documentation.
