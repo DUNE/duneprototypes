@@ -15,7 +15,7 @@
 #include "dunecore/DuneObj/DUNEHDF5FileInfo2.h"
 #include "dunecore/DuneObj/PDSPTPCDataInterfaceParent.h"
 #include "dunecore/HDF5Utils/HDF5RawFile3Service.h"
-#include "duneprototypes/Protodune/vd/ChannelMap/TPCChannelMapService.h"
+#include "dunecore/ChannelMap/TPCChannelMapService.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 class PDVDDataInterfaceWIBEth : public PDSPTPCDataInterfaceParent {
