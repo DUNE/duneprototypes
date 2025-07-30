@@ -461,7 +461,7 @@ public:
           skipped_frames |= (delta != 2048);
 
           if (delta != 2048)
-            std::cout << "PDVDDataInterfaceWIBEth WARNING. APPARENT SKIPPED FRAME " << i << " timestamp delta: " << delta
+            std::cout << "PDVDDataInterfaceWIBEth WARNING. APPARENT SKIPPED BDE FRAME " << i << " timestamp delta: " << delta
                       << std::endl;
           //TODO -- implement the patching,
           //but wait until we have bad data to work with
@@ -673,7 +673,7 @@ public:
 	    int last_tick = 64;
 	    //if the readout time is past the frame, don't change anything
 	    //if frame is past readout time, determine where to stop
-	    if (frame_timestamp + 500. * 64 / 16 > frag_window_end) {
+	    if (frame_timestamp + 500. * 64 / 16 > frag_window_end && i==n_frames-1) {
 	      //Account for the ticks at the front
 	      last_tick -= leftover_tde_ticks;
 	      if (fDebugLevel > 0) std::cout << "Last frame. last tick: " << last_tick << std::endl;
@@ -761,11 +761,11 @@ public:
 	    if (fDebugLevel > 0) std::cout << i << " " << this_timestamp << " " << delta << std::endl;
 	    prev_timestamp = this_timestamp;
 
-	    //For now, set this if the difference isn't 2000
-	    skipped_frames |= (delta != 2000);
+	    //For now, set this if the difference isn't 32000
+	    skipped_frames |= (delta != 32000);
 
-	    if (delta != 2000)
-	      std::cout << "PDVDDataInterfaceWIBEth WARNING. APPARENT SKIPPED FRAME " << i << " timestamp delta: " << delta
+	    if (delta != 32000)
+	      std::cout << "PDVDDataInterfaceWIBEth WARNING. APPARENT SKIPPED TDE FRAME " << i << " timestamp delta: " << delta
 			<< std::endl;
 	    //TODO -- implement the patching,
 	    //but wait until we have bad data to work with
