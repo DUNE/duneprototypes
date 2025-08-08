@@ -8,9 +8,13 @@
     > Author: Tom Junk
 ************************************************************************/
 
-// This makes the "electronics debugging" channel map (not rotated by 3 channels)
-// for physics use.  Based on MakePD2HDChannelMap_v4.C, it is the first guess at WIBEth
-// channel mapping
+// For physics use.  Based on MakePD2HDChannelMap_WIBEth_v1.C, it is the first guess at WIBEth
+// channel mapping, with the +-3-wire offset
+// see https://indico.fnal.gov/event/55149/contributions/245059/attachments/156640/204540/trjchanmapjune2022.pdf
+// and https://wiki.dunescience.org/wiki/ProtoDUNE-HD_Geometry for more documentation.
+
+// update June 30, 2025 -- flip the sign of the +/- 3 wire correction, to fix the cathode-crossing
+// inefficiency and a sign mistake.
 
 using namespace std;
 
@@ -151,8 +155,8 @@ void MakePD2HDChannelMap_WIBEth_v1_visiblewires() {
 		      if (tmpchan < 0) tmpchan += 800;
                       offlchan = tmpchan;
 		    }
-		  offlchan -= 3;
-		  if (offlchan < 0) offlchan += 800;
+		  offlchan += 3;
+		  if (offlchan > 799) offlchan -= 800;
 		}
 	      else
 		{
@@ -164,8 +168,8 @@ void MakePD2HDChannelMap_WIBEth_v1_visiblewires() {
 		    {
 		      offlchan = 400 + nichans*(20-ifemb) - iuchan - 1;
 		    }
-		  offlchan += 3;
-		  if (offlchan > 799) offlchan -= 800;
+		  offlchan -= 3;
+		  if (offlchan < 0) offlchan += 800;
 		}
 	      offlchan += 2560*icrate;
 
@@ -206,8 +210,8 @@ void MakePD2HDChannelMap_WIBEth_v1_visiblewires() {
 		      if (tmpchan > 1599) tmpchan -= 800;
 		      offlchan = tmpchan;
 		    }
-		  offlchan -=3;
-		  if (offlchan < 800) offlchan += 800;
+		  offlchan +=3;
+		  if (offlchan > 1599) offlchan -= 800;
 		}
 	      else
 		{
@@ -219,8 +223,8 @@ void MakePD2HDChannelMap_WIBEth_v1_visiblewires() {
 		    {
 		      offlchan = 1599 + nichans*(ifemb-20) + ivchan + 1;
 		    }
-		  offlchan += 3;
-		  if (offlchan > 1599) offlchan -= 800;
+		  offlchan -= 3;
+		  if (offlchan < 800) offlchan += 800;
 		}
 	      offlchan += 2560*icrate;
 
