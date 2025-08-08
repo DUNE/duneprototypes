@@ -116,7 +116,7 @@ void PDVDTPCReader::produce(art::Event& e)
   std::vector<raw::RDTimeStamp> rdtscol;
   art::Assns<raw::RawDigit, raw::RDTimeStamp> rdtacol;
 
-  m_DecoderTool->retrieveDataForSpecifiedAPAs(e, rawdigitcol, rdtscol, rdstatuscol, m_CrateList);
+  m_DecoderTool->retrieveDataForSpecifiedAPAs(e, rawdigitcol, rdtscol, rdstatuscol, m_CrateList, "ALL");
 
   SetRDTSFlags(rawdigitcol, rdtscol);
 
