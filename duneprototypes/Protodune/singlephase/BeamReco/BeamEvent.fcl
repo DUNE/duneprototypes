@@ -48,6 +48,8 @@ proto_beamevent:
   XCETPrefix:         "dip/acc/NORTH/NP04/BI/XCET/"
 
 
+  GeneralTriggerPrefix: "dip/acc/NORTH/NP04/BI/XBTF/GeneralTrigger"
+
   TOF1:               "XBTF022687"
   TOF2:               "XBTF022716"
 
@@ -215,4 +217,28 @@ pdhd_beamevent.PDHDTimingCalibrations: [
   [[28881, 2147483647], .3847e-3] ## Looks good up to 29194 -- should be good for the last run 29195
 ]
 
+pdvd_beamevent: @local::pdhd_beamevent
+pdvd_beamevent.BundleName: "DUNE_CERN_JUL2025"
+pdvd_beamevent.XCET1: ""
+pdvd_beamevent.XCET2: ""
+pdvd_beamevent.Devices: [
+    "XBPF021655",
+    "XBPF021656",
+    "XBPF021659",
+    "XBPF021660",
+    "XBPF021670",
+    "XBPF021671"
+]
+
+pdvd_beamevent.DeviceTypes:  [
+  ["XBPF021655","horiz"],
+  ["XBPF021656","vert"],
+  ["XBPF021659","horiz"],
+  ["XBPF021660","horiz"],
+  ["XBPF021670","horiz"],
+  ["XBPF021671","vert"]
+]
+pdvd_beamevent.MagnetCurrentName: "dip/acc/NORTH/NP02/POW/CALC/MOMENTUM:i_meas"
+pdvd_beamevent.RunType: 2
+pdvd_beamevent.GeneralTriggerPrefix: "dip/acc/NORTH/NP02/BI/TDC/GeneralTrigger"
 END_PROLOG

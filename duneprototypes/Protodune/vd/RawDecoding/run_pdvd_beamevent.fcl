@@ -1,0 +1,63 @@
+#include "HDF5RawInput3.fcl"
+#include "PDVDTriggerReader4.fcl"
+#include "PDVDTimingRawDecoder.fcl"
+#include "messageservices_dune.fcl"
+#include "BeamEvent.fcl"
+###include "PDHDCTBRawDecoder.fcl"
+
+process_name: BeamEvent
+
+services:
+{
+  # Load the service that manages root files for histograms.
+  TimeTracker:       {}
+  MemoryTracker:     {}
+  RandomNumberGenerator: {} #ART native random number generator
+  message:              @local::dune_message_services_prod_debug
+
+  TFileService: { #closeFileFast: true
+                  fileName: "beamevent_hist.root" #can be overridden by '-T'
+                }
+  IFBeam:            {}
+  HDF5RawFile3Service:  {}
+}
+services.message.destinations.LogStandardOut.threshold: "INFO"
+
+source: @local::hdf5rawinput3
+
+outputs:
+{
+ out1:
+  {
+    module_type: RootOutput
+    fileName:    "%ifb_beam.root"  #default file name, can override from command line with -o or --output
+    dataTier:    "reconstructed"
+    
+  }
+}
+
+physics:
+{
+ producers:
+ {
+  triggerrawdecoder: @local::PDVDTriggerReader4Defaults
+  #ctbrawdecoder: @local::PDVDCTBRawDecoderDefaults
+  timingrawdecoder: @local::PDVDTimingRawDecoder
+  beamevent:          @local::pdvd_beamevent
+ }
+
+ #produce:  [ timingrawdecoder, ctbrawdecoder, beamevent ]
+ produce:  [ triggerrawdecoder, timingrawdecoder, beamevent ]
+ stream1: [ out1 ]
+
+ trigger_paths:     [ produce ]
+ end_paths:         [ stream1 ]
+}
+physics.producers.beamevent.SaveOutTree: true
+physics.producers.beamevent.PrintDebug: true
+physics.producers.beamevent.DebugTOFs: true
+
+
+physics.producers.beamevent.ForceRead:            false
+physics.producers.beamevent.MatchTime:            true
+physics.producers.beamevent.SkipLLT:            true
