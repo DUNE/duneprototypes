@@ -3,7 +3,7 @@
 // Plugin Type: producer (art v2_08_03)
 // File:        BeamEvent_module.cc
 //
-// Written by Jake Calcutt (calcuttj@msu.edu)
+// Written by Jake Calcutt 
 ////////////////////////////////////////////////////////////////////////
 
 
@@ -890,6 +890,10 @@ void proto::BeamEvent::SetBeamEvent(){
 
 
 void proto::BeamEvent::reset_gentrigs(){
+  genTrigFracs.clear();
+  genTrigCoarses.clear();
+  genTrigSecs.clear();
+
   br1AFracs.clear();
   br1ACoarses.clear();
   br1ASecs.clear();

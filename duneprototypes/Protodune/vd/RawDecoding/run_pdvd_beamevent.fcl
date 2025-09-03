@@ -3,7 +3,7 @@
 #include "PDVDTimingRawDecoder.fcl"
 #include "messageservices_dune.fcl"
 #include "BeamEvent.fcl"
-###include "PDHDCTBRawDecoder.fcl"
+#include "PDHDCTBRawDecoder.fcl"
 
 process_name: BeamEvent
 
@@ -41,13 +41,13 @@ physics:
  producers:
  {
   triggerrawdecoder: @local::PDVDTriggerReader4Defaults
-  #ctbrawdecoder: @local::PDVDCTBRawDecoderDefaults
+  ctbrawdecoder: @local::PDHDCTBRawDecoderDefaults
   timingrawdecoder: @local::PDVDTimingRawDecoder
   beamevent:          @local::pdvd_beamevent
  }
 
  #produce:  [ timingrawdecoder, ctbrawdecoder, beamevent ]
- produce:  [ triggerrawdecoder, timingrawdecoder, beamevent ]
+ produce:  [ triggerrawdecoder, timingrawdecoder, ctbrawdecoder, beamevent ]
  stream1: [ out1 ]
 
  trigger_paths:     [ produce ]
@@ -60,4 +60,5 @@ physics.producers.beamevent.DebugTOFs: true
 
 physics.producers.beamevent.ForceRead:            false
 physics.producers.beamevent.MatchTime:            true
-physics.producers.beamevent.SkipLLT:            true
+#physics.producers.beamevent.SkipLLT:            true
+

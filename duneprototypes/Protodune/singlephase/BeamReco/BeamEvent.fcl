@@ -221,6 +221,7 @@ pdvd_beamevent: @local::pdhd_beamevent
 pdvd_beamevent.BundleName: "DUNE_CERN_JUL2025"
 pdvd_beamevent.XCET1: ""
 pdvd_beamevent.XCET2: ""
+
 pdvd_beamevent.Devices: [
     "XBPF021655",
     "XBPF021656",
@@ -239,6 +240,20 @@ pdvd_beamevent.DeviceTypes:  [
   ["XBPF021671","vert"]
 ]
 pdvd_beamevent.MagnetCurrentName: "dip/acc/NORTH/NP02/POW/CALC/MOMENTUM:i_meas"
-pdvd_beamevent.RunType: 2
+pdvd_beamevent.RunType: 2 #PDVD
 pdvd_beamevent.GeneralTriggerPrefix: "dip/acc/NORTH/NP02/BI/TDC/GeneralTrigger"
+pdvd_beamevent.XBPFPrefix: "dip/acc/NORTH/NP02/BI/XBPF/"
+pdvd_beamevent.XTOFPrefix: "dip/acc/NORTH/NP02/BI/XTOF/"
+pdvd_beamevent.XCETPrefix: "dip/acc/NORTH/NP02/BI/XCET/"
+pdvd_beamevent.DownstreamToGenTrig: 60
+pdvd_beamevent.TOF1:               "XBTF022638"
+pdvd_beamevent.TOF2:               "XBTF022670"
+pdvd_beamevent.TimingCalibration: -6.0e-7
+pdvd_beamevent.SkipMakeTrack: true
+pdvd_beamevent.FirstBPROF1:  "XBPF021655"
+pdvd_beamevent.SecondBPROF1: "XBPF021656"
+pdvd_beamevent.BPROF2:       "XBPF021659"
+pdvd_beamevent.BPROF3:       "XBPF021660"
+pdvd_beamevent.BeamBend:     .05792 #.11508
+pdvd_beamevent.BProf3Shift:  0
 END_PROLOG
