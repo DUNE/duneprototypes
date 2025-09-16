@@ -1,0 +1,12 @@
+BEGIN_PROLOG
+
+ICEBERGWIBEthBinaryWriter:
+{
+  module_type:                 "ICEBERGDAQWIBEthBinary"
+  rawdigitlabel:               "tpcrawdecoder:daq"
+  CollectionPedestalOffset:    900    # to be added to all collection-plane ADC values
+  InductionPedestalOffset:     2000   # to be added to all induction-plane ADC values
+  Crate:                       8      # number of the only ICEBERG WIEC crate
+}
+
+END_PROLOG
