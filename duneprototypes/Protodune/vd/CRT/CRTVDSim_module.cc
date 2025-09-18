@@ -178,7 +178,7 @@ void CRT::CRTVDSim::produce(art::Event & e)
 std::cout << "\nHit in volume " << volume << std::endl;
 std::cout << "edep.GetID() = " << eDep.GetID() << std::endl;
 std::cout << "CRT volume index = " << (eDep.GetID())/8 << std::endl;
-std::cout << "CRT channel = " << (eDep.GetID()-1)%8 << std::endl;
+std::cout << "CRT channel = " << (eDep.GetID())%8 << std::endl;
 std::cout << "edep.GetTrackID() = " << eDep.GetTrackID() << std::endl;
 std::cout << "tAvg_fl = " << tAvg_fl << "\t" << "tAvg_int = " << tAvg << std::endl;
 std::cout << "Integration window = " << fIntegrationWindow << std::endl; 
@@ -186,7 +186,7 @@ std::cout << "energy deposited : = " << eDep.GetEnergyDeposited() << std::endl;
 */
 
       // Smear hit position from true position
-      const geo::AuxDetGeo& adg = auxDetGeom.AuxDet( (eDep.GetID()-1)/8 );
+      const geo::AuxDetGeo& adg = auxDetGeom.AuxDet( (eDep.GetID())/8 );
 
 // adg.PrintAuxDetInfo(std::cout, "" , 3); std::cout << "\n";
       float x = midpoint.X();
@@ -220,7 +220,7 @@ std::cout << "energy deposited : = " << eDep.GetEnergyDeposited() << std::endl;
 //std::cout << "Position : = " << hp.X() << " " << hp.Y() << " " << hp.Z() << std::endl; 
 
 
-      crtHitsModuleMap[(eDep.GetID()-1)/8][tAvg/fSamplingTime].emplace_back(CRTVD::Hit( (eDep.GetID()-1)%8, volume, eDep.GetEnergyDeposited(), geo::Point_t(x, y, z)), eDep.GetTrackID() );
+      crtHitsModuleMap[(eDep.GetID())/8][tAvg/fSamplingTime].emplace_back(CRTVD::Hit( (eDep.GetID())%8, volume, eDep.GetEnergyDeposited(), geo::Point_t(x, y, z)), eDep.GetTrackID() );
 //      crtHitsModuleMap[(eDep.GetID()-1)/8][tAvg/fIntegrationTime].emplace_back(CRTVD::Hit((eDep.GetID()-1)%8, volume, eDep.GetEnergyDeposited()*0.001f*fGeVToADC),eDep.GetTrackID());
 //      crtHitsModuleMap[i_volume][tAvg/fIntegrationTime].emplace_back(CRTVD::Hit((eDep.GetID())%64, volume, eDep.GetEnergyDeposited()*0.001f*fGeVToADC),eDep.GetTrackID());
 //      mf::LogDebug("TrueTimes") << "Assigned true hit at time " << tAvg << " to bin " << tAvg/fIntegrationTime << ".\n";
