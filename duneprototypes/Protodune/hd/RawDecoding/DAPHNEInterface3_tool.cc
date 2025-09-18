@@ -110,6 +110,7 @@ class DAPHNEInterface3 : public DAPHNEInterfaceBase {
         if (count_warnings < 100) {
           std::cout << "WARNING: Could not find offline channel for " <<
                        b_slot << " " << b_link << " " << frame_channels[i] << std::endl;
+          ++count_warnings;
         }
         // Don't process data from unknown offline channels!
         continue;
@@ -163,6 +164,7 @@ class DAPHNEInterface3 : public DAPHNEInterfaceBase {
       if (count_warnings < 100) {
         std::cout << "WARNING: Could not find offline channel for " <<
                      b_slot << " " << b_link << " " << b_channel_0 << std::endl;
+        ++count_warnings;
       }
       // Don't process data from unknown offline channels!
       return;
