@@ -165,6 +165,7 @@ private:
   double SpillEnd = 0.;
   double SpillOffset = 0.;
   double ActiveTriggerTime = 0.;
+  long ActiveTrigger = -999;
   long long RDTSTime = 0;
   double RDTSTimeSec = 0.;
   double PrevRDTSTimeSec=-99999.;  
@@ -238,7 +239,8 @@ private:
   std::string fMagnetCurrentName;
 
   std::map<std::string, std::string > fDeviceTypes;
-  std::map< std::string, double > fFiberDimension;
+  //std::map< std::string, double > fFiberDimension;
+  double fFiberDimension = 1.;
 
 
   // Names of the CERN Beam Devices
@@ -410,6 +412,7 @@ proto::BeamEvent::BeamEvent(fhicl::ParameterSet const & p)
     fBProf2Shift(p.get<double>("BProf2Shift")), 
     fBProf3Shift(p.get<double>("BProf3Shift")), 
     fMagnetCurrentName(p.get<std::string>("MagnetCurrentName")),
+    fFiberDimension(p.get<double>("FiberDimension", 1.)),
     fXBPFPrefix(p.get<std::string>("XBPFPrefix")),
     fXTOFPrefix(p.get<std::string>("XTOFPrefix")),
     fXCETPrefix(p.get<std::string>("XCETPrefix")),
@@ -492,8 +495,8 @@ proto::BeamEvent::BeamEvent(fhicl::ParameterSet const & p)
   fDeviceTypes  = std::map<std::string, std::string>(tempTypes.begin(), tempTypes.end() );
 
   //Deminsion of Fibers
-  std::vector< std::pair<std::string, double> > tempFiberDims = p.get< std::vector<std::pair<std::string,double> > >("Dimension");
-  fFiberDimension = std::map<std::string, double>(tempFiberDims.begin(), tempFiberDims.end());
+  //std::vector< std::pair<std::string, double> > tempFiberDims = p.get< std::vector<std::pair<std::string,double> > >("Dimension");
+  //fFiberDimension = std::map<std::string, double>(tempFiberDims.begin(), tempFiberDims.end());
 }
 // END Constructor
 ////////////////////////
@@ -925,6 +928,7 @@ void proto::BeamEvent::reset(){
   s11Sec      = -1.;
 
   ActiveTriggerTime = -1;
+  ActiveTrigger = -999;
   RDTSTime   = 0;
   RDTSSec = -999.;
   RDTSNano = -999.;
@@ -1229,6 +1233,7 @@ void proto::BeamEvent::produce(art::Event & e){
       if( beamspill->CheckIsMatched() ){
         std::pair<double,double> theTime = beamspill->GetT0(beamspill->GetActiveTrigger());
         ActiveTriggerTime = theTime.first + theTime.second*1.e-9;
+        ActiveTrigger = beamspill->GetActiveTrigger();
 
         if( fPrintDebug ) 
           MF_LOG_INFO("BeamEvent") << "Trigger: " << beamspill->GetActiveTrigger() << " " << ActiveTriggerTime << "\n";       
@@ -1626,7 +1631,7 @@ void proto::BeamEvent::parseXTOF(uint64_t time){
 
         //if here, 0. < delta < 50ns
         if( fPrintDebug )
-          MF_LOG_INFO("BeamEvent") << "Found match 2A to Gen" << "\n";
+          MF_LOG_INFO("BeamEvent") << "Found match 2A to Gen " << ip2A << "\n";
 
         //So check 1A and 1B
         for(size_t ip1A = 0; ip1A < unorderedTOF1ATime.size(); ++ip1A){
@@ -1689,7 +1694,7 @@ void proto::BeamEvent::parseXTOF(uint64_t time){
 
         //if here, 0. < delta < 50ns
         if( fPrintDebug )
-          MF_LOG_INFO("BeamEvent") << "Found match 2B to Gen" << "\n";
+          MF_LOG_INFO("BeamEvent") << "Found match 2B to Gen " <<  ip2B <<"\n";
 
         //So check 1A and 1B
         for(size_t ip1A = 0; ip1A < unorderedTOF1ATime.size(); ++ip1A){
@@ -2116,6 +2121,7 @@ void proto::BeamEvent::beginJob()
     fOutTree->Branch("SpillEnd", &SpillEnd);
     fOutTree->Branch("SpillOffset", &SpillOffset);
     fOutTree->Branch("ActiveTriggerTime", &ActiveTriggerTime);
+    fOutTree->Branch("ActiveTrigger", &ActiveTrigger);
     fOutTree->Branch("Run",   &runNum);
     fOutTree->Branch("Subrun", &subRunNum);
     fOutTree->Branch("Pressure1", &CKov1Pressure);
@@ -2640,6 +2646,9 @@ void proto::BeamEvent::MomentumSpec(size_t theTrigger){
         x2 = x2 - fBProf2Shift*1.e-3; 
         x3 = x3 - fBProf3Shift*1.e-3; 
 
+        std::cout << BPROF1Fibers[i1] << " " << BPROF2Fibers[i2] << " " << BPROF3Fibers[i3] << std::endl;
+        std::cout << x1 << " " << x2 << " " << x3 << std::endl;
+
         double cosTheta_full = MomentumCosTheta(x1,x2,x3);        
         double momentum_full = 299792458*LB/(1.E9 * acos(cosTheta_full));
         if( fDebugMomentum ) fFullMomentum->Fill(momentum_full);
@@ -2701,7 +2710,7 @@ TVector3 proto::BeamEvent::ProjectToTPC(TVector3 firstPoint, TVector3 secondPoin
 
 double proto::BeamEvent::GetPosition(std::string deviceName, int fiberIdx){
   if(fiberIdx > 192){ MF_LOG_WARNING("BeamEvent") << "Please select fiber in range [0,191]" << "\n"; return -1.;}
-  double size = fFiberDimension[deviceName];
+  double size = fFiberDimension; //[deviceName];
   
   //Define 0th fiber as farthest positive. Last fiber is farthest negative. Center is between 96 and 97 
   double pos = size*(96 - fiberIdx) - size/2.;

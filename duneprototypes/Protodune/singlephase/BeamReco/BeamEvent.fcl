@@ -34,14 +34,15 @@ proto_beamevent:
   FixedTime:     0.
 
   Coordinates:   [] 
-  Dimension:         [["XBPF022697",1],
-                      ["XBPF022698",1],
-                      ["XBPF022701",1],
-                      ["XBPF022702",1],
-                      ["XBPF022707",1],
-                      ["XBPF022708",1],
-                      ["XBPF022716",1],
-                      ["XBPF022717",1]]
+  FiberDimension: 1.
+  #Dimension:         [["XBPF022697",1],
+  #                    ["XBPF022698",1],
+  #                    ["XBPF022701",1],
+  #                    ["XBPF022702",1],
+  #                    ["XBPF022707",1],
+  #                    ["XBPF022708",1],
+  #                    ["XBPF022716",1],
+  #                    ["XBPF022717",1]]
 
   XBPFPrefix:         "dip/acc/NORTH/NP04/BI/XBPF/"
   XTOFPrefix:         "dip/acc/NORTH/NP04/BI/XTOF/"
@@ -239,6 +240,12 @@ pdvd_beamevent.DeviceTypes:  [
   ["XBPF021670","horiz"],
   ["XBPF021671","vert"]
 ]
+#pdvd_beamevent.Dimension:         [["XBPF021655",1],
+#                    ["XBPF021656",1],
+#                    ["XBPF021659",1],
+#                    ["XBPF021660",1],
+#                    ["XBPF021670",1],
+#                    ["XBPF021671",1]]
 pdvd_beamevent.MagnetCurrentName: "dip/acc/NORTH/NP02/POW/CALC/MOMENTUM:i_meas"
 pdvd_beamevent.RunType: 2 #PDVD
 pdvd_beamevent.GeneralTriggerPrefix: "dip/acc/NORTH/NP02/BI/TDC/GeneralTrigger"
@@ -256,4 +263,9 @@ pdvd_beamevent.BPROF2:       "XBPF021659"
 pdvd_beamevent.BPROF3:       "XBPF021660"
 pdvd_beamevent.BeamBend:     .05792 #.11508
 pdvd_beamevent.BProf3Shift:  0
+pdvd_beamevent.TOFCalAA: 0. 
+pdvd_beamevent.TOFCalAB: 0. 
+pdvd_beamevent.TOFCalBA: 0. 
+pdvd_beamevent.TOFCalBB: 0. 
+
 END_PROLOG
