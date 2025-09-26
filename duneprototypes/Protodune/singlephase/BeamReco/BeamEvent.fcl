@@ -34,19 +34,22 @@ proto_beamevent:
   FixedTime:     0.
 
   Coordinates:   [] 
-  Dimension:         [["XBPF022697",1],
-                      ["XBPF022698",1],
-                      ["XBPF022701",1],
-                      ["XBPF022702",1],
-                      ["XBPF022707",1],
-                      ["XBPF022708",1],
-                      ["XBPF022716",1],
-                      ["XBPF022717",1]]
+  FiberDimension: 1.
+  #Dimension:         [["XBPF022697",1],
+  #                    ["XBPF022698",1],
+  #                    ["XBPF022701",1],
+  #                    ["XBPF022702",1],
+  #                    ["XBPF022707",1],
+  #                    ["XBPF022708",1],
+  #                    ["XBPF022716",1],
+  #                    ["XBPF022717",1]]
 
   XBPFPrefix:         "dip/acc/NORTH/NP04/BI/XBPF/"
   XTOFPrefix:         "dip/acc/NORTH/NP04/BI/XTOF/"
   XCETPrefix:         "dip/acc/NORTH/NP04/BI/XCET/"
 
+
+  GeneralTriggerPrefix: "dip/acc/NORTH/NP04/BI/XBTF/GeneralTrigger"
 
   TOF1:               "XBTF022687"
   TOF2:               "XBTF022716"
@@ -214,5 +217,55 @@ pdhd_beamevent.PDHDTimingCalibrations: [
   [[28871, 28881], -.2105e-3], ## 08/23 -- Really it's just 28880
   [[28881, 2147483647], .3847e-3] ## Looks good up to 29194 -- should be good for the last run 29195
 ]
+
+pdvd_beamevent: @local::pdhd_beamevent
+pdvd_beamevent.BundleName: "DUNE_CERN_JUL2025"
+pdvd_beamevent.XCET1: ""
+pdvd_beamevent.XCET2: ""
+
+pdvd_beamevent.Devices: [
+    "XBPF021655",
+    "XBPF021656",
+    "XBPF021659",
+    "XBPF021660",
+    "XBPF021670",
+    "XBPF021671"
+]
+
+pdvd_beamevent.DeviceTypes:  [
+  ["XBPF021655","horiz"],
+  ["XBPF021656","vert"],
+  ["XBPF021659","horiz"],
+  ["XBPF021660","horiz"],
+  ["XBPF021670","horiz"],
+  ["XBPF021671","vert"]
+]
+#pdvd_beamevent.Dimension:         [["XBPF021655",1],
+#                    ["XBPF021656",1],
+#                    ["XBPF021659",1],
+#                    ["XBPF021660",1],
+#                    ["XBPF021670",1],
+#                    ["XBPF021671",1]]
+pdvd_beamevent.MagnetCurrentName: "dip/acc/NORTH/NP02/POW/CALC/MOMENTUM:i_meas"
+pdvd_beamevent.RunType: 2 #PDVD
+pdvd_beamevent.GeneralTriggerPrefix: "dip/acc/NORTH/NP02/BI/TDC/GeneralTrigger"
+pdvd_beamevent.XBPFPrefix: "dip/acc/NORTH/NP02/BI/XBPF/"
+pdvd_beamevent.XTOFPrefix: "dip/acc/NORTH/NP02/BI/XTOF/"
+pdvd_beamevent.XCETPrefix: "dip/acc/NORTH/NP02/BI/XCET/"
+pdvd_beamevent.DownstreamToGenTrig: 60
+pdvd_beamevent.TOF1:               "XBTF022638"
+pdvd_beamevent.TOF2:               "XBTF022670"
+pdvd_beamevent.TimingCalibration: -6.0e-7
+pdvd_beamevent.SkipMakeTrack: true
+pdvd_beamevent.FirstBPROF1:  "XBPF021655"
+pdvd_beamevent.SecondBPROF1: "XBPF021656"
+pdvd_beamevent.BPROF2:       "XBPF021659"
+pdvd_beamevent.BPROF3:       "XBPF021660"
+pdvd_beamevent.BeamBend:     .05792 #.11508
+pdvd_beamevent.BProf3Shift:  0
+pdvd_beamevent.TOFCalAA: 0. 
+pdvd_beamevent.TOFCalAB: 0. 
+pdvd_beamevent.TOFCalBA: 0. 
+pdvd_beamevent.TOFCalBB: 0. 
 
 END_PROLOG
