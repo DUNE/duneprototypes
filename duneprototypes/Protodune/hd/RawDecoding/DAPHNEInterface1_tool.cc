@@ -20,6 +20,9 @@ using DAPHNEFrame = dunedaq::fddetdataformats::DAPHNEFrame;
 class DAPHNEInterface1 : public DAPHNEInterfaceBase {
 
  private:
+  unsigned count_warnings;
+
+ private:
   static const size_t FragmentHeaderSize = sizeof(FragmentHeader);
   static const size_t FrameSize = sizeof(DAPHNEFrame);
   static const size_t StreamFrameSize = sizeof(DAPHNEStreamFrame);
@@ -35,9 +38,9 @@ class DAPHNEInterface1 : public DAPHNEInterfaceBase {
       std::unique_ptr<Fragment> & frag,
       std::unordered_map<unsigned int, std::vector<raw::OpDetWaveform>> & wf_map,
       utils::DAPHNETree * daphne_tree) {
-  
+
     bool is_stream = (frag->get_fragment_type() != FragmentType::kDAPHNE);
-  
+
     if (!is_stream) {
       ProcessFrames(frag, wf_map, daphne_tree);
     }
@@ -50,7 +53,7 @@ class DAPHNEInterface1 : public DAPHNEInterfaceBase {
       std::unique_ptr<Fragment> & frag,
       std::unordered_map<unsigned int, std::vector<raw::OpDetWaveform>> & wf_map,
       utils::DAPHNETree * daphne_tree) {
-  
+
     auto n_frames = GetNFrames<DAPHNEFrame>(frag->get_size(),
                                             FragmentHeaderSize);
     for (size_t i = 0; i < n_frames; ++i) {
@@ -60,13 +63,13 @@ class DAPHNEInterface1 : public DAPHNEInterfaceBase {
       ProcessFrame(frame, wf_map, daphne_tree);
     }
   }
-  
+
   //Get number of streaming Frames then loop over them and process each one
   void ProcessStreamFrames(
       std::unique_ptr<Fragment> & frag,
       std::unordered_map<unsigned int, std::vector<raw::OpDetWaveform>> & wf_map,
       utils::DAPHNETree * daphne_tree) {
-  
+
     auto n_frames = GetNFrames<DAPHNEStreamFrame>(frag->get_size(),
                                                   FragmentHeaderSize);
     for (size_t i = 0; i < n_frames; ++i) {
@@ -84,8 +87,8 @@ class DAPHNEInterface1 : public DAPHNEInterfaceBase {
     art::ServiceHandle<dune::DAPHNEChannelMapService> channel_map;
     auto b_link = frame->daq_header.link_id;
     auto b_slot = frame->daq_header.slot_id;
-  
-  
+
+
     //Each streaming frame comes with data from 4 channels
     std::array<size_t, 4> frame_channels = {
       frame->header.channel_0,
@@ -95,16 +98,21 @@ class DAPHNEInterface1 : public DAPHNEInterfaceBase {
     // Loop over channels
     for (size_t i = 0; i < frame->s_channels_per_frame; ++i) {
       auto offline_channel = -1;
-  
+
       try {
         offline_channel = channel_map->GetOfflineChannel(
           b_slot, b_link, frame_channels[i]);
       }
       catch (const std::range_error & err) {
-        std::cout << "WARNING: Could not find offline channel for " <<
-                     b_slot << " " << b_link << " " << frame_channels[i] << std::endl;
+        if (count_warnings < 100) {
+          std::cout << "WARNING: Could not find offline channel for " <<
+                       b_slot << " " << b_link << " " << frame_channels[i] << std::endl;
+          ++count_warnings;
+        }
+        // Don't process data from unknown offline channels!
+        continue;
       }
-  
+
       //Make output
       auto & waveform = daphne::utils::MakeWaveform(
             offline_channel,
@@ -112,14 +120,14 @@ class DAPHNEInterface1 : public DAPHNEInterfaceBase {
             frame->get_timestamp(),
             wf_map,
             true);
-  
-      // Loop over ADC values in the frame for channel i 
+
+      // Loop over ADC values in the frame for channel i
       for (size_t j = 0; j < static_cast<size_t>(frame->s_adcs_per_channel); ++j) {
         waveform.push_back(frame->get_adc(j, i));
         if (daphne_tree != nullptr)
           daphne_tree->fADCValue[j] = frame->get_adc(j, i);
       }
-  
+
       if (daphne_tree != nullptr) {
         daphne_tree->fSlot = b_slot;
         daphne_tree->fDaphneChannel = frame_channels[i];
@@ -129,7 +137,7 @@ class DAPHNEInterface1 : public DAPHNEInterfaceBase {
         daphne_tree->fThreshold = 0;
         daphne_tree->fBaseline = 0;
         daphne_tree->Fill();
-      } 
+      }
     }
   }
 
@@ -137,7 +145,7 @@ class DAPHNEInterface1 : public DAPHNEInterfaceBase {
       DAPHNEFrame * frame,
       std::unordered_map<unsigned int, std::vector<raw::OpDetWaveform>> & wf_map,
       utils::DAPHNETree * daphne_tree) {
-  
+
     art::ServiceHandle<dune::DAPHNEChannelMapService> channel_map;
     int b_channel_0 = frame->get_channel();
     int b_link = frame->daq_header.link_id;
@@ -150,10 +158,15 @@ class DAPHNEInterface1 : public DAPHNEInterfaceBase {
     catch (const std::range_error & err) {
       //Just throw a warning so users can check out the rest of the data
       //maybe we can configure this to crash for keepup reco
-      std::cout << "WARNING: Could not find offline channel for " <<
-                   b_slot << " " << b_link << " " << b_channel_0 << std::endl;
+      if (count_warnings < 100) {
+        std::cout << "WARNING: Could not find offline channel for " <<
+                     b_slot << " " << b_link << " " << b_channel_0 << std::endl;
+        ++count_warnings;
+      }
+      // Don't process data from unknown offline channels!
+      return;
     }
-  
+
     //Make output waveform and fill
     auto & waveform = daphne::utils::MakeWaveform(
         offline_channel,
@@ -176,7 +189,7 @@ class DAPHNEInterface1 : public DAPHNEInterfaceBase {
       daphne_tree->fBaseline = frame->header.baseline;
       daphne_tree->Fill();
     }
-  
+
   }
 
   bool CheckIsDetReadout(const SourceID & source_id) {
@@ -191,7 +204,9 @@ class DAPHNEInterface1 : public DAPHNEInterfaceBase {
 
  public:
 
-  DAPHNEInterface1(fhicl::ParameterSet const& p) {};
+  DAPHNEInterface1(fhicl::ParameterSet const& p) :
+    count_warnings(0)
+  {};
 
   void Process(
       art::Event &evt,
