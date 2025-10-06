@@ -1,0 +1,40 @@
+#include "HDF5RawInput3.fcl"
+#include "PDVDTimingRawDecoder.fcl"
+
+process_name: PDVDTimingDECODER
+
+services:
+{
+  TimeTracker:  {}
+  TFileService: 
+  {
+    fileName: "pdvdtimingdecodermoduleTFile.root"
+  } 
+  HDF5RawFile3Service:  {}
+}
+
+source: @local::hdf5rawinput3
+
+physics:
+{
+  producers:
+  {
+    timingrawdecoder: @local::PDVDTimingRawDecoder
+  }
+
+  produce: [ timingrawdecoder ] 
+  output: [ out1 ]
+  trigger_paths : [ produce ]
+  end_paths: [ output ]
+} 	     
+
+outputs:
+{
+  out1:
+  {
+    compressionLevel: 1
+    module_type: RootOutput
+    fileName: "%ifb_decode.root"
+  }
+}
+

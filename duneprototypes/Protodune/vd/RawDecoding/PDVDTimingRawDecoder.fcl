@@ -1,0 +1,6 @@
+BEGIN_PROLOG
+PDVDTimingRawDecoder: {
+  module_type: "PDHDTimingRawDecoder"
+  OutputLabel: "daq"
+}
+END_PROLOG
