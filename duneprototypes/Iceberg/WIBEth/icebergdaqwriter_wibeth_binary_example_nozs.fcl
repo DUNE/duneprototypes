@@ -1,0 +1,17 @@
+#include "ICEBERGDAQWriter.fcl"
+#include "prodsingle_iceberg.fcl"
+
+services.PD2HDChannelMapService.FileName: "iceberg_wibeth_chanmap_v1.txt"
+physics.analyzers.icebergwibethbinary: @local::ICEBERGWIBEthBinaryWriter
+physics.stream1: [ "icebergwibethbinary", "out1" ]
+physics.analyzers.icebergwibethbinary.rawdigitlabel: "daq"
+
+# save all the raw digits in memory
+
+physics.producers.daq.CompressionType: "none"
+physics.producers.daq.SaveEmptyChannel: true
+physics.producers.daq.ZeroThreshold: 1
+
+# but do not write them to disk
+
+outputs.out1.outputCommands: [ "keep *", "drop raw::RawDigit*_*_*_*" ]
