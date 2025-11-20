@@ -6,6 +6,7 @@ cet_build_plugin( BeamEvent art::module LIBRARIES
                         ifdh_art::IFBeam_service
                         lardataobj::RawData
                         lardataobj::RecoBase
+                        lardataalg::UtilitiesHeaders
                         larreco::RecoAlg
                         larreco::Calorimetry
                         larreco::RecoAlg_PMAlg

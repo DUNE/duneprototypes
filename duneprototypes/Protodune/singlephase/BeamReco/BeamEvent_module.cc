@@ -26,6 +26,7 @@
 #include "dunecore/DuneObj/ProtoDUNEBeamSpill.h"
 #include "duneprototypes/Protodune/singlephase/CTB/data/pdspctb.h"
 #include "lardataobj/RawData/RDTimeStamp.h"
+#include "lardataalg/Utilities/TrackingTypeUtils.h"
 #include "dunecore/DuneObj/ProtoDUNETimeStamp.h"
 #include "detdataformats/trigger/TriggerCandidateData.hpp"
 #include "detdataformats/trigger/TriggerCandidateData2.hpp"
