@@ -141,9 +141,9 @@ namespace dune
 					   art::ActivityRegistry& areg);
     // The compiler-generated destructor is fine for non-base
     // classes without bare pointers or other resource use.
-    
+   
     std::string getMapName() const { return mapname_; }
-    
+   
     // old style map functions 
     int MapToCRP(int seqch, int &crp, int &view, int &chv) const;
     int MapToDAQ(int crp, int view, int chv, int &seqch) const;
@@ -202,6 +202,8 @@ namespace dune
 	}
       return res;
     }
+
+    void ReadMapFromFile(std::string& fullname);
 
     // simple map
     void simpleMap( unsigned ncrates, unsigned ncards, unsigned nviews );
