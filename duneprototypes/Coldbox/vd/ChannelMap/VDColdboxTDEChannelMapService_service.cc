@@ -50,6 +50,7 @@
 #include <iostream>
 #include <iomanip>
 #include <utility>
+#include <fstream>
 
 #include "VDColdboxTDEChannelMapService.h"
 #include "tde_cmap_utils.h"
@@ -93,6 +94,9 @@ dune::VDColdboxTDEChannelMapService::VDColdboxTDEChannelMapService(fhicl::Parame
 void dune::VDColdboxTDEChannelMapService::initMap( std::string mapname, unsigned ncrates,
 						    unsigned ncards, unsigned nviews )
 {
+  if( fLogLevel )
+    std::cout<<"VDColdboxTDEChannelMapService::initMap" <<std::endl;
+  
   // already defined?
   if( mapname_.compare( mapname ) == 0 ) {
     return;
@@ -105,6 +109,13 @@ void dune::VDColdboxTDEChannelMapService::initMap( std::string mapname, unsigned
   } 
   else if( mapname.compare("vdcb2crp") == 0 ) {
     vdcb2crpMap();
+  }
+  else if( mapname.size() != 0){
+    std::string fullname;
+    cet::search_path sp("FW_SEARCH_PATH");
+    sp.find_file(mapname, fullname);
+    if( fLogLevel ) std::cout<<"VDColdboxTDEChannelMapService::ctor: full MapName : " << fullname <<std::endl;
+    ReadMapFromFile(fullname);
   }
   else {
     simpleMap( ncrates, ncards, nviews );
@@ -125,6 +136,65 @@ void dune::VDColdboxTDEChannelMapService::clearMap()
   crpidx_.clear();
 }
 
+
+void dune::VDColdboxTDEChannelMapService::ReadMapFromFile(std::string& fullname){
+
+  if( fLogLevel )
+    std::cout<<"VDColdboxTDEChannelMapService::ReadMapFromFile : "<< fullname <<std::endl;
+
+
+  unsigned int state;
+  unsigned fNChans = 0;
+  
+  std::ifstream inFile(fullname, std::ios::in);
+  std::string line;
+
+  std::string daqch;
+  std::string globch;
+  std::string AB;
+  std::string femb;
+  std::string asic;
+  std::string asic_ch;
+  std::string view;
+  std::string channel;
+  std::string modul;
+  std::string crate;
+  std::string slot;
+  std::string stream_ch;
+    
+  if( fLogLevel )
+    std::cout<<"VDColdboxTDEChannelMapService::ReadMapFromFile :    fNChans crate slot stream_ch crp view view_ch state" <<std::endl;
+
+  while (std::getline(inFile, line)) {
+    std::stringstream linestream(line);
+
+    linestream >> 
+     daqch   >>
+     globch  >>
+     AB      >>
+     femb    >>
+     asic    >>
+     asic_ch >>
+     view    >>
+     channel >>
+     modul   >>
+     crate   >> 
+     slot    >>
+     stream_ch;
+
+     if(globch == "-1") state = 1; // unused channels
+     else               state = 0; // valid channels
+	
+     add(fNChans++ , atoi(crate.c_str()), atoi(slot.c_str()), atoi(stream_ch.c_str()), atoi(modul.c_str()), atoi(view.c_str()), atoi(channel.c_str()), state);
+    
+    if( fLogLevel )
+      std::cout<<"VDColdboxTDEChannelMapService::ReadMapFromFile :    " << fNChans << " " << crate << " " << slot << " " << stream_ch << " " << modul << " " << view << " " << channel << " " << state <<std::endl;
+  }
+  inFile.close();
+
+  if( fLogLevel )  std::cout<<"VDColdboxTDEChannelMapService::ReadMapFromFile : Ntot: " << chanTable.size() << std::endl;
+
+}
 
 //
 // a simple channel map for testing purposes
@@ -158,11 +228,14 @@ void dune::VDColdboxTDEChannelMapService::simpleMap( unsigned ncrates, unsigned 
 //
 // add channl ID to map
 void dune::VDColdboxTDEChannelMapService::add( unsigned seq, unsigned crate, unsigned card, 
-					      unsigned cch,  unsigned crp, unsigned view, 
-					      unsigned vch, unsigned short state )
+ 					       unsigned cch, unsigned crp,   unsigned view, 
+					       unsigned vch, unsigned short state )
 {
+
+  if( fLogLevel  > 1) std::cout << "VDColdboxTDEChannelMapService::add : ChannelId(" << seq << " " << crate << " " << card << " " << cch << " " << crp << " " << view << " " << vch << " " << state << ")" << std::endl;
+
   chanTable.insert( ChannelId(seq, crate, card, cch, crp, view, vch, state) );
-  //
+
   ntot_    = chanTable.size();
 
   crateidx_.insert( crate );
@@ -170,6 +243,8 @@ void dune::VDColdboxTDEChannelMapService::add( unsigned seq, unsigned crate, uns
       
   crpidx_.insert( crp );
   ncrps_ = crpidx_.size();
+
+  if( fLogLevel > 2) std::cout << "VDColdboxTDEChannelMapService::add : " << ntot_ << " " << ncrates_ << " " << ncrps_ <<  std::endl;
 }
 
 //
