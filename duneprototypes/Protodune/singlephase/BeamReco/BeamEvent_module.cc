@@ -22,6 +22,7 @@
 #include "lardataobj/RecoBase/TrackingTypes.h"
 #include "lardataobj/RecoBase/TrackTrajectory.h"
 #include "lardataobj/RecoBase/Track.h"
+#include "lardataalg/Utilities/TrackingTypeUtils.h"
 #include "dunecore/DuneObj/ProtoDUNEBeamEvent.h"
 #include "dunecore/DuneObj/ProtoDUNEBeamSpill.h"
 #include "duneprototypes/Protodune/singlephase/CTB/data/pdspctb.h"
