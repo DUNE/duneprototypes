@@ -13,6 +13,7 @@ cet_build_plugin( BeamEvent art::module LIBRARIES
                         larcore::Geometry_Geometry_service
                         lardata::ArtDataHelper
                         lardata::Utilities
+                        lardataalg::UtilitiesHeaders
                         larsim::Simulation 
                         lardataobj::Simulation
                         dunecore::DuneObj
