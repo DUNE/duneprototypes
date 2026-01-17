@@ -152,7 +152,7 @@ void PDVDTriggerReader4::produce(art::Event& e)
       {
 	    if (fDebugLevel > 0)
 	    {
-	      std::cout << source_id << "   ;    " << i << "    ;    "  << tp_col.at(i).channel << "    ;    " << tp_col.at(i).time_start << "  ;  " << tp_col.at(i).version << std::endl;
+	      std::cout << source_id << "   ;    " << i << "    ;    "  << tp_col.at(i).Channel() << "    ;    " << tp_col.at(i).time_start << "  ;  " << tp_col.at(i).version << std::endl;
 	    }
       }
       
