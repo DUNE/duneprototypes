@@ -126,7 +126,8 @@ class DAPHNEInterface3 : public DAPHNEInterfaceBase {
       auto & waveform = daphne::utils::MakeWaveform(
             offline_channel,
             frame->s_adcs_per_channel,
-            frame->get_timestamp()*fClocksData->OpticalClock().TickPeriod(), // making sure the timestamp is in microseconds; assumed it's in ticks in DAQ
+            (frame->get_timestamp() & 0xffffffffff) // mask out most significant bits. Live with only 40 least significant bits ~ 1,099,511,627,776 ticks = ~4.9 h
+            *fClocksData->OpticalClock().TickPeriod(), // making sure the timestamp is in microseconds; assumed it's in ticks in DAQ
             wf_map,
             true);
 
@@ -181,7 +182,8 @@ class DAPHNEInterface3 : public DAPHNEInterfaceBase {
     auto & waveform = daphne::utils::MakeWaveform(
         offline_channel,
         static_cast<size_t>(frame->s_num_adcs),
-        frame->get_timestamp()*fClocksData->OpticalClock().TickPeriod(), // making sure the timestamp is in microseconds; assumed it's in ticks in DAQ
+        (frame->get_timestamp() & 0xffffffffff) // mask out most significant bits. Live with only 40 least significant bits ~ 1,099,511,627,776 ticks = ~4.9 h
+        *fClocksData->OpticalClock().TickPeriod(), // making sure the timestamp is in microseconds; assumed it's in ticks in DAQ
         wf_map);
     for (size_t j = 0; j < static_cast<size_t>(frame->s_num_adcs); ++j) {
       waveform.push_back(frame->get_adc(j));
