@@ -35,7 +35,7 @@ services.Geometry: @local::protodunedphase_geo
 services.DetectorPropertiesService:    @local::protodunedphase_detproperties
 services.RawDigitPrepService:          @local::adcprep_with_tools_data
 services.ChannelStatusService:         @local::pddp_channel_status_lemblind
-services.DetectorPropertiesService.Efield:	[0.166, 4.0, 0.0]
+services.DetectorPropertiesService.PerPlaneEfield:	[0.166, 4.0, 0.0]
 
 ### to add to common
 tools.pddp_adcMultiThreshSignalFinder: {

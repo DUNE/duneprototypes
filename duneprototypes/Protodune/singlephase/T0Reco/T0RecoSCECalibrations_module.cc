@@ -209,7 +209,7 @@ T0RecoSCECalibrations::T0RecoSCECalibrations(fhicl::ParameterSet const & p)
   
   // Use '_detp' to find 'efield' and 'temp'
   auto const detProp = art::ServiceHandle<detinfo::DetectorPropertiesService const>()->DataForJob();
-  double efield = detProp.Efield();
+  double efield = detProp.PerPlaneEfield();
   double temp   = detProp.Temperature();
   // Determine the drift velocity from 'efield' and 'temp'
   fDriftVelocity = detProp.DriftVelocity(efield,temp);

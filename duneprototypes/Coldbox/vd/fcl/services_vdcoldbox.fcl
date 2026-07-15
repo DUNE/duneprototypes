@@ -36,7 +36,7 @@ data.vdcb_nov21_Efield:  [0.404, 1.0, 1.0]
 data.vdcb_dec21_Efield:  [0.411, 1.0, 1.0]
 
 # set efield
-vdcb_services.DetectorPropertiesService.Efield: @local::data.vdcb_nov21_Efield
+vdcb_services.DetectorPropertiesService.PerPlaneEfield: @local::data.vdcb_nov21_Efield
 
 # bot CRP1
 vdcb_crp1_bot_services: @local::vdcb_services
@@ -138,7 +138,7 @@ vdcb_bot_reco_services: {
 vdcb_crp2_services: @local::vdcb_crp1_top_services
 vdcb_crp2_services.AuxDetGeometry: @local::dunecrpcb_auxdet_geo
 vdcb_crp2_services.Geometry: @local::dunecrpcb_geo
-vdcb_crp2_services.DetectorPropertiesService.Efield: @local::data.vdcb_nov21_Efield
+vdcb_crp2_services.DetectorPropertiesService.PerPlaneEfield: @local::data.vdcb_nov21_Efield
 vdcb_crp2_services.DetectorPropertiesService.NumberTimeSamples: 10000
 vdcb_crp2_services.DetectorPropertiesService.ReadOutWindowSize: 10000
 
@@ -160,7 +160,7 @@ vdcb_crp2_data_services.DetectorPropertiesService.ReadOutWindowSize: 10000
 # 
 vdcb_crp4_services: @local::vdcb_crp1_top_services
 vdcb_crp4_services.Geometry: @local::dunecrpcb_geo
-vdcb_crp4_services.DetectorPropertiesService.Efield: [0.438, 1, 1]
+vdcb_crp4_services.DetectorPropertiesService.PerPlaneEfield: [0.438, 1, 1]
 vdcb_crp4_services.DetectorPropertiesService.NumberTimeSamples: 6000
 vdcb_crp4_services.DetectorPropertiesService.ReadOutWindowSize: 6000
 vdcb_crp4_services.DetectorClocksService.ClockSpeedTPC: 1.953125 # 512ns per sample

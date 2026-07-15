@@ -209,7 +209,7 @@ T0RecoAnodePiercers::T0RecoAnodePiercers(fhicl::ParameterSet const & fcl)
 
   // Use 'detp' to find 'efield' and 'temp'
   auto const detProp = art::ServiceHandle<detinfo::DetectorPropertiesService const>()->DataForJob();
-  double efield = detProp.Efield();
+  double efield = detProp.PerPlaneEfield();
   if(fDebug) std::cout << "Nominal electric field is: " << efield << " V/cm" << std::endl;
 
   double temp   = detProp.Temperature();

@@ -289,7 +289,7 @@ void dune::CalibrationdEdXPDSP::produce(art::Event & evt)
           double dQdx_e = caloAlg.ElectronsFromADCArea(vdQdx[j], planeID.Plane);
           double rho = detProp.Density();                       // LAr density in g/cm^3
           double Wion = 1000./util::kGeVToElectrons;    // 23.6 eV = 1e, Wion in MeV/e
-          double E_field_nominal = detProp.Efield();   // Electric Field in the drift region in KV/cm
+          double E_field_nominal = detProp.PerPlaneEfield();   // Electric Field in the drift region in KV/cm
 
           //correct Efield for SCE
           geo::Vector_t E_field_offsets = {0., 0., 0.};
@@ -464,7 +464,7 @@ void dune::CalibrationdEdXPDSP::produce(art::Event & evt)
           double dQdx_e = caloAlg.ElectronsFromADCArea(vdQdx[j], planeID.Plane);
           double rho = detProp.Density();                       // LAr density in g/cm^3
           double Wion = 1000./util::kGeVToElectrons;    // 23.6 eV = 1e, Wion in MeV/e
-          double E_field_nominal = detProp.Efield();   // Electric Field in the drift region in KV/cm
+          double E_field_nominal = detProp.PerPlaneEfield();   // Electric Field in the drift region in KV/cm
 
           //correct Efield for SCE
           geo::Vector_t E_field_offsets = {0., 0., 0.};

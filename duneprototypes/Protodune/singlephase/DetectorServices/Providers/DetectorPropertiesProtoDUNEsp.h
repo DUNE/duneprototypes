@@ -29,6 +29,7 @@
 #include "lardataalg/DetectorInfo/LArProperties.h"
 #include "lardataalg/DetectorInfo/DetectorClocks.h"
 #include "lardataalg/DetectorInfo/DetectorProperties.h"
+#include "lardataalg/DetectorInfo/IElectricFieldProvider.h"
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 
 #include "lardata/DetectorInfoServices/ServicePack.h"
@@ -37,8 +38,13 @@
 #include "fhiclcpp/types/Sequence.h"
 #include "fhiclcpp/types/Table.h"
 #include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/DelegatedParameter.h"
 #include "fhiclcpp/types/OptionalAtom.h"
+
+#include "TVector3.h"
+
 // C/C++ standard libraries
+#include <memory>
 #include <set>
 
 
@@ -72,6 +78,11 @@ namespace spdp{
 
         fhicl::Sequence<double> Efield { Name("Efield"), Comment(
           "electric field in front of each wire plane (the last one is the big one!) [kV/cm]")
+          };
+
+        fhicl::DelegatedParameter ElectricFieldProvider { Name("ElectricFieldProvider"), Comment(
+          "configuration for the position-aware electric field provider; "
+          "must contain a 'ProviderType' selector (e.g. \"Box\")")
           };
 
 
@@ -236,7 +247,8 @@ namespace spdp{
       void SetLArProperties(const detinfo::LArProperties* lp) { fLP = lp; }
       void SetNumberTimeSamples(unsigned int nsamp) { fNumberTimeSamples=nsamp;}
       // Accessors.
-      virtual double Efield(unsigned int planegap=0) const override; ///< kV/cm
+      virtual double PerPlaneEfield(unsigned int planegap=0) const override; ///< kV/cm
+      virtual TVector3 Efield(TVector3 const& point) const override; ///< kV/cm (field vector)
       virtual double DriftVelocity(double efield=0., double temperature=0.) const override;  ///< cm/us
 
       /// dQ/dX in electrons/cm, returns dE/dX in MeV/cm.
@@ -332,6 +344,7 @@ namespace spdp{
       bool                        fUseRunDependentTemperature;
       double                         fHV_cath;   //  <KV
       std::vector<double>          fEfield;           ///< kV/cm (per inter-plane volume)
+      std::unique_ptr<detinfo::IElectricFieldProvider> fEField; ///< position-aware E-field provider
       double                         fElectronlifetime; ///< microseconds
       double                         fTemperature;      ///< kelvin
       double       fSamplingRate;      ///< in ns

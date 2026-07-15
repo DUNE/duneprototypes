@@ -48,7 +48,7 @@ services.SignalShapingServiceDUNEDPhase.ShapeFuncParams: [0.5, 4.0]
 services.SignalShapingServiceDUNEDPhase.ColFilterParams: [ 1.0, 0.0, 0.1 ]
 
 # electric field configuration
-services.DetectorPropertiesService.Efield:	[0.166, 4.0, 0.0]
+services.DetectorPropertiesService.PerPlaneEfield:	[0.166, 4.0, 0.0]
 
 ### to add to common
 tools.pddp_adcMultiThreshSignalFinder: {

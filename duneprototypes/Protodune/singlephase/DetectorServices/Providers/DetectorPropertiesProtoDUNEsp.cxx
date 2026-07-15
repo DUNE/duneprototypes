@@ -30,6 +30,7 @@
 
 #include "duneprototypes/Protodune/singlephase/DetectorServices/Services/DetectorPropertiesServiceProtoDUNEsp.h"
 #include "lardataalg/DetectorInfo/LArProperties.h"
+#include "lardataalg/DetectorInfo/ElectricFieldProviderFactory.h"
 #include "larcore/Geometry/Geometry.h"
 
 
@@ -224,6 +225,8 @@ namespace spdp{
   void DetectorPropertiesProtoDUNEsp::Configure(Configuration_t const& config) {
 
     fEfield                     = config.Efield();
+    fEField                     = detinfo::makeElectricFieldProvider(
+      config.ElectricFieldProvider.get<fhicl::ParameterSet>());
     fGetHVDriftfromMetaData    = config.fGetHVDriftfromMetaData();
     fGetHVDriftfromMetaData    = false;  // DLA 2021-11-11  Redmine 26419
     fGetReadOutWindowSizefromMetaData = config.fGetReadOutWindowSizefromMetaData();
@@ -285,13 +288,19 @@ namespace spdp{
 
 
   //------------------------------------------------------------------------------------//
-  double DetectorPropertiesProtoDUNEsp::Efield(unsigned int planegap) const
+  double DetectorPropertiesProtoDUNEsp::PerPlaneEfield(unsigned int planegap) const
   {
     if(planegap >= fEfield.size())
       throw cet::exception("DetectorPropertiesStandard") << "requesting Electric field in a plane gap that is not defined\n";
 
 
     return fEfield[planegap];
+  }
+
+  //------------------------------------------------------------------------------------//
+  TVector3 DetectorPropertiesProtoDUNEsp::Efield(TVector3 const& point) const
+  {
+    return fEField->Efield(point);
   }
 
 
@@ -402,7 +411,7 @@ namespace spdp{
     // Temperature should have units of Kelvin
     // Default Efield, use internal value.
     if(efield == 0.)
-      efield = Efield();
+      efield = PerPlaneEfield();
     //
     if(efield > 4.0)
       mf::LogWarning("DetectorPropertiesStandard") << "DriftVelocity Warning! : E-field value of "
@@ -476,7 +485,7 @@ namespace spdp{
   // returns dEdX in MeV/cm
   double DetectorPropertiesProtoDUNEsp::BirksCorrection(double dQdx) const
   {
-    return BirksCorrection(dQdx, Efield());
+    return BirksCorrection(dQdx, PerPlaneEfield());
   }
   double DetectorPropertiesProtoDUNEsp::BirksCorrection(double dQdx, double E_field) const
   {
@@ -497,7 +506,7 @@ namespace spdp{
   // Modified Box model correction
   double DetectorPropertiesProtoDUNEsp::ModBoxCorrection(double dQdx) const
   {
-    return ModBoxCorrection(dQdx, Efield());
+    return ModBoxCorrection(dQdx, PerPlaneEfield());
   }
   double DetectorPropertiesProtoDUNEsp::ModBoxCorrection(double dQdx, double E_field) const
   {
@@ -530,7 +539,7 @@ namespace spdp{
     CheckIfConfigured();
 
     double samplingRate   = sampling_rate(clockData);
-    double efield         = Efield();
+    double efield         = PerPlaneEfield();
     double temperature    = Temperature();
     double driftVelocity  = DriftVelocity(efield, temperature);
 

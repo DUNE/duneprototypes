@@ -19,7 +19,7 @@ art_make( NO_PLUGINS
                         ifdh::ifdh
                         ifdh_art::IFBeam_service
                         fhiclcpp::fhiclcpp
-                        ROOT::Core ROOT::Hist ROOT::Tree
+                        ROOT::Core ROOT::Hist ROOT::Tree ROOT::Physics
                         
         )
 
