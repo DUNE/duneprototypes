@@ -17,6 +17,8 @@
 #include "lardata/DetectorInfoServices/ServicePack.h" // lar::extractProviders()
 #include "lardata/DetectorInfoServices/LArPropertiesService.h"
 #include "lardata/DetectorInfoServices/DetectorClocksService.h"
+#include "lardata/DetectorInfoServices/ElectricFieldService.h"
+#include "lardata/DetectorInfoServices/PositionDistorterService.h"
 // Art includes
 #include "art_root_io/RootDB/SQLite3Wrapper.h"
 #include "fhiclcpp/make_ParameterSet.h"
@@ -51,12 +53,23 @@ namespace spdp{
 
     fProp = std::make_unique<detinfo::DetectorPropertiesStandard>(pset,geo,lp,clks);
     */
+    // The ElectricFieldService / PositionDistorterService are optional: use the
+    // provider when the service is configured, else null (built-in fallbacks).
+    detinfo::IElectricFieldProvider const* efield = nullptr;
+    if (art::ServiceRegistry::isAvailable<detinfo::ElectricFieldService>())
+      efield = lar::providerFrom<detinfo::ElectricFieldService>();
+    detinfo::IPositionDistorter const* distorter = nullptr;
+    if (art::ServiceRegistry::isAvailable<detinfo::PositionDistorterService>())
+      distorter = lar::providerFrom<detinfo::PositionDistorterService>();
+
     fProp = std::make_unique<spdp::DetectorPropertiesProtoDUNEsp>(
         pset,
         lar::providerFrom<geo::Geometry>(),
         &art::ServiceHandle<geo::WireReadout>()->Get(),
         lar::providerFrom<detinfo::LArPropertiesService>(),
-        std::set<std::string>({ "InheritNumberTimeSamples" })
+        std::set<std::string>({ "InheritNumberTimeSamples" }),
+        efield,
+        distorter
       );
 
     // at this point we need and expect the provider to be fully configured

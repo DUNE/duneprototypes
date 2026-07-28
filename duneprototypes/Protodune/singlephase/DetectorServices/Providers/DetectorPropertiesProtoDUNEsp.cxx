@@ -30,7 +30,7 @@
 
 #include "duneprototypes/Protodune/singlephase/DetectorServices/Services/DetectorPropertiesServiceProtoDUNEsp.h"
 #include "lardataalg/DetectorInfo/LArProperties.h"
-#include "lardataalg/DetectorInfo/ElectricFieldProviderFactory.h"
+#include "lardataalg/DetectorInfo/EFieldFallback.h"
 #include "larcore/Geometry/Geometry.h"
 
 
@@ -58,9 +58,11 @@ namespace spdp{
                                                                const geo::GeometryCore* geo,
                                                                const geo::WireReadoutGeom* wireReadout,
                                                                const detinfo::LArProperties* lp,
-                                                               std::set<std::string> const& ignore_params /* = {} */
+                                                               std::set<std::string> const& ignore_params /* = {} */,
+                                                               detinfo::IElectricFieldProvider const* efield /* = nullptr */,
+                                                               detinfo::IPositionDistorter const* distorter /* = nullptr */
                                                                ):
-    fLP(lp), fGeo(geo), fWireReadoutGeom(wireReadout)
+    fLP(lp), fGeo(geo), fWireReadoutGeom(wireReadout), fEField(efield), fDistorter(distorter)
   {
     {
       mf::LogInfo debug("setupProvider<DetectorPropertiesStandard>");
@@ -70,6 +72,10 @@ namespace spdp{
     }
 
     ValidateAndConfigure(pset, ignore_params);
+
+    // Active LAr volume(s) are only needed for the uniform-field fallback used
+    // when no ElectricFieldProvider is injected.
+    if (!fEField && fGeo) fActiveVolumes = detinfo::extractActiveVolumes(*fGeo);
 
   }
 
@@ -189,22 +195,22 @@ namespace spdp{
       //double Uplane_bias=(-0.370*(fHV_cath/180));
       //double Vplane_bias=0;
       //double Xplane_bias=0.820*(fHV_cath/180);
-      fEfield={fHV_cath/360,std::fabs(Gplane_bias-Uplane_bias)/0.47625,std::fabs(Uplane_bias-Vplane_bias)/0.47625,std::fabs(Vplane_bias-Xplane_bias)/0.47625};
-      //fEfield[0]=fHV_cath/360;
-      //fEfield[1]=std::fabs(Gplane_bias-Uplane_bias)/0.475;
-      //fEfield[2]=std::fabs(Uplane_bias-Vplane_bias)/0.475;
-      //fEfield[3]=std::fabs(Vplane_bias-Xplane_bias)/0.475;
+      fPerPlaneEfield={fHV_cath/360,std::fabs(Gplane_bias-Uplane_bias)/0.47625,std::fabs(Uplane_bias-Vplane_bias)/0.47625,std::fabs(Vplane_bias-Xplane_bias)/0.47625};
+      //fPerPlaneEfield[0]=fHV_cath/360;
+      //fPerPlaneEfield[1]=std::fabs(Gplane_bias-Uplane_bias)/0.475;
+      //fPerPlaneEfield[2]=std::fabs(Uplane_bias-Vplane_bias)/0.475;
+      //fPerPlaneEfield[3]=std::fabs(Vplane_bias-Xplane_bias)/0.475;
       if (std::abs(fHV_cath-180) < 1e-6){
         // Use the corrected E field from Flavio, Francesco and Stefania
         // Ref: https://indico.fnal.gov/event/20939/contribution/1/material/slides/0.pdf
         if (run < 6725){ //first run in Feb 8, 2019
-          fEfield[0] = 0.4867;
+          fPerPlaneEfield[0] = 0.4867;
         }
         else{
-          fEfield[0] = 0.4995;
+          fPerPlaneEfield[0] = 0.4995;
         }
       }
-      std::cout<<"Calculated E field in 4 plane gaps as: "<<fEfield[0]<<","<<fEfield[1]<<","<<fEfield[2]<<","<<fEfield[3]<<std::endl;
+      std::cout<<"Calculated E field in 4 plane gaps as: "<<fPerPlaneEfield[0]<<","<<fPerPlaneEfield[1]<<","<<fPerPlaneEfield[2]<<","<<fPerPlaneEfield[3]<<std::endl;
     }//End GetHVDriftfrom MetaData if
 
 
@@ -224,9 +230,11 @@ namespace spdp{
   //--------------------------------------------------------------------
   void DetectorPropertiesProtoDUNEsp::Configure(Configuration_t const& config) {
 
-    fEfield                     = config.Efield();
-    fEField                     = detinfo::makeElectricFieldProvider(
-      config.ElectricFieldProvider.get<fhicl::ParameterSet>());
+    fPerPlaneEfield                     = config.PerPlaneEfield();
+    // fEField / fDistorter are injected via the constructor (from the
+    // ElectricFieldService / PositionDistorterService); both may be null, in
+    // which case Efield()/Distort()/Correct() use built-in fallbacks.
+
     fGetHVDriftfromMetaData    = config.fGetHVDriftfromMetaData();
     fGetHVDriftfromMetaData    = false;  // DLA 2021-11-11  Redmine 26419
     fGetReadOutWindowSizefromMetaData = config.fGetReadOutWindowSizefromMetaData();
@@ -290,17 +298,35 @@ namespace spdp{
   //------------------------------------------------------------------------------------//
   double DetectorPropertiesProtoDUNEsp::PerPlaneEfield(unsigned int planegap) const
   {
-    if(planegap >= fEfield.size())
+    if(planegap >= fPerPlaneEfield.size())
       throw cet::exception("DetectorPropertiesStandard") << "requesting Electric field in a plane gap that is not defined\n";
 
 
-    return fEfield[planegap];
+    return fPerPlaneEfield[planegap];
   }
 
   //------------------------------------------------------------------------------------//
-  TVector3 DetectorPropertiesProtoDUNEsp::Efield(TVector3 const& point) const
+  geo::Vector_t DetectorPropertiesProtoDUNEsp::Efield(geo::Point_t const& point) const
   {
-    return fEField->Efield(point);
+    if (fEField) return fEField->Efield(point);
+
+    // Fallback (no ElectricFieldProvider injected): uniform field of magnitude
+    // PerPlaneEfield(0) along the drift axis inside the active LAr volume, zero
+    // outside it.
+    double const mag = fPerPlaneEfield.empty() ? 0. : fPerPlaneEfield.front();
+    return detinfo::uniformFallbackEField(*fGeo, fActiveVolumes, mag, point);
+  }
+
+  //------------------------------------------------------------------------------------//
+  geo::Point_t DetectorPropertiesProtoDUNEsp::Distort(geo::Point_t const& point) const
+  {
+    return fDistorter ? fDistorter->Distort(point) : point;
+  }
+
+  //------------------------------------------------------------------------------------//
+  geo::Point_t DetectorPropertiesProtoDUNEsp::Correct(geo::Point_t const& point) const
+  {
+    return fDistorter ? fDistorter->Correct(point) : point;
   }
 
 

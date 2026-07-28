@@ -29,7 +29,9 @@
 #include "lardataalg/DetectorInfo/LArProperties.h"
 #include "lardataalg/DetectorInfo/DetectorClocks.h"
 #include "lardataalg/DetectorInfo/DetectorProperties.h"
+#include "lardataalg/DetectorInfo/EFieldFallback.h"
 #include "lardataalg/DetectorInfo/IElectricFieldProvider.h"
+#include "lardataalg/DetectorInfo/IPositionDistorter.h"
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 
 #include "lardata/DetectorInfoServices/ServicePack.h"
@@ -38,10 +40,7 @@
 #include "fhiclcpp/types/Sequence.h"
 #include "fhiclcpp/types/Table.h"
 #include "fhiclcpp/types/Atom.h"
-#include "fhiclcpp/types/DelegatedParameter.h"
 #include "fhiclcpp/types/OptionalAtom.h"
-
-#include "TVector3.h"
 
 // C/C++ standard libraries
 #include <memory>
@@ -76,13 +75,8 @@ namespace spdp{
         using Name = fhicl::Name;
         using Comment = fhicl::Comment;
 
-        fhicl::Sequence<double> Efield { Name("Efield"), Comment(
+        fhicl::Sequence<double> PerPlaneEfield { Name("PerPlaneEfield"), Comment(
           "electric field in front of each wire plane (the last one is the big one!) [kV/cm]")
-          };
-
-        fhicl::DelegatedParameter ElectricFieldProvider { Name("ElectricFieldProvider"), Comment(
-          "configuration for the position-aware electric field provider; "
-          "must contain a 'ProviderType' selector (e.g. \"Box\")")
           };
 
 
@@ -173,7 +167,9 @@ namespace spdp{
                          const geo::GeometryCore* geo,
                          const geo::WireReadoutGeom* wireReadout,
                          const detinfo::LArProperties* lp,
-                         std::set<std::string> const& ignore_params = {}
+                         std::set<std::string> const& ignore_params = {},
+                         detinfo::IElectricFieldProvider const* efield = nullptr,
+                         detinfo::IPositionDistorter const* distorter = nullptr
                          );
       /**
        * @brief Constructs the provider and sets up the dependencies
@@ -248,7 +244,9 @@ namespace spdp{
       void SetNumberTimeSamples(unsigned int nsamp) { fNumberTimeSamples=nsamp;}
       // Accessors.
       virtual double PerPlaneEfield(unsigned int planegap=0) const override; ///< kV/cm
-      virtual TVector3 Efield(TVector3 const& point) const override; ///< kV/cm (field vector)
+      virtual geo::Vector_t Efield(geo::Point_t const& point) const override; ///< kV/cm (field vector)
+      virtual geo::Point_t Distort(geo::Point_t const& point) const override; ///< distorted position [cm]
+      virtual geo::Point_t Correct(geo::Point_t const& point) const override; ///< corrected position [cm]
       virtual double DriftVelocity(double efield=0., double temperature=0.) const override;  ///< cm/us
 
       /// dQ/dX in electrons/cm, returns dE/dX in MeV/cm.
@@ -343,8 +341,10 @@ namespace spdp{
       bool                        fGetReadOutWindowSizefromMetaData;
       bool                        fUseRunDependentTemperature;
       double                         fHV_cath;   //  <KV
-      std::vector<double>          fEfield;           ///< kV/cm (per inter-plane volume)
-      std::unique_ptr<detinfo::IElectricFieldProvider> fEField; ///< position-aware E-field provider
+      std::vector<double>          fPerPlaneEfield;           ///< kV/cm (per inter-plane volume)
+      detinfo::IElectricFieldProvider const* fEField = nullptr; ///< injected E-field provider (may be null)
+      detinfo::IPositionDistorter const* fDistorter = nullptr; ///< injected position distorter (may be null)
+      std::vector<geo::BoxBoundedGeo> fActiveVolumes; ///< active LAr volume per cryostat (E-field fallback)
       double                         fElectronlifetime; ///< microseconds
       double                         fTemperature;      ///< kelvin
       double       fSamplingRate;      ///< in ns

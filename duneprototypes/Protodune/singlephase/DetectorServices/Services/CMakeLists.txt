@@ -1,6 +1,8 @@
 cet_build_plugin(DetectorPropertiesServiceProtoDUNEsp art::service  LIBRARIES
 	          ProtoDUNEspDataProviders
               lardataalg::DetectorInfo
+              lardata::ElectricFieldService
+              lardata::PositionDistorterService
               larcore::Geometry_Geometry_service
               larcorealg::Geometry
               art::Framework_Principal
