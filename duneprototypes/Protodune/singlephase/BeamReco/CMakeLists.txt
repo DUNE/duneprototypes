@@ -40,8 +40,7 @@ cet_build_plugin( BeamEvent art::module LIBRARIES
 find_library(IFBEAM ifbeam)
 find_library(IFDH ifdh)
 #find_library(IFDH ifdh)
-cet_make_exec(
-  test_ifbeam
+cet_make_exec(NAME test_ifbeam
   SOURCE test_ifbeam.c++
   LIBRARIES
     ifdh::ifdh
