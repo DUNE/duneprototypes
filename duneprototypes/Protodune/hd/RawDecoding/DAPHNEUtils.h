@@ -17,6 +17,8 @@ namespace daphne {
   using WaveformVector = std::vector<raw::OpDetWaveform>;
 namespace utils {
 
+  double convert_delta_ts(uint64_t delta);
+  
   class DAPHNETree {
    public:
     int fRun, fEvent, fTriggerNumber, fNFrames, fSlot, fCrate, fDaphneChannel,
