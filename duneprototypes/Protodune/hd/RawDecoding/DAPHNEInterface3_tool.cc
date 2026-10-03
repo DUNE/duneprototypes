@@ -45,21 +45,23 @@ class DAPHNEInterface3 : public DAPHNEInterfaceBase {
   void UnpackFragment(
       std::unique_ptr<Fragment> & frag,
       std::unordered_map<unsigned int, std::vector<raw::OpDetWaveform>> & wf_map,
+      uint64_t trigger_timestamp,
       utils::DAPHNETree * daphne_tree) {
 
     bool is_stream = (frag->get_fragment_type() != FragmentType::kDAPHNE);
 
     if (!is_stream) {
-      ProcessFrames(frag, wf_map, daphne_tree);
+      ProcessFrames(frag, wf_map, trigger_timestamp, daphne_tree);
     }
     else {
-      ProcessStreamFrames(frag, wf_map, daphne_tree);
+      ProcessStreamFrames(frag, wf_map, trigger_timestamp, daphne_tree);
     }
   }
 
   void ProcessFrames(
       std::unique_ptr<Fragment> & frag,
       std::unordered_map<unsigned int, std::vector<raw::OpDetWaveform>> & wf_map,
+      uint64_t trigger_timestamp,
       utils::DAPHNETree * daphne_tree) {
 
     auto n_frames = GetNFrames<DAPHNEFrame>(frag->get_size(),
@@ -68,7 +70,7 @@ class DAPHNEInterface3 : public DAPHNEInterfaceBase {
       auto frame
           = reinterpret_cast<DAPHNEFrame*>(
               static_cast<uint8_t*>(frag->get_data()) + i*FrameSize);
-      ProcessFrame(frame, wf_map, daphne_tree);
+      ProcessFrame(frame, wf_map, trigger_timestamp, daphne_tree);
     }
   }
 
@@ -76,6 +78,7 @@ class DAPHNEInterface3 : public DAPHNEInterfaceBase {
   void ProcessStreamFrames(
       std::unique_ptr<Fragment> & frag,
       std::unordered_map<unsigned int, std::vector<raw::OpDetWaveform>> & wf_map,
+      uint64_t trigger_timestamp,
       utils::DAPHNETree * daphne_tree) {
 
     auto n_frames = GetNFrames<DAPHNEStreamFrame>(frag->get_size(),
@@ -84,13 +87,14 @@ class DAPHNEInterface3 : public DAPHNEInterfaceBase {
       auto frame
           = reinterpret_cast<DAPHNEStreamFrame*>(
               static_cast<uint8_t*>(frag->get_data()) + i*StreamFrameSize);
-      ProcessStreamFrame(frame, wf_map, daphne_tree);
+      ProcessStreamFrame(frame, wf_map, trigger_timestamp, daphne_tree);
     }
   }
 
   void ProcessStreamFrame(
       DAPHNEStreamFrame * frame,
       std::unordered_map<unsigned int, std::vector<raw::OpDetWaveform>> & wf_map,
+      uint64_t trigger_timestamp,
       utils::DAPHNETree * daphne_tree) {
 
     art::ServiceHandle<dune::DAPHNEChannelMapService> channel_map;
@@ -122,12 +126,14 @@ class DAPHNEInterface3 : public DAPHNEInterfaceBase {
         continue;
       }
 
+      double delta_ts = daphne::utils::convert_delta_ts( //See DAPHNEUtils.h -- static cast to int64_t + implicit cast to double
+        frame->get_timestamp()-trigger_timestamp
+      )*fClocksData->OpticalClock().TickPeriod(); // making sure the timestamp is in microseconds; assumed it's in ticks in DAQ
       //Make output
       auto & waveform = daphne::utils::MakeWaveform(
             offline_channel,
             frame->s_adcs_per_channel,
-            (frame->get_timestamp() & 0xffffffffff) // mask out most significant bits. Live with only 40 least significant bits ~ 1,099,511,627,776 ticks = ~4.9 h
-            *fClocksData->OpticalClock().TickPeriod(), // making sure the timestamp is in microseconds; assumed it's in ticks in DAQ
+            delta_ts,
             wf_map,
             true);
 
@@ -154,6 +160,7 @@ class DAPHNEInterface3 : public DAPHNEInterfaceBase {
   void ProcessFrame(
       DAPHNEFrame * frame,
       std::unordered_map<unsigned int, std::vector<raw::OpDetWaveform>> & wf_map,
+      uint64_t trigger_timestamp,
       utils::DAPHNETree * daphne_tree) {
 
     art::ServiceHandle<dune::DAPHNEChannelMapService> channel_map;
@@ -178,12 +185,15 @@ class DAPHNEInterface3 : public DAPHNEInterfaceBase {
       return;
     }
 
+    double delta_ts = daphne::utils::convert_delta_ts( //See DAPHNEUtils.h -- static cast to int64_t + implicit cast to double
+          frame->get_timestamp() - trigger_timestamp
+    )*fClocksData->OpticalClock().TickPeriod(); // making sure the timestamp is in microseconds; assumed it's in ticks in DAQ,
+
     //Make output waveform and fill
     auto & waveform = daphne::utils::MakeWaveform(
         offline_channel,
         static_cast<size_t>(frame->s_num_adcs),
-        (frame->get_timestamp() & 0xffffffffff) // mask out most significant bits. Live with only 40 least significant bits ~ 1,099,511,627,776 ticks = ~4.9 h
-        *fClocksData->OpticalClock().TickPeriod(), // making sure the timestamp is in microseconds; assumed it's in ticks in DAQ
+        delta_ts,
         wf_map);
     for (size_t j = 0; j < static_cast<size_t>(frame->s_num_adcs); ++j) {
       waveform.push_back(frame->get_adc(j));
@@ -243,6 +253,9 @@ class DAPHNEInterface3 : public DAPHNEInterfaceBase {
     art::ServiceHandle<dune::HDF5RawFile3Service> rawFileService;
     auto raw_file = rawFileService->GetPtr();
     auto source_ids = raw_file->get_source_ids(record_id);
+
+    auto trigger_timestamp = raw_file->get_trh_ptr(record_id)->get_trigger_timestamp();
+
     //Loop over source ids
     for (const auto & source_id : source_ids)  {
       // only want detector readout data (i.e. not trigger info)
@@ -261,7 +274,7 @@ class DAPHNEInterface3 : public DAPHNEInterfaceBase {
         if (!CheckFragSize(frag)) continue;
 
         //Process it
-        UnpackFragment(frag, wf_map, daphne_tree);
+        UnpackFragment(frag, wf_map, trigger_timestamp, daphne_tree);
       }
     }
   };
@@ -270,7 +283,7 @@ class DAPHNEInterface3 : public DAPHNEInterfaceBase {
       art::Event &evt,
       std::string inputlabel,
       std::string subdet_label,
-      std::unordered_map<unsigned int, std::vector<raw::OpDetWaveform>> & wf_map,
+      std::unordered_map<unsigned int, std::vector<raw::OpDetWaveform>> & wf_map,      
       utils::DAPHNETree * daphne_tree) override {};
 
 };
