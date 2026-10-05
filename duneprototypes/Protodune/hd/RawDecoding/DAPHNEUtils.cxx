@@ -3,6 +3,14 @@
 
 namespace daphne::utils {
 
+double convert_delta_ts(uint64_t delta) {
+    // In c++20 static casting overflowed negatives to int64_t yields the correct negative int.
+    // (I guess as long as abs(delta) < max(int64_t) but that's fine here)
+    // Then the implicit cast to double is also fine
+    return static_cast<int64_t>(delta);
+}
+
+
 DAPHNETree::DAPHNETree() : fTree(nullptr) {}
 DAPHNETree::DAPHNETree(TTree * tree) : fTree(tree) {
   SetBranches();
