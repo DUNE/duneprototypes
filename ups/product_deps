@@ -87,7 +87,7 @@
 #>  define_pythonpath
 ####################################
 parent		duneprototypes
-defaultqual	e26
+defaultqual	e28
 ####################################
 
 ####################################
@@ -232,9 +232,9 @@ fwdir	product_dir	config_data
 
 product                 version
 cetmodules	        v3_27_04	-	only_for_build
-duneopdet               v10_32_00d01
-dunecalib               v10_32_00d01
-dunesim                 v10_32_00d01
+duneopdet               v11_00_00d00
+dunecalib               v11_00_00d00
+dunesim                 v11_00_00d00
 end_product_list
 
 ####################################
@@ -289,10 +289,8 @@ end_product_list
 #
 ####################################
 qualifier	duneopdet	dunecalib	dunesim		notes
-c14:debug	c14:debug	c14:debug	c14:debug
-c14:prof	c14:prof	c14:prof	c14:prof
-e26:debug	e26:debug	e26:debug	e26:debug
-e26:prof	e26:prof	e26:prof	e26:prof
+e28:debug	e28:debug	e28:debug	e28:debug
+e28:prof	e28:prof	e28:prof	e28:prof
 end_qualifier_list
 ####################################
 
